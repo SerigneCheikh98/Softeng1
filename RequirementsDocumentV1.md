@@ -34,37 +34,42 @@ Version: V1 - description of EZWallet in CURRENT form (as received by teachers)
 EZWallet (read EaSy Wallet) is a software application designed to help individuals and families keep track of their expenses. Users can enter and categorize their expenses, allowing them to quickly see where their money is going. EZWallet is a powerful tool for those looking to take control of their finances and make informed decisions about their spending.
 
 
-
 # Stakeholders
-
 
 | Stakeholder name  | Description | 
 | ----------------- |:-----------:|
-|   Stakeholder x..     |             | 
+|   StakeHolder1: Owner    |    investor, owns the product     |
+|   StakeHolder2: User    |    person interested in charting its expenses      |
+|   StakeHolder5: DB Administrator    |    person in charge of managing the DB     |
+|   StakeHolder6: Developer   | person in charge of developing the software product  |
+|   StakeHolder7: Server   | TODO |
 
 # Context Diagram and interfaces
 
 ## Context Diagram
-\<Define here Context diagram using UML use case diagram>
-
-\<actors are a subset of stakeholders>
+![image info](./code/images/context_diagram.png)
 
 ## Interfaces
-\<describe here each interface in the context diagram>
-
-\<GUIs will be described graphically in a separate document>
-
 | Actor | Logical Interface | Physical Interface  |
 | ------------- |:-------------:| -----:|
-|   Actor x..     |  |  |
+|   Developer     | PC | Developing Suite Tools (VSCode, NodeJS, ...) |
+|   DB Administrator     | PC | MongoDB Graphical User Interface |
+|   User     | Smartphone/PC | Graphical User Interface (to be defined) |
+|   Server     | Internet connection | NodeJS API |
 
 # Stories and personas
-\<A Persona is a realistic impersonation of an actor. Define here a few personas and describe in plain text how a persona interacts with the system>
-
-\<Persona is-an-instance-of actor>
-
-\<stories will be formalized later as scenarios in use cases>
-
+- Persona 1: High income professional, male, married, with no children, 40 yo
+	+ Story: He thought that invest into this type of application could be profitable. Every month he checks how the project is going.
+- Persona 2: Professional, female, divorced, with children, 40 yo
+	+ Story: She needs to monitor her expenses, interested in understanding where her money has been spent.
+- Persona 3: Student, worker part-time, male, 22, low income
+	+ Story: Off-campus student interested in managing his finances better, since he has a part-time job but monthly expenses.
+- Persona 4: Student, female, 22, no income 
+	+ Story: Student Offsite, interested in managing the money her family sends her.
+- Persona 5: Young professional, female, 30, with very high skills in DB management
+	+ Story: Graduated with 110 e Lode at the Politecnico Di Torino, specializing in business information systems, subsequently hired for the management of software data. 
+- Persona 6: professional, male, married, with children, 50 yo
+	+ Story: Web application field expert, with knowledge about the frontend and backend. Proficient with Javascript and able to develop an application very well.
 
 # Functional and non functional requirements
 
