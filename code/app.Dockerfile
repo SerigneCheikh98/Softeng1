@@ -1,6 +1,12 @@
 FROM node:14
+
 WORKDIR /app
-COPY . /app
-RUN rm -rf node_modules
+
+COPY package*.json ./
+
 RUN npm install
-CMD [ "npx", "nodemon", "server.js" ]
+
+RUN npm install mongoose
+COPY . .
+
+CMD npm install mongoose; npx nodemon server.js
