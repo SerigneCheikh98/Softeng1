@@ -6,7 +6,6 @@ COPY package*.json ./
 
 RUN npm install
 
-RUN npm install mongoose
 COPY . .
 
-CMD npx nodemon server.js
+CMD npm install; mongoose; npx nodemon server.js
