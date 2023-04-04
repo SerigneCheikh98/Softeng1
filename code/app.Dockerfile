@@ -8,4 +8,4 @@ RUN npm install
 
 COPY . .
 
-CMD npm install; mongoose; npx nodemon server.js
+CMD npm install mongoose; npx nodemon server.js
