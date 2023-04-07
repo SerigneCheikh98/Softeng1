@@ -65,3 +65,5 @@ test:
   stage: test
   script:
     - npm run test:coverage
+  rules:
+  - if: '$CI_COMMIT_BRANCH == "main"'
