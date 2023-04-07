@@ -21,8 +21,8 @@ Consider the EZWallet  project in CURRENT version (as received by the teachers),
 ### 
 |         component name    | Estimated effort (person hours)   |             
 | ----------- | ------------------------------- | 
-|requirement document    | |
-| GUI prototype ||
+|requirement document    | 16 |
+| GUI prototype | 10 |
 |design document ||
 |code ||
 | unit tests ||

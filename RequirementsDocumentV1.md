@@ -40,9 +40,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 | ----------------- |:-----------:|
 |   StakeHolder1: Owner    |    investor, owns the product     |
 |   StakeHolder2: User    |    person interested in charting its expenses      |
-|   StakeHolder5: DB Administrator    |    person in charge of managing the DB     |
-|   StakeHolder6: Developer   | person in charge of developing the software product  |
-|   StakeHolder7: Server   | TODO |
+|   StakeHolder3: DB Administrator    |    person in charge of managing the DB     |
+|   StakeHolder4: Developer   | person in charge of developing the software product  |
 
 # Context Diagram and interfaces
 
@@ -55,7 +54,6 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |   Developer     | PC | Developing Suite Tools (VSCode, NodeJS, ...) |
 |   DB Administrator     | PC | MongoDB Graphical User Interface |
 |   User     | Smartphone/PC | Graphical User Interface (to be defined) |
-|   Server     | Internet connection | NodeJS API |
 
 # Stories and personas
 - Persona 1: High income professional, male, married, with no children, 40 yo
@@ -75,27 +73,30 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 ## Functional Requirements
 
-\<In the form DO SOMETHING, or VERB NOUN, describe high level capabilities of the system>
-
-\<they match to high level use cases>
-
 | ID        | Description  |
 | ------------- |:-------------:| 
-|  FR1     |  |
-|  FR2     |   |
-| FRx..  | | 
+|  F1     | Authorize and Authenticate |
+|  F1.1     | Log In |
+|  F1.2  | Log Out |
+|  F1.3	|	Create Account	|
+|  F2 | Manage Expenses |
+|  F2.1 | Manage Categories |
+|  F2.1.1| Create Categories |
+|  F2.1.2| Get Categories |
+|  F2.2 | Manage Transaction |
+|  F2.2.1| Create Transaction |
+|  F2.2.2| Get Transaction |
+|  F2.2.3| Delete Transaction |
+|  F2.3 | Manage Labels |
+|  F2.3.1| Get Labels |
 
 ## Non Functional Requirements
 
-\<Describe constraints on functional requirements>
-
 | ID        | Type (efficiency, reliability, ..)           | Description  | Refers to |
 | ------------- |:-------------:| :-----:| -----:|
-|  NFR1     |   |  | |
-|  NFR2     | |  | |
-|  NFR3     | | | |
-| NFRx .. | | | | 
-
+|  NFR1     | Efficiency | Each function less than ½ sec | F1,F2 |
+|  NFR2     | Portability | Currency is Euro | F2.2,F2.3 |
+|  NFR3     | Usability | Training Time 1 Hour, Average Number of Errors less than 2 | F1,F2 |
 
 # Use case diagram and use cases
 
@@ -105,45 +106,186 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 
 \<next describe here each use case in the UCD>
-### Use case 1, UC1
-| Actors Involved        |  |
+### Use case 1, UC1 (Login/Register)
+| Actors Involved        | User |
 | ------------- |:-------------:| 
-|  Precondition     | \<Boolean expression, must evaluate to true before the UC can start> |
-|  Post condition     | \<Boolean expression, must evaluate to true after UC is finished> |
-|  Nominal Scenario     | \<Textual description of actions executed by the UC> |
-|  Variants     | \<other normal executions> |
-|  Exceptions     | \<exceptions, errors > |
+|  Precondition     | <u>User</u> opened the application |
+|  Post condition     | <u>User</u> is logged |
+|  Nominal Scenario     | <u>User</u>, initially on the page, decides if register for the first time or, if already registered, to login. |
+|  Variants     | <u>User</u> is not registered, <u>User</u> is already registered  |
+|  Exceptions     | wrong username or password |
 
 ##### Scenario 1.1 
 
-\<describe here scenarios instances of UC1>
-
-\<a scenario is a sequence of steps that corresponds to a particular execution of one use case>
-
-\<a scenario is a more formal description of a story>
-
-\<only relevant scenarios should be described>
-
-| Scenario 1.1 | |
+| Scenario 1.1 | Login |
 | ------------- |:-------------:| 
-|  Precondition     | \<Boolean expression, must evaluate to true before the scenario can start> |
-|  Post condition     | \<Boolean expression, must evaluate to true after scenario is finished> |
+|  Precondition     | <u>User</u> is registered and not logged in |
+|  Post condition     | <u>User</u> is Logged In and can access his account |
 | Step#        | Description  |
-|  1     |  |  
-|  2     |  |
-|  ...     |  |
+|  1     | <u>User</u> enters username and password. |  
+|  2     | <u>User</u> confirms the login. |
 
 ##### Scenario 1.2
 
-##### Scenario 1.x
+| Scenario 1.2 | Register |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is not registered |
+|  Post condition     | <u>User</u> is registered and logged in |
+| Step#        | Description  |
+|  1     | <u>User</u> enters username and password. |  
+|  2     | System confirm the registration. |
+|  3     | <u>User</u> enters username and password. |  
+|  4     | <u>User</u> confirms the login. |
 
-### Use case 2, UC2
-..
+##### Scenario 1.3
 
-### Use case x, UCx
-..
+| Scenario 1.3 | Wrong Username/Password |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is not registered or not logged in |
+|  Post condition     | <u>User</u> is not registered or not logged in |
+| Step#        | Description  |
+|  1     | <u>User</u> enters username and password. |  
+|  2     | Username or password are wrong. |
+|  3     | System asks again the data. |
 
+### Use case 2, UC2 Logout
+| Actors Involved        | User |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is already logged in |
+|  Post condition     | <u>User</u> is logged out |
+|  Nominal Scenario     | <u>User</u>, initially logged in, decides to logout. |
+|  Variants     |  |
+|  Exceptions     |  |
 
+##### Scenario 2.1
+
+| Scenario 2.1 | Logout |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is already logged in |
+|  Post condition     | <u>User</u> is logged out |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the logout button. |  
+|  2     | System confirms the logout. |
+
+### Use case 3, UC3 (Get Information)
+
+| Actors Involved        | User |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and wants to see all categories/labels/transaction inserted. |
+|  Post condition     | <u>User</u> retrieves the information he wants. |
+|  Nominal Scenario     | <u>User</u>, initially logged in on the page, wants to find information by clicking on the relative button. |
+|  Variants     | <u>User</u> wants to see all categories.<br> <u>User</u> wants to see all labels. <br> <u>User</u> wants to see all transaction.  |
+|  Exceptions     |  |
+
+##### Scenario 3.1 
+
+| Scenario 3.1 | Find Categories |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "show categories" button. |
+|  Post condition     | All categories are displayed. |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the "show categories" button. |
+|  2     | System shows the result to the <u>User</u>. |
+
+##### Scenario 3.2
+
+| Scenario 3.2 | Find Labels |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "show labels" button. |
+|  Post condition     |  All labels are displayed. |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the "show labels" button. |
+|  2     | System shows the result to the <u>User</u>. |
+
+##### Scenario 3.3
+
+| Scenario 3.3 | Find Transaction |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "show transaction" button. |
+|  Post condition     |  All transaction are displayed. |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the "show transaction" button. |
+|  2     | System shows the result to the <u>User</u>. |
+
+### Use case 4, UC4 (Add Information)
+
+| Actors Involved        | User |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and want to Add specific information. |
+|  Post condition     | <u>User</u> Adds the information he wants. |
+|  Nominal Scenario     | <u>User</u>, initially logged in on the page, wants to Add something by clicking on the relative button. |
+|  Variants     | <u>User</u> wants to Add a category.<br> <u>User</u> wants to Add a transaction.  |
+|  Exceptions     | Category or Transaction are already present. |
+
+##### Scenario 4.1 
+| Scenario 4.1 | Add Category |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "add category" button. |
+|  Post condition     | A Category is added successfully. |
+| Step#        | Description  |
+|  1     | <u>User</u> enters the category that he wants to add. |  
+|  2     | <u>User</u> clicks the "add category" button. |
+|  3     | System confirms the creation to the <u>User</u>. |
+
+##### Scenario 4.2
+| Scenario 4.2 | Add Transaction |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "add transaction" button. |
+|  Post condition     | A transaction is added successfully. |
+| Step#        | Description  |
+|  1     | <u>User</u> enters the transaction that he wants to Add. |  
+|  2     | <u>User</u> clicks the "add transaction" button. |
+|  3     | System confirms the creation. |
+
+##### Scenario 4.3
+| Scenario 4.3 | Failure in Creation of Category |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "add category" button. |
+|  Post condition     | Nothing is added. |
+| Step#        | Description  |
+|  1     | <u>User</u> enters the category  that he wants to add. |  
+|  2     | <u>User</u> clicks the "add category" button. |
+|  3     | System fails on already existing category. |
+
+##### Scenario 4.4
+| Scenario 4.4 | Failure in Creation of Transaction |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "add transaction" button. |
+|  Post condition     | Nothing is added. |
+| Step#        | Description  |
+|  1     | <u>User</u> enters the transaction that he wants to add. |  
+|  2     | <u>User</u> clicks the "add transaction" button. |
+|  3     | System fails on already existing transaction. |
+
+### Use case 5, UC5 (Delete Information)
+
+| Actors Involved        | User |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and want to delete an information. |
+|  Post condition     | <u>User</u> deletes the information he wants. |
+|  Nominal Scenario     | <u>User</u>, initially logged in on the page, wants to delete something by clicking on the relative button. |
+|  Variants     | <u>User</u> wants to delete a transaction. |
+|  Exceptions     | Transaction not found. |
+
+##### Scenario 5.1
+| Scenario 5.1 | Delete a Transaction |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "delete transaction" button. |
+|  Post condition     | Transaction is deleted. |
+| Step#        | Description  |
+|  1     | <u>User</u> enters the transaction id that he wants to delete. |  
+|  2     | <u>User</u> clicks the "delete transaction" button. |
+|  3     | System confirms the deletion. |
+
+##### Scenario 5.2
+| Scenario 5.2 | Transaction Not Found |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in and clicked "delete transaction" button. |
+|  Post condition     | Transaction is not deleted. |
+| Step#        | Description  |
+|  1     | <u>User</u> enters the transaction id that he wants to delete. |  
+|  2     | <u>User</u> clicks the "delete transaction" button. |
+|  3     | System fails on missing transaction. |
 
 # Glossary
 
