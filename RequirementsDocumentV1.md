@@ -1,13 +1,16 @@
 # Requirements Document - current EZWallet
 
-Date: 
+Date: 14/04/2023
 
 Version: V1 - description of EZWallet in CURRENT form (as received by teachers)
 
  
 | Version number | Change |
 | ----------------- |:-----------|
-| | | 
+| 1.0 | Stakeholders, Context Diagram, Interfaces, stories and Personas |
+| 1.1 | Functional/ Non Funtional Requirements |
+| 1.2 | Use Cases and Scenarios |
+| 1.3 | Diagrams |
 
 
 # Contents
@@ -102,10 +105,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 
 ## Use case diagram
-\<define here UML Use case diagram UCD summarizing all use cases, and their relationships>
+![image info](./code/images/use_case_diagram.png)
 
-
-\<next describe here each use case in the UCD>
 ### Use case 1, UC1 (Login/Register)
 | Actors Involved        | User |
 | ------------- |:-------------:| 
@@ -289,18 +290,15 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 # Glossary
 
-\<use UML class diagram to define important terms, or concepts in the domain of the application, and their relationships> 
+![image info](./code/images/glossary.png)
 
-\<concepts must be used consistently all over the document, ex in use cases, requirements etc>
+\<concepts must be used consistently all over the document, ex in use cases, requirements etc> VERIFICARE
 
 # System Design
-\<describe here system design>
-
-\<must be consistent with Context diagram>
+![image info](./code/images/system_design.png)
 
 # Deployment Diagram 
-
-\<describe here deployment diagram >
+![image info](./code/images/deployment_diagram.png)
 
 
 
