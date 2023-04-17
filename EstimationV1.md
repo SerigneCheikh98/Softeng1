@@ -5,6 +5,7 @@ Version:
 | Version number | Change |
 | ----------------- |:-----------|
 | 1.0 | Estimation by Size, Product Decomposition, Activity Decomposition |
+| 1.1 | Comparison of The Approaches, Gantt Diagram |
 
 # Estimation approach
 Consider the EZWallet  project in CURRENT version (as received by the teachers), assume that you are going to develop the project INDEPENDENT of the deadlines of the course
@@ -23,13 +24,13 @@ Consider the EZWallet  project in CURRENT version (as received by the teachers),
 ### 
 |         component name    | Estimated effort (person hours)   |             
 | ----------- | ------------------------------- | 
-|requirement document    | 22 |
-| GUI prototype | 10 |
-|design document | 8 |
-|code | 22.4 |
-| unit tests | 38.3 |
-| api tests | 40.1 |
-| management documents  | 8 |
+|requirement document    | 11 |
+| GUI prototype | 5 |
+|design document | 4 |
+|code | 11 |
+| unit tests | 19 |
+| api tests | 20 |
+| management documents  | 4 |
 
 
 
@@ -43,20 +44,21 @@ Consider the EZWallet  project in CURRENT version (as received by the teachers),
 | Functional and Non Functional Requirement | 6 |
 | Use Cases and Scenario | 8 |
 | Design Documents | 2 |
-| code | 22 |
-| tests | 70 |
+| code | 12 |
+| tests | 38 |
 ###
-Insert here Gantt chart with above activities
+![image info](./code/images/Gantt_table.png)
+![image info](./code/images/Gantt.png)
 
 # Summary
 
-Report here the results of the three estimation approaches. The  estimates may differ. Discuss here the possible reasons for the difference
+In product and activity decomposition approaches, we have a slightly less person hour cost. So, developers may take more time to develop the application.
 
 |             | Estimated effort                        |   Estimated duration |          
 | ----------- | ------------------------------- | ---------------|
-| estimate by size | 70.2 | 0.43875 |
-| estimate by product decomposition | 148.8 | |
-| estimate by activity decomposition | 116 | |
+| estimate by size | 70.2 | 0.43875 calendar weeks |
+| estimate by product decomposition | 74 | 0.4625 calendar weeks |
+| estimate by activity decomposition | 74 | 0.4625 calendar weeks |
 
 
 

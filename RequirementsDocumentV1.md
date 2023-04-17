@@ -11,7 +11,7 @@ Version: V1 - description of EZWallet in CURRENT form (as received by teachers)
 | 1.1 | Functional/ Non Funtional Requirements |
 | 1.2 | Use Cases and Scenarios |
 | 1.3 | Diagrams |
-
+| 1.4 | Corrections |
 
 # Contents
 
@@ -45,6 +45,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |   StakeHolder2: User    |    person interested in charting its expenses      |
 |   StakeHolder3: DB Administrator    |    person in charge of managing the DB     |
 |   StakeHolder4: Developer   | person in charge of developing the software product  |
+|   Stakeholder5: Administrator | a person who has rights to manage users in the application |
 
 # Context Diagram and interfaces
 
@@ -54,9 +55,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 ## Interfaces
 | Actor | Logical Interface | Physical Interface  |
 | ------------- |:-------------:| -----:|
-|   Developer     | PC | Developing Suite Tools (VSCode, NodeJS, ...) |
-|   DB Administrator     | PC | MongoDB Graphical User Interface |
-|   User     | Smartphone/PC | Graphical User Interface (to be defined) |
+|   User     | PC | Graphical User Interface (to be defined) |
+|   Administrator | PC | Graphical User Interface (to be defined) |
 
 # Stories and personas
 - Persona 1: High income professional, male, married, with no children, 40 yo
@@ -71,6 +71,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 	+ Story: Graduated with 110 e Lode at the Politecnico Di Torino, specializing in business information systems, subsequently hired for the management of software data. 
 - Persona 6: professional, male, married, with children, 50 yo
 	+ Story: Web application field expert, with knowledge about the frontend and backend. Proficient with Javascript and able to develop an application very well.
+- Persona 7: professional, female, married, with children, 30 yo
+	+ Story: Figure with experience in web application for expense management, proficient in managing a great amount of accounts.
 
 # Functional and non functional requirements
 
@@ -82,6 +84,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  F1.1     | Log In |
 |  F1.2  | Log Out |
 |  F1.3	|	Create Account	|
+|  F1.4	|	Get Users	|
+|  F1.5	|	Get User By Username	|
 |  F2 | Manage Expenses |
 |  F2.1 | Manage Categories |
 |  F2.1.1| Create Categories |
@@ -288,11 +292,47 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  2     | <u>User</u> clicks the "delete transaction" button. |
 |  3     | System fails on missing transaction. |
 
+### Use case 6, UC6 (Get User Information)
+| Actors Involved        | User, Administrator |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged |
+|  Post condition     | <u>User</u> views his informations |
+|  Nominal Scenario     | <u>User</u>, initially on the page, decides to view his account informations. |
+|  Variants     |  |
+|  Exceptions     |  |
+
+##### Scenario 6.1 
+
+| Scenario 6.1 | Get User Information |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged |
+|  Post condition     | <u>User</u> views his informations |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the button to show his account informations. |  
+|  2     | Informations are displayed. |
+
+### Use case 7, UC7 (Get Users Information)
+| Actors Involved        | Administrator |
+| ------------- |:-------------:| 
+|  Precondition     | <u>Administrator</u> is logged |
+|  Post condition     | <u>Administrator</u> views informations of the <u>Users</u> |
+|  Nominal Scenario     | <u>Administrator</u>, initially on the page, decides to view informations of the <u>Users</u>. |
+|  Variants     |  |
+|  Exceptions     |  |
+
+##### Scenario 7.1 
+
+| Scenario 7.1 | Get Users |
+| ------------- |:-------------:| 
+|  Precondition     | <u>Administrator</u> is logged |
+|  Post condition     | <u>Administrator</u> views informations of the <u>Users</u> |
+| Step#        | Description  |
+|  1     | <u>Administrator</u> clicks the button to show informations of the <u>Users</u>. |  
+|  2     | Informations are displayed. |
+
 # Glossary
 
 ![image info](./code/images/glossary.png)
-
-\<concepts must be used consistently all over the document, ex in use cases, requirements etc> VERIFICARE
 
 # System Design
 ![image info](./code/images/system_design.png)
