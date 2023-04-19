@@ -11,7 +11,7 @@ const categories_model = new Schema({
         required: true,
         default: "#fcbe44"
     }
-   
+    
 });
 
 const transaction_model = new Schema({
@@ -26,12 +26,12 @@ const transaction_model = new Schema({
     amount: {
         type: Number,
         default: 0
-    }, 
+    },
     date: {
         type: Date,
         default: Date.now
     }
-}) 
+})
 
 const categories = mongoose.model("categories", categories_model);
 const transactions = mongoose.model("transactions", transaction_model);

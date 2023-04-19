@@ -137,10 +137,12 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Precondition     | <u>User</u> is not registered |
 |  Post condition     | <u>User</u> is registered and logged in |
 | Step#        | Description  |
-|  1     | <u>User</u> enters username and password. |  
-|  2     | System confirm the registration. |
-|  3     | <u>User</u> enters username and password. |  
-|  4     | <u>User</u> confirms the login. |
+|  1     | <u>User</u> clicks "not signed up" link. |  
+|  2     | <u>User</u> enters username, e-mail, password and confirm password. |  
+|  3     | <u>User</u> clicks "sign up" button. |  
+|  4     | System confirm the registration after checking if the user doesn't exists. |
+|  5     | <u>User</u> is logged. |  
+
 
 ##### Scenario 1.3
 
@@ -169,8 +171,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Precondition     | <u>User</u> is already logged in |
 |  Post condition     | <u>User</u> is logged out |
 | Step#        | Description  |
-|  1     | <u>User</u> clicks the logout button. |  
-|  2     | System confirms the logout. |
+|  1     | <u>User</u> clicks the settings icon. |  
+|  2     | <u>User</u> clicks the logout button. |  
+|  3     | System confirms the logout. |
 
 ### Use case 3, UC3 (Get Information)
 
@@ -190,7 +193,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Post condition     | All categories are displayed. |
 | Step#        | Description  |
 |  1     | <u>User</u> clicks the "show categories" button. |
-|  2     | System shows the result to the <u>User</u>. |
+|  2     | System shows all categories to the <u>User</u>. |
 
 ##### Scenario 3.2
 
@@ -200,17 +203,16 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Post condition     |  All labels are displayed. |
 | Step#        | Description  |
 |  1     | <u>User</u> clicks the "show labels" button. |
-|  2     | System shows the result to the <u>User</u>. |
+|  2     | System shows all labels to the <u>User</u>. |
 
 ##### Scenario 3.3
 
 | Scenario 3.3 | Find Transaction |
 | ------------- |:-------------:| 
-|  Precondition     | <u>User</u> is logged in and clicked "show transaction" button. |
+|  Precondition     | <u>User</u> is logged in. |
 |  Post condition     |  All transaction are displayed. |
 | Step#        | Description  |
-|  1     | <u>User</u> clicks the "show transaction" button. |
-|  2     | System shows the result to the <u>User</u>. |
+|  1     | System shows automatically all transactions to the <u>User</u>. |
 
 ### Use case 4, UC4 (Add Information)
 
@@ -228,9 +230,10 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Precondition     | <u>User</u> is logged in and clicked "add category" button. |
 |  Post condition     | A Category is added successfully. |
 | Step#        | Description  |
-|  1     | <u>User</u> enters the category that he wants to add. |  
-|  2     | <u>User</u> clicks the "add category" button. |
-|  3     | System confirms the creation to the <u>User</u>. |
+|  1     | <u>User</u> clicks the "show categories" button. |
+|  2     | System shows all categories to the <u>User</u>. |
+|  3     | <u>User</u> enters the type and the color of the category that he wants to add. |  
+|  4     | <u>User</u> clicks the "add category" button. |
 
 ##### Scenario 4.2
 | Scenario 4.2 | Add Transaction |
