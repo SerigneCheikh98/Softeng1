@@ -52,7 +52,7 @@ Consider the EZWallet  project in CURRENT version (as received by the teachers),
 
 # Summary
 
-In product and activity decomposition approaches, we have a slightly less person hour cost. So, developers may take more time to develop the application.
+There is about 5% error between the approaches, since estimation is not perfect by definition.
 
 |             | Estimated effort                        |   Estimated duration |          
 | ----------- | ------------------------------- | ---------------|
