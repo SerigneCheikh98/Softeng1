@@ -57,7 +57,6 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 | Actor | Logical Interface | Physical Interface  |
 | ------------- |:-------------:| -----:|
 |   User     | PC | Graphical User Interface (to be defined) |
-|   Administrator | PC | Graphical User Interface (to be defined) |
 
 # Stories and personas
 - Persona 1: High income professional, male, married, with no children, 40 yo
@@ -68,12 +67,6 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 	+ Story: Off-campus student interested in managing his finances better, since he has a part-time job but monthly expenses.
 - Persona 4: Student, female, 22, no income 
 	+ Story: Student Offsite, interested in managing the money her family sends her.
-- Persona 5: Young professional, female, 30, with very high skills in DB management
-	+ Story: Graduated with 110 e Lode at the Politecnico Di Torino, specializing in business information systems, subsequently hired for the management of software data. 
-- Persona 6: professional, male, married, with children, 50 yo
-	+ Story: Web application field expert, with knowledge about the frontend and backend. Proficient with Javascript and able to develop an application very well.
-- Persona 7: professional, female, married, with children, 30 yo
-	+ Story: Figure with experience in web application for expense management, proficient in managing a great amount of accounts.
 
 # Functional and non functional requirements
 
@@ -355,3 +348,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 # Deployment Diagram 
 ![image info](./code/images/deployment_diagram.png)
+
+# Defect Table
+| Defect | File | Description |
+|----------|:-------------:|------:|
+| getUsers | users.js | This Function should be called only by User with Admin Privileges, but no Privileges are checked. |
+| getLabels | controller.js | |
