@@ -343,6 +343,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 # Deployment Diagram 
 ![image info](./code/images/deployment_diagram.png)
 
+# Defect Table
 
-
-
+| Defect   |      File      |  Description |
+|----------|:-------------:|------:|
+| getUsers | users.js | Function should be called by User with Admin Privileges, but no check on these privileges is made. |
+| get_labels | controller.js |  |
