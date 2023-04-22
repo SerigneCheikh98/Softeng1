@@ -1,13 +1,13 @@
 # Requirements Document - future EZWallet
 
-Date: 
+Date: 22/04/2023
 
 Version: V2 - description of EZWallet in FUTURE form (as proposed by the team)
 
  
 | Version number | Change |
 | ----------------- |:-----------|
-| | | 
+| 1.0 | Stakeholders, Context Diagram, Interfaces, stories and Personas | 
 
 
 # Contents
@@ -47,7 +47,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 # Context Diagram and interfaces
 
 ## Context Diagram
-![image info](./code/images/context_diagram.png)
+![image info](./code/images_v2/context_diagram.png)
 
 ## Interfaces
 | Actor | Logical Interface | Physical Interface  |
@@ -102,7 +102,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 
 ## Use case diagram
-![image info](./code/images/use_case_diagram.png)
+![image info](./code/images_v2/use_case_diagram.png)
 
 ### Use case 1, UC1 (Login/Register)
 | Actors Involved        | User |
@@ -340,10 +340,10 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 # Glossary
 
-![image info](./code/images/glossary.png)
+![image info](./code/images_v2/glossary.png)
 
 # System Design
-![image info](./code/images/system_design.png)
+![image info](./code/images_v2/system_design.png)
 
 # Deployment Diagram 
-![image info](./code/images/deployment_diagram.png)
+![image info](./code/images_v2/deployment_diagram.png)
