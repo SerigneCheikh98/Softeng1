@@ -46,7 +46,6 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |   StakeHolder2: User    |    person interested in charting its expenses      |
 |   StakeHolder3: DB Administrator    |    person in charge of managing the DB     |
 |   StakeHolder4: Developer   | person in charge of developing the software product  |
-|   Stakeholder5: Administrator | a person who has rights to manage users in the application |
 
 # Context Diagram and interfaces
 
@@ -78,18 +77,19 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  F1.1     | Log In |
 |  F1.2  | Log Out |
 |  F1.3	|	Create Account	|
-|  F1.4	|	Get Users	|
-|  F1.5	|	Get User By Username	|
 |  F2 | Manage Expenses |
 |  F2.1 | Manage Categories |
-|  F2.1.1| Create Categories |
+|  F2.1.1| Create Category |
 |  F2.1.2| Get Categories |
-|  F2.2 | Manage Transaction |
+|  F2.2 | Manage Transactions |
 |  F2.2.1| Create Transaction |
-|  F2.2.2| Get Transaction |
+|  F2.2.2| Get Transactions |
 |  F2.2.3| Delete Transaction |
 |  F2.3 | Manage Labels |
 |  F2.3.1| Get Labels |
+|  F3    | Manage User Information |
+|  F3.1	|	Get Users	|
+|  F3.2	|	Get User By Username	|
 
 ## Non Functional Requirements
 
@@ -122,7 +122,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Post condition     | <u>User</u> is Logged In and can access his account |
 | Step#        | Description  |
 |  1     | <u>User</u> enters email and password. |  
-|  2     | <u>User</u> confirms the login. |
+|  2     | <u>User</u> confirms the login by clicking on the "Login" button. |
 
 ##### Scenario 1.2
 
@@ -297,7 +297,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Post condition     | Transaction is deleted. |
 | Step#        | Description  |
 |  1    | <u>User</u> clicks the trash icon next to the transaction. |
-|  3     | System confirms the deletion. |
+|  2     | System confirms the deletion. |
 
 
 
@@ -353,4 +353,4 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 | Defect | File | Description |
 |----------|:-------------:|------:|
 | getUsers | users.js | This Function should be called only by User with Admin Privileges, but no Privileges are checked. |
-| getLabels | controller.js | |
+| getLabels | controller.js | The Function considers also color attribute from category, but this attribute is never returned. |
