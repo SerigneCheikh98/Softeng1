@@ -82,12 +82,15 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  F2.1.1| Create Category |
 |  F2.1.2| Get Categories |
 |  F2.1.3| Delete Category |
+|  F2.1.4| Order Categories |
 |  F2.2 | Manage Transactions |
 |  F2.2.1| Create Transaction |
 |  F2.2.2| Get Transactions |
 |  F2.2.3| Delete Transaction |
+|  F2.2.4| Order Transaction |
 |  F2.3 | Manage Labels |
 |  F2.3.1| Get Labels |
+|  F2.3.2| Order Labels |
 |  F3    | Manage User Information |
 |  F3.1	|	Get Users	|
 |  F3.2	|	Get User By Username	|
@@ -221,7 +224,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Post condition     | All categories are displayed. |
 | Step#        | Description  |
 |  1     | <u>User</u> clicks the "show categories" button. |
-|  2     | System shows all categories to the <u>User</u>. |
+|  2     | System shows all categories with the sum of the transaction amounts to the <u>User</u>. |
 
 ##### Scenario 3.2
 
@@ -383,6 +386,45 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  1     | <u>Administrator</u> clicks the "GetUsers" button to show information of the <u>Users</u>. |  
 |  2     | Username,email and HashedPassword are displayed. |
 
+### Use case 8, UC8 (Order information by )
+| Actors Involved        | User |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in . |
+|  Post condition     | <u>User</u> views ordered information like he prefers. |
+|  Nominal Scenario     | <u>User</u>  decides to view information in a different order. |
+|  Variants     | Order Transactions by , Order Categories by , Order Labels by  |
+|  Exceptions     |  |
+
+##### Scenario 8.1 
+
+| Scenario 8.1 | Order Transactions by  |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in . |
+|  Post condition     | <u>User</u> views transactions in a specific order |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the "Sort icon" on the column name. |  
+|  2     | Sorted transactions are displayed. |
+
+##### Scenario 8.2
+
+| Scenario 8.2 | Order Categories by  |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in . |
+|  Post condition     | <u>User</u> views categories in a specific order |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the "Sort icon" on the column name. |  
+|  2     | Sorted categories are displayed. |
+##### Scenario 8.3 
+
+| Scenario 8.3 | Order Labels by  |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is logged in . |
+|  Post condition     | <u>User</u> views labels in a specific order |
+| Step#        | Description  |
+|  1     | <u>User</u> clicks the "Sort icon" on the column name. |  
+|  2     | Sorted labels are displayed. |
+
+
 # Glossary
 
 ![image info](./code/images_v2/glossary.png)
@@ -392,11 +434,20 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 # Deployment Diagram 
 ![image info](./code/images_v2/deployment_diagram.png)
-
+# Bug Fixed
+| Bug Fix | File | Description |
+|----------|:-------------:|------:|
+| Fixed getUsers function | auth.js | Added the check to verify that the User has Administrator privileges.|
+| Fixed getLabels function | controller.js | The result now  includes also color attribute from category.|
 # New Features
 | Feature | File | Description |
 |----------|:-------------:|------:|
-| Login as Administrator | auth.js | Add the functionality to allow an Administrator to Log In. Consequently added the "Login as Administrator" button in GUI. [HOME](GUIPrototypeV1.md#access-page)|
-| Delete Category | controller.js | Add the functionality to delete a Category. Consequently added the "trash" icon in GUI. |
-| Confirm Password| auth.js | Add the Confirm Password field during the registration. Consequently added the "Confirm Password" input field in GUI.|
-| Password Check  | auth.js| Add the check on format/length of the password. |
+| Login as Administrator | auth.js | Add the functionality to allow an Administrator to Log In. Consequently added the "Login as Administrator" button in  [GUI (HOME)](GUIPrototypeV2.md#access-page) .|
+| Delete Category | controller.js | Add the functionality to delete a Category. Consequently added the "trash" icon in [GUI (Manage Category)](GUIPrototypeV2.md#manage-categories). |
+| Confirm Password| auth.js | Add the Confirm Password field during the registration. Consequently added the "Confirm Password" input field in [GUI (Modify Password)](GUIPrototypeV2.md#modify-password) and in [GUI (Create Account)](GUIPrototypeV2.md#create-account)  .|
+| Password Check  | auth.js| Add the check on format/length of the password in [GUI (Modify Password)](GUIPrototypeV2.md#modify-password) and in [GUI (Create Account)](GUIPrototypeV2.md#create-account)  .|3 . |
+| Modify Password   | users.js|Modify password in settings page entering Old Password, New Password and Confirm New Password in [GUI (Modify Password)](GUIPrototypeV2.md#modify-password) .|
+| Add total of amount for each category  | controller.js|Compute the sum of different amounts for each category and show it in [GUI (Manage Categories)](GUIPrototypeV2.md#manage-categories).|
+| Order Labels by   | controller.js| Modify visualization  by id, name, amount, type and  color in [GUI (Manage Labels)](GUIPrototypeV2.md#manage-labels).|
+| Order Categories by   | controller.js| Modify visualization  order of  categories by  type, color and sum of amounts  in [GUI (Manage Categories)](GUIPrototypeV2.md#manage-categories).|
+| Order  Transactions by   | controller.js| Modify visualization  order of  transactions  by id, name, amount, type and  date  in  [GUI (Home Page)](GUIPrototypeV2.md#home-page-user)
