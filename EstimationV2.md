@@ -35,9 +35,17 @@ Consider the EZWallet  project in FUTURE version (as proposed by the team), assu
 ### 
 |         Activity name    | Estimated effort (person hours)   |             
 | ----------- | ------------------------------- | 
-| | |
+| Defining Stakeholders | 1 |
+| Context Diagram and Interfaces | 1 |
+| Stories and Personas | 1 |
+| Functional and Non Functional Requirement | 1 |
+| Use Cases and Scenario | 3 |
+| Design Documents | 1 |
+| code | 2 |
+| tests | 5 |
 ###
-Insert here Gantt chart with above activities
+![image info](./code/images_v2/Gantt_table.png)
+![image info](./code/images_v2/Gantt.png)
 
 # Summary
 
@@ -45,9 +53,9 @@ Report here the results of the three estimation approaches. The  estimates may d
 
 |             | Estimated effort                        |   Estimated duration |          
 | ----------- | ------------------------------- | ---------------|
-| estimate by size | 13,6 |
-| estimate by product decomposition | 15 |
-| estimate by activity decomposition | 15 |
+| estimate by size | 13,6 |  0,085 calendar weeks |
+| estimate by product decomposition | 15 | 0,094 calendar weeks |
+| estimate by activity decomposition | 15 | 0,094 calendar weeks |
 
 
 

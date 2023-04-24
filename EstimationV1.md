@@ -47,6 +47,7 @@ Consider the EZWallet  project in CURRENT version (as received by the teachers),
 | code | 12 |
 | tests | 38 |
 ###
+## Gantt Diagram, in calendar weeks (Assume team of 4 people, 8 hours per day).
 ![image info](./code/images/Gantt_table.png)
 ![image info](./code/images/Gantt.png)
 

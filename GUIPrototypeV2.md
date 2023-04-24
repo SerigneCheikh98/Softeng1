@@ -17,7 +17,7 @@ From here the User can enter E-Mail, Password. He can:
 The non-registered User enters Username, E-Mail, Password and Confirm Password. After that, by clicking on the "Sign Up" button the User can go to the [HOME PAGE USER](#home-page-user).
 ![image info](./code/gui_v2/CreateAccount.png)
 # HOME PAGE USER
-From here the User can see all the transactions. Here he can add a Transaction by clicking on "Create Transaction" button. He can also go to:<br>
+From here the User can see all the transactions. Here he can add a Transaction by clicking on "Create Transaction" button. <br>In addition, he can change the visualization order by clicking on the "Sort Icon" on the corresponding column. <br>He can also go to:<br>
 1) [USER SETTINGS](#user-settings) by clicking on the settings icon.
 2) [MANAGE CATEGORIES](#manage-categories) by clicking on the "Show Categories" button.
 3) [MANAGE LABELS](#manage-labels) by clicking on the "Show Labels" button.   
@@ -25,7 +25,7 @@ From here the User can see all the transactions. Here he can add a Transaction b
   
 ![image info](./code/gui_v2/HomePageUser.png)
 # HOME PAGE ADMINISTRATOR
-From here the Administrator can see all the transactions. Here he can add a Transaction by clicking on "Create Transaction" button. He can also go to:<br>
+From here the Administrator can see all the transactions. Here he can add a Transaction by clicking on "Create Transaction" button.<br>In addition, he can change the visualization order by clicking on the "Sort Icon" on the corresponding column. <br> He can also go to:<br>
 1) [USER SETTINGS](#user-settings) by clicking on the settings icon.
 2) [USERS INFORMATION](#users-information) by clicking on the "GetUsers" button.
 3) [MANAGE CATEGORIES](#manage-categories) by clicking on the "Show Categories" button.
@@ -56,14 +56,14 @@ He can go to:
 ![image info](./code/gui_v2/ModifyPassword.png)
 
 # MANAGE CATEGORIES
-From here the User can see all the categories. He can also add a category by clicking on the "Create Category" button or cancel a category by clicking on the "Trash" icon . He can  go to:<br>
+From here the User can see all the categories. He can also add a category by clicking on the "Create Category" button or cancel a category by clicking on the "Trash" icon .<br>In addition, he can change the visualization order by clicking on the "Sort Icon" on the corresponding column. <br> He can  go to:<br>
 1) [USER SETTINGS](#user-settings) by clicking on the settings icon.
 2) [HOME PAGE USER](#home-page-user) by clicking on the "Return Home" button if he is a normal user.
 3) [HOME PAGE ADMINISTRATOR](#home-page-administrator) by clicking on the "Return Home" button if he is an administrator.
 
 ![image info](./code/gui_v2/ManageCategories.png)
 # MANAGE LABELS
-From here the User can see all the labels. He can also go to:<br>
+From here the User can see all the labels.<br>In addition, he can change the visualization order by clicking on the "Sort Icon" on the corresponding column. <br> He can also go to:<br>
 1) [USER SETTINGS](#user-settings) by clicking on the settings icon.
 2) [HOME PAGE USER](#home-page-user) by clicking on the "Return Home" button if he is a normal user.
 3) [HOME PAGE ADMINISTRATOR](#home-page-administrator) by clicking on the "Return Home" button if he is an administrator.
