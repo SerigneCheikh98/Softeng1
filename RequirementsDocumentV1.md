@@ -366,3 +366,4 @@ EzWallet is a free-to-use app. It's implemented with a desktop GUI, that allows 
 | getLabels | controller.js | The Function considers also color attribute from category, but this attribute is never returned. |
 | get_transaction | controller.js | The function return all the transactions of all the users, instead of returning only the transactions of the logged user. |
 | get_Categories | controller.js | The function return all the Categories of all the users, instead of returning only the Categories of the logged user. |
+| get_labels | controller.js | The function return all the labels of all the users, instead of returning only the labels of the logged user. |
