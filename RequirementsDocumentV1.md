@@ -36,7 +36,8 @@ Version: V1 - description of EZWallet in CURRENT form (as received by teachers)
 
 # Informal description
 EZWallet (read EaSy Wallet) is a software application designed to help individuals and families keep track of their expenses. Users can enter and categorize their expenses, allowing them to quickly see where their money is going. EZWallet is a powerful tool for those looking to take control of their finances and make informed decisions about their spending.
-
+## Business Model
+EzWallet is a free-to-use app. It's implemented with a desktop GUI, that allows the user to easily perform all the activities related to his expenses. 
 
 # Stakeholders
 
@@ -105,28 +106,18 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 ## Use case diagram
 ![image info](./code/images/use_case_diagram.png)
 
-### Use case 1, UC1 (Login/Register)
+### Use case 1, UC1 (Register)
 | Actors Involved        | User |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> opened the application |
-|  Post condition     | <u>User</u> is logged |
-|  Nominal Scenario     | <u>User</u>, initially on the page, decides if register for the first time or, if already registered, to login. |
-|  Variants     | <u>User</u> is not registered, <u>User</u> is already registered  |
-|  Exceptions     | wrong username or password |
+|  Post condition     | <u>User</u> is registered |
+|  Nominal Scenario     | <u>User</u>, initially on the page, decides to register for the first time. |
+|  Variants     | <u>User</u> is already registered |
+|  Exceptions     |  |
 
-##### Scenario 1.1 
+##### Scenario 1.1
 
-| Scenario 1.1 | Login |
-| ------------- |:-------------:| 
-|  Precondition     | <u>User</u> is registered and not logged in |
-|  Post condition     | <u>User</u> is Logged In and can access his account |
-| Step#        | Description  |
-|  1     | <u>User</u> enters email and password. |  
-|  2     | <u>User</u> confirms the login by clicking on the "Login" button. |
-
-##### Scenario 1.2
-
-| Scenario 1.2 | Register |
+| Scenario 1.1 | Register |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is not registered |
 |  Post condition     | <u>User</u> is registered and logged in |
@@ -138,9 +129,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  5     | <u>User</u> is logged. |  
 
 
-##### Scenario 1.3
+##### Scenario 1.2
 
-| Scenario 1.3 |  User already exists |
+| Scenario 1.2 |  User already exists |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is not registered |
 |  Post condition     | <u>User</u> is not registered  |
@@ -149,9 +140,28 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  2     | Email found in the database. |
 |  3     | System asks again the data. |
 
-##### Scenario 1.4
+### Use case 2, UC2 (Login)
+| Actors Involved        | User |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> opened the application |
+|  Post condition     | <u>User</u> is logged |
+|  Nominal Scenario     | <u>User</u>, initially on the page, decides to login. |
+|  Variants     | <u>User</u> is not registered  |
+|  Exceptions     | wrong username or password |
 
-| Scenario 1.4 | Wrong password  |
+##### Scenario 2.1 
+
+| Scenario 2.1 | Login |
+| ------------- |:-------------:| 
+|  Precondition     | <u>User</u> is registered and not logged in |
+|  Post condition     | <u>User</u> is Logged In and can access his account |
+| Step#        | Description  |
+|  1     | <u>User</u> enters email and password. |  
+|  2     | <u>User</u> confirms the login by clicking on the "Login" button. |
+
+##### Scenario 2.2
+
+| Scenario 2.2 | Wrong password  |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is not logged in |
 |  Post condition     | <u>User</u> is  not logged in |
@@ -160,9 +170,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  2     | Password is wrong. |
 |  3     | System asks again the data. |
 
-##### Scenario 1.5
+##### Scenario 2.3
 
-| Scenario 1.5 | User doesn't exists  |
+| Scenario 2.3 | User doesn't exists  |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is not logged in |
 |  Post condition     | <u>User</u> is  not logged in |
@@ -171,7 +181,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  2     | Email not found in the database |
 |  3     | System asks again the data. |
 
-### Use case 2, UC2 Logout
+### Use case 3, UC3 Logout
 | Actors Involved        | User |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is already logged in |
@@ -180,9 +190,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Variants     |  |
 |  Exceptions     |  |
 
-##### Scenario 2.1
+##### Scenario 3.1
 
-| Scenario 2.1 | Logout |
+| Scenario 3.1 | Logout |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is already logged in |
 |  Post condition     | <u>User</u> is logged out |
@@ -191,7 +201,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  2     | <u>User</u> clicks the logout button. |  
 |  3     | System confirms the logout. |
 
-### Use case 3, UC3 (Get Information)
+### Use case 4, UC4 (Get Information)
 
 | Actors Involved        | User |
 | ------------- |:-------------:| 
@@ -201,9 +211,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Variants     | <u>User</u> wants to see all categories.<br> <u>User</u> wants to see all labels. <br> <u>User</u> wants to see all transaction.  |
 |  Exceptions     |  |
 
-##### Scenario 3.1 
+##### Scenario 4.1 
 
-| Scenario 3.1 | Get Categories |
+| Scenario 4.1 | Get Categories |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in and clicked "show categories" button. |
 |  Post condition     | All categories are displayed. |
@@ -211,9 +221,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  1     | <u>User</u> clicks the "show categories" button. |
 |  2     | System shows all categories to the <u>User</u>. |
 
-##### Scenario 3.2
+##### Scenario 4.2
 
-| Scenario 3.2 | Get Labels |
+| Scenario 4.2 | Get Labels |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in and clicked "show labels" button. |
 |  Post condition     |  All labels are displayed. |
@@ -221,16 +231,16 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  1     | <u>User</u> clicks the "show labels" button. |
 |  2     | System shows all labels to the <u>User</u>. |
 
-##### Scenario 3.3
+##### Scenario 4.3
 
-| Scenario 3.3 | Get Transaction |
+| Scenario 4.3 | Get Transaction |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in. |
 |  Post condition     |  All transaction are displayed. |
 | Step#        | Description  |
 |  1     | System shows automatically all transactions to the <u>User</u>. |
 
-### Use case 4, UC4 (Add Information)
+### Use case 5, UC5 (Add Information)
 
 | Actors Involved        | User |
 | ------------- |:-------------:| 
@@ -240,8 +250,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Variants     | <u>User</u> wants to Add a category.<br> <u>User</u> wants to Add a transaction.  |
 |  Exceptions     | Category or Transaction are already present. |
 
-##### Scenario 4.1 
-| Scenario 4.1 | Create Category |
+##### Scenario 5.1 
+| Scenario 5.1 | Create Category |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in |
 |  Post condition     | A Category is added successfully. |
@@ -251,8 +261,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  3     | <u>User</u> enters the type and the color of the category that he wants to add. |  
 |  4     | <u>User</u> clicks the "Create category" button. |
 
-##### Scenario 4.2
-| Scenario 4.2 | Create Transaction |
+##### Scenario 5.2
+| Scenario 5.2 | Create Transaction |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in. |
 |  Post condition     | A transaction is added successfully. |
@@ -260,8 +270,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  1     | <u>User</u> enters name,amount,type of the transaction that he wants to Add. |  
 |  2     | <u>User</u> clicks the "create transaction" button. |
 
-##### Scenario 4.3
-| Scenario 4.3 | Failure in Creation of Category |
+##### Scenario 5.3
+| Scenario 5.3 | Failure in Creation of Category |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in . |
 |  Post condition     | Nothing is added. |
@@ -270,8 +280,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  2     | <u>User</u> clicks the "create category" button. |
 |  3     | System fails on already existing category. |
 
-##### Scenario 4.4
-| Scenario 4.4 | Failure in Creation of Transaction |
+##### Scenario 5.4
+| Scenario 5.4 | Failure in Creation of Transaction |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in . |
 |  Post condition     | Nothing is added. |
@@ -280,7 +290,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  2     | <u>User</u> clicks the "create transaction" button. |
 |  3     | System fails on already existing transaction. |
 
-### Use case 5, UC5 (Delete Information)
+### Use case 6, UC6 (Delete Information)
 
 | Actors Involved        | User |
 | ------------- |:-------------:| 
@@ -290,8 +300,8 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Variants     | <u>User</u> wants to delete a transaction. |
 |  Exceptions     |  |
 
-##### Scenario 5.1
-| Scenario 5.1 | Delete a Transaction |
+##### Scenario 6.1
+| Scenario 6.1 | Delete a Transaction |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in  |
 |  Post condition     | Transaction is deleted. |
@@ -301,7 +311,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 
 
 
-### Use case 6, UC6 (Get User by Username)
+### Use case 7, UC7 (Get User by Username)
 | Actors Involved        | User |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in |
@@ -310,9 +320,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Variants     |  |
 |  Exceptions     |  |
 
-##### Scenario 6.1 
+##### Scenario 7.1 
 
-| Scenario 6.1 | Get User Information |
+| Scenario 7.1 | Get User Information |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in |
 |  Post condition     | <u>User</u> views his information |
@@ -320,7 +330,7 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  1     | <u>User</u> clicks the  settings icon to show his account information. |  
 |  2     | Username,email and hashedPassword are displayed. |
 
-### Use case 7, UC7 (Get Users )
+### Use case 8, UC8 (Get Users )
 | Actors Involved        | User |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged |
@@ -329,9 +339,9 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |  Variants     |  |
 |  Exceptions     |  |
 
-##### Scenario 7.1 
+##### Scenario 8.1 
 
-| Scenario 7.1 | Get Users |
+| Scenario 8.1 | Get Users |
 | ------------- |:-------------:| 
 |  Precondition     | <u>User</u> is logged in |
 |  Post condition     | <u>User</u> views information of the <u>Users</u> |
@@ -354,3 +364,5 @@ EZWallet (read EaSy Wallet) is a software application designed to help individua
 |----------|:-------------:|------:|
 | getUsers | users.js | This Function should be called only by User with Admin Privileges, but no Privileges are checked. |
 | getLabels | controller.js | The Function considers also color attribute from category, but this attribute is never returned. |
+| get_transaction | controller.js | The function return all the transactions of all the users, instead of returning only the transactions of the logged user. |
+| get_Categories | controller.js | The function return all the Categories of all the users, instead of returning only the Categories of the logged user. |
