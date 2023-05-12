@@ -54,8 +54,32 @@ export const getUser = async (req, res) => {
  */
 export const createGroup = async (req, res) => {
     try {
+      let name = req.body.name;
+      let memberEmails = req.body.memberEmails;
+      let members = [];
+      let membersNotFound = [];
+      for (let email of memberEmails) {
+        let result = await User.findOne({email: email}).exec();
+        if (result === null) {
+          membersNotFound.push(email);
+        } else {
+          members.push({ email: email, user: result._id });
+        }
+      }
+      if (members.length === 0) {
+        return res.status(401).json({error: "All memberEmails does not exist"});
+      }
+      try {
+        const new_group = await Group.create({
+          name,
+          members,
+        });
+        res.status(200).json({ group: new_group, alreadyInGroup: members, membersNotFound: membersNotFound });
+      } catch (error) {
+        res.status(401).json(error.message);        
+      }
     } catch (err) {
-        res.status(500).json(err.message)
+        res.status(500).json(err.message);
     }
 }
 
@@ -69,6 +93,8 @@ export const createGroup = async (req, res) => {
  */
 export const getGroups = async (req, res) => {
     try {
+      const groups = await Group.find();
+      res.status(200).json(groups);
     } catch (err) {
         res.status(500).json(err.message)
     }
@@ -84,6 +110,12 @@ export const getGroups = async (req, res) => {
  */
 export const getGroup = async (req, res) => {
     try {
+      const group = await Group.findOne({name: req.body.name});
+      if (group === null) {
+        res.status(401).json({error: "Group Does Not exist"});
+      } else {
+        res.status(200).json(group);
+      }
     } catch (err) {
         res.status(500).json(err.message)
     }
@@ -102,6 +134,28 @@ export const getGroup = async (req, res) => {
  */
 export const addToGroup = async (req, res) => {
     try {
+      let name = req.body.name;
+      let memberEmails = req.body.memberEmails;
+      let members = [];
+      let membersNotFound = [];
+      for (let email of memberEmails) {
+        let result = await User.findOne({email: email}).exec();
+        if (result === null) {
+          membersNotFound.push(email);
+        } else {
+          members.push({ email: email, user: result._id });
+        }
+      }
+      try {
+        const updated_group = await Group.findOneAndUpdate({name: name},{$push: {members: members}});
+        if (updated_group === null) {
+          res.status(401).json({error: "Group Does Not exist"});
+        } else {
+          res.status(200).json({ group: updated_group, alreadyInGroup: members, membersNotFound: membersNotFound }); 
+        }
+      } catch (error) {
+        res.status(401).json(error.message);        
+      }
     } catch (err) {
         res.status(500).json(err.message)
     }
