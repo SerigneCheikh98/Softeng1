@@ -17,7 +17,7 @@ export const createCategory = (req, res) => {
         const new_categories = new categories({ type, color });
         new_categories.save()
             .then(data => res.json(data))
-            .catch(err => { throw err })
+            .catch(err => { res.status(401).json({ err: "Category already exist!" }) }) //No need to crash the server 
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
@@ -48,7 +48,17 @@ export const updateCategory = async (req, res) => {
  */
 export const deleteCategory = async (req, res) => {
     try {
-
+        const types = req.body;
+        for (let categoryType of types){
+            //find all transactions in these category and count {getTransactionsByUserByCategory()}
+            
+            //assign new category(investment) to all those transactions
+            //delete category
+            //return message with count of transactions
+            /*categories.remove({type: categoryType})
+            .then()
+            .catch()*/
+        }
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
