@@ -58,24 +58,40 @@ export const createGroup = async (req, res) => {
       let memberEmails = req.body.memberEmails;
       let members = [];
       let membersNotFound = [];
+      let alreadyInGroup = [];
       for (let email of memberEmails) {
-        let result = await User.findOne({email: email}).exec();
-        if (result === null) {
+        // verify that the user exists
+        let user = await User.findOne({email: email});
+        if (user === null) {
+          // if not existent, push into membersNotFound
           membersNotFound.push(email);
         } else {
-          members.push({ email: email, user: result._id });
+          // check if user is already in a group
+          let in_group = await Group.findOne({"members.email": email});
+          if (in_group === null) {
+            // if user is not in a group, add it to members
+            members.push({ email: email, user: user._id });
+          } else {
+            // if user already in a group, add it to alreadyInGroup
+            alreadyInGroup.push({ email: email, user: user._id });
+          }
         }
       }
-      if (members.length === 0) {
-        return res.status(401).json({error: "All memberEmails does not exist"});
-      }
       try {
+        // create a group
         const new_group = await Group.create({
           name,
           members,
         });
-        res.status(200).json({ group: new_group, alreadyInGroup: members, membersNotFound: membersNotFound });
+        // if All memberEmails does not exist or Already in Group error handling
+        if (members.length === 0) {
+          res.status(401).json({error: "All memberEmails does not exist or Already in Group"});
+        } else {
+          // all ok, return the group created
+          res.status(200).json({ group: new_group, alreadyInGroup: alreadyInGroup, membersNotFound: membersNotFound });
+        }
       } catch (error) {
+        // already an existing group with the same name error
         res.status(401).json(error.message);        
       }
     } catch (err) {
@@ -110,7 +126,7 @@ export const getGroups = async (req, res) => {
  */
 export const getGroup = async (req, res) => {
     try {
-      const group = await Group.findOne({name: req.body.name});
+      const group = await Group.findOne({name: req.params.name});
       if (group === null) {
         res.status(401).json({error: "Group Does Not exist"});
       } else {
@@ -134,27 +150,42 @@ export const getGroup = async (req, res) => {
  */
 export const addToGroup = async (req, res) => {
     try {
-      let name = req.body.name;
+      let name = req.params.name;
       let memberEmails = req.body.memberEmails;
       let members = [];
       let membersNotFound = [];
+      let alreadyInGroup = [];
       for (let email of memberEmails) {
-        let result = await User.findOne({email: email}).exec();
-        if (result === null) {
+        // verify that the user exists
+        let user = await User.findOne({email: email});
+        if (user === null) {
+          // if not existent, push into membersNotFound
           membersNotFound.push(email);
         } else {
-          members.push({ email: email, user: result._id });
+          // check if user is already in a group
+          let in_group = await Group.findOne({"members.email": email});
+          if (in_group === null) {
+            // if user is not in a group, add it to members
+            members.push({ email: email, user: user._id });
+          } else {
+            // if user already in a group, add it to alreadyInGroup
+            alreadyInGroup.push({ email: email, user: user._id });
+          }
         }
       }
-      try {
-        const updated_group = await Group.findOneAndUpdate({name: name},{$push: {members: members}});
-        if (updated_group === null) {
-          res.status(401).json({error: "Group Does Not exist"});
-        } else {
-          res.status(200).json({ group: updated_group, alreadyInGroup: members, membersNotFound: membersNotFound }); 
-        }
-      } catch (error) {
-        res.status(401).json(error.message);        
+      // find and return the updated version of the group (with new option)
+      const updated_group = await Group.findOneAndUpdate({ name: name }, { $push: { members: members } }, { new: true });
+      let err;
+      // Group Does Not exist or All memberEmails does not exist or Already in Group error handling
+      if (updated_group === null) {
+        err = { error: "Group Does Not exist" };
+      } else if (members.length === 0) {
+        err = { error: "All memberEmails does not exist or Already in Group" };
+      }
+      if (err) {
+        res.status(401).json(err);
+      } else {
+        res.status(200).json({ group: updated_group, alreadyInGroup: alreadyInGroup, membersNotFound: membersNotFound });
       }
     } catch (err) {
         res.status(500).json(err.message)
@@ -173,6 +204,14 @@ export const addToGroup = async (req, res) => {
  */
 export const removeFromGroup = async (req, res) => {
     try {
+      // users = user to remove from group, name = name of the group to delete
+      let users = req.body.users;
+      let name = req.params.name;
+      let notInGroup = [];
+      let membersNotFound = [];
+      for (let email of users) {
+        
+      }
     } catch (err) {
         res.status(500).json(err.message)
     }
@@ -188,10 +227,19 @@ export const removeFromGroup = async (req, res) => {
     - error 401 is returned if the user does not exist 
  */
 export const deleteUser = async (req, res) => {
-    try {
-    } catch (err) {
-        res.status(500).json(err.message)
-    }
+  try {
+    /*// return the number of deleted user (in our case possible values are only 1 or 0, since email is unique)
+    const n_el_deleted = await User.deleteOne({email: req.body.email});
+    if (n_el_deleted.deletedCount === 0) {
+      // no user deleted, the user does not exist
+      res.status(401).json({error: "User Does Not exist"});
+    } else {
+      // user deleted wuth success
+      res.status(200).json({message: "User deleted Successfully"});
+    }*/
+  } catch (err) {
+      res.status(500).json(err.message)
+  }
 }
 
 /**
@@ -203,6 +251,15 @@ export const deleteUser = async (req, res) => {
  */
 export const deleteGroup = async (req, res) => {
     try {
+      // return the number of deleted groups (in our case possible values are only 1 or 0, since name is unique)
+      const n_el_deleted = await Group.deleteOne({name: req.body.name});
+      if (n_el_deleted.deletedCount === 0) {
+        // no group deleted, the group does not exist
+        res.status(401).json({error: "Group Does Not exist"});
+      } else {
+        // group deleted wuth success
+        res.status(200).json({message: "Group deleted Successfully"});
+      }
     } catch (err) {
         res.status(500).json(err.message)
     }
