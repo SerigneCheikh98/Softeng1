@@ -49,9 +49,9 @@ export const updateCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
     try {
         const types = req.body;
-        for (let categoryType of types){
+        for (let categoryType of types) {
             //find all transactions in these category and count {getTransactionsByUserByCategory()}
-            
+
             //assign new category(investment) to all those transactions
             //delete category
             //return message with count of transactions
@@ -101,10 +101,20 @@ export const createTransaction = async (req, res) => {
             return res.status(401).json({ message: "Unauthorized" }) // unauthorized
         }
         const { username, amount, type } = req.body;
+        //TODO 
+        //check :username is the logged user
+        //check username
+        const existingUser = await User.findOne({ username: username });
+        if (!existingUser) return res.status(401).json({ message: "Username does not exist!" });
+
+        //check category type
+        const category = await categories.findOne({ type: type })
+        if (!category) return res.status(401).json({ message: "Category does not exist!" })
+
         const new_transactions = new transactions({ username, amount, type });
         new_transactions.save()
             .then(data => res.json(data))
-            .catch(err => { throw err })
+            .catch(err => { res.status(401).json({ err: err }) })
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
@@ -156,11 +166,36 @@ export const getAllTransactions = async (req, res) => {
  */
 export const getTransactionsByUser = async (req, res) => {
     try {
-        //Distinction between route accessed by Admins or Regular users for functions that can be called by both
-        //and different behaviors and access rights
-        if (req.url.indexOf("/transactions/users/") >= 0) {
-        } else {
-        }
+        //find all transactions then 
+        let allTransactions = new Array();
+        transactions.aggregate([
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "type",
+                    foreignField: "type",
+                    as: "categories_info"
+                }
+            },
+            { $unwind: "$categories_info" }
+        ]).then((result) => {
+            allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
+            console.log(allTransactions);
+
+            //Distinction between route accessed by Admins or Regular users for functions that can be called by both
+            //and different behaviors and access rights
+            if (req.url.indexOf("/transactions/users/") >= 0) {
+                //admin
+                //all transactions for each user
+                res.json(allTransactions.filter(tr => tr.username === req.params.username))
+                //TODO! => controll if the user is an admin
+            } else {
+                //users
+                //all transactions for the logged user 
+                //TODO! => controll if the username is the logged user
+                res.json(allTransactions.filter(tr => tr.username === req.params.username))
+            }
+        }).catch(error => { res.status(401).json({ err: error }) })
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
