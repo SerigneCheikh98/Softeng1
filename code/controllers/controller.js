@@ -33,7 +33,20 @@ export const createCategory = (req, res) => {
  */
 export const updateCategory = async (req, res) => {
     try {
-
+        // if type or color are undefined or only spaces, consider them as invalid values
+        if (!req.body.type || !req.body.color || req.body.type.trim().length === 0 || req.body.color.trim().length === 0) {
+            res.status(401).json({ error: 'Invalid Values.' });
+        } else {
+            const data = await categories.findOneAndUpdate({ type: req.params.type }, { $set: { type: req.body.type, color: req.body.color } });
+            if (data === null) {
+                res.status(401).json({ error: 'this category does not exist.' });
+            } else {
+                // change all related transactions
+                const updated_transactions = await transactions.updateMany({ type: req.params.type }, { type: req.body.type });
+                res.status(200).json({ message: 'Category Edited With Success', count: updated_transactions.nModified });
+                //controlla count se è giusto
+            }
+        }
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
@@ -49,9 +62,9 @@ export const updateCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
     try {
         const types = req.body;
-        for (let categoryType of types){
+        for (let categoryType of types) {
             //find all transactions in these category and count {getTransactionsByUserByCategory()}
-            
+
             //assign new category(investment) to all those transactions
             //delete category
             //return message with count of transactions
@@ -73,10 +86,10 @@ export const deleteCategory = async (req, res) => {
  */
 export const getCategories = async (req, res) => {
     try {
-        const cookie = req.cookies
+        /*const cookie = req.cookies
         if (!cookie.accessToken) {
             return res.status(401).json({ message: "Unauthorized" }) // unauthorized
-        }
+        }*/
         let data = await categories.find({})
 
         let filter = data.map(v => Object.assign({}, { type: v.type, color: v.color }))
@@ -119,10 +132,10 @@ export const createTransaction = async (req, res) => {
  */
 export const getAllTransactions = async (req, res) => {
     try {
-        const cookie = req.cookies
+        /*const cookie = req.cookies
         if (!cookie.accessToken) {
             return res.status(401).json({ message: "Unauthorized" }) // unauthorized
-        }
+        }*/
         /**
          * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
          */
@@ -240,6 +253,15 @@ export const deleteTransaction = async (req, res) => {
  */
 export const deleteTransactions = async (req, res) => {
     try {
+        for (let id of req.body._ids) {
+            const el_finded = await transactions.findOne({ _id: id });
+            if (el_finded === null)
+                return res.status(401).json({ error: "One or more ids does not have a corresponding transaction" });
+        }
+        for (let id of req.body._ids) {
+            const n_el_deleted = await transactions.deleteOne({ _id: id });
+        }
+        res.status(200).json(("Transactions deleted successfully"));
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
