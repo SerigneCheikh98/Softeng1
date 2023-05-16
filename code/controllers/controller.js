@@ -43,8 +43,7 @@ export const updateCategory = async (req, res) => {
             } else {
                 // change all related transactions
                 const updated_transactions = await transactions.updateMany({ type: req.params.type }, { type: req.body.type });
-                res.status(200).json({ message: 'Category Edited With Success', count: updated_transactions.nModified });
-                //controlla count se è giusto
+                res.status(200).json({ message: 'Category Edited With Success', count: updated_transactions.modifiedCount});
             }
         }
     } catch (error) {
@@ -60,32 +59,29 @@ export const updateCategory = async (req, res) => {
     - error 401 is returned if the specified category does not exist
  */
 export const deleteCategory = async (req, res) => {
-    //DA COMPLETARE
     try {
-        //boolean per vedere se ho già ritornato valore
-        let flag = true;
-            for (let type of req.body.types) {
-                //find category 
-                const el_finded = await categories.findOne({ type: type });
-                if (el_finded === null){
-                    flag = false;
-                    return res.status(401).json({ error: "One or more Categories do not exists" });
-                }
-            }
-            if(flag){
-            for (let type of req.body.types) {
-                //find category 
-                //occhio a non cancellare investmentb 
-                const updated_transactions = await transactions.updateMany({ type: type }, { type: "investment"});
-                const n_el_deleted = await categories.deleteOne({ type: type });
-               
-                res.status(200).json({ message: 'Category Deleted With Success, ${count transactions} updated', count: updated_transactions.nModified });
+        for (let type of req.body.types) {
+            //find category 
+            const el_finded = await categories.findOne({ type: type });
+            if (el_finded === null) {
+                return res.status(401).json({ error: "One or more Categories do not exists" });
             }
         }
-    //transazioni solo dell'utente loggato
-                //res.status(200).json({ message: 'Categories Deleted With Success', count: updated_transactions.nModified });
-                }
-     catch (error) {
+        let count = 0;
+        for (let type of req.body.types) {
+            //find category 
+            //occhio a non cancellare investmentb 
+            const updated_transactions = await transactions.updateMany({ type: type }, { type: "investment" });
+            const n_el_deleted = await categories.deleteOne({ type: type });
+            count += updated_transactions.modifiedCount;
+        }
+
+        res.status(200).json({ message: 'Category Deleted With Success, ' + count.toString() + 'transactions updated', count: count });
+
+        //transazioni solo dell'utente loggato
+        //res.status(200).json({ message: 'Categories Deleted With Success', count: updated_transactions.nModified });
+    }
+    catch (error) {
         res.status(400).json({ error: error.message })
     }
 }
@@ -206,7 +202,6 @@ export const getTransactionsByUser = async (req, res) => {
             { $unwind: "$categories_info" }
         ]).then((result) => {
             allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
-            console.log(allTransactions);
 
             //Distinction between route accessed by Admins or Regular users for functions that can be called by both
             //and different behaviors and access rights
