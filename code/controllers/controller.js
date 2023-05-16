@@ -9,10 +9,10 @@ import { handleDateFilterParams, handleAmountFilterParams, verifyAuth } from "./
  */
 export const createCategory = (req, res) => {
     try {
-        const cookie = req.cookies
+      /*  const cookie = req.cookies
         if (!cookie.accessToken) {
             return res.status(401).json({ message: "Unauthorized" }) // unauthorized
-        }
+        }*/
         const { type, color } = req.body;
         const new_categories = new categories({ type, color });
         new_categories.save()
@@ -60,19 +60,32 @@ export const updateCategory = async (req, res) => {
     - error 401 is returned if the specified category does not exist
  */
 export const deleteCategory = async (req, res) => {
+    //DA COMPLETARE
     try {
-        const types = req.body;
-        for (let categoryType of types) {
-            //find all transactions in these category and count {getTransactionsByUserByCategory()}
-
-            //assign new category(investment) to all those transactions
-            //delete category
-            //return message with count of transactions
-            /*categories.remove({type: categoryType})
-            .then()
-            .catch()*/
+        //boolean per vedere se ho già ritornato valore
+        let flag = true;
+            for (let type of req.body.types) {
+                //find category 
+                const el_finded = await categories.findOne({ type: type });
+                if (el_finded === null){
+                    flag = false;
+                    return res.status(401).json({ error: "One or more Categories do not exists" });
+                }
+            }
+            if(flag){
+            for (let type of req.body.types) {
+                //find category 
+                //occhio a non cancellare investmentb 
+                const updated_transactions = await transactions.updateMany({ type: type }, { type: "investment"});
+                const n_el_deleted = await categories.deleteOne({ type: type });
+               
+                res.status(200).json({ message: 'Category Deleted With Success, ${count transactions} updated', count: updated_transactions.nModified });
+            }
         }
-    } catch (error) {
+    //transazioni solo dell'utente loggato
+                //res.status(200).json({ message: 'Categories Deleted With Success', count: updated_transactions.nModified });
+                }
+     catch (error) {
         res.status(400).json({ error: error.message })
     }
 }
@@ -109,10 +122,10 @@ export const getCategories = async (req, res) => {
  */
 export const createTransaction = async (req, res) => {
     try {
-        const cookie = req.cookies
+       /* const cookie = req.cookies
         if (!cookie.accessToken) {
             return res.status(401).json({ message: "Unauthorized" }) // unauthorized
-        }
+        }*/
         const { username, amount, type } = req.body;
         //TODO 
         //check :username is the logged user
