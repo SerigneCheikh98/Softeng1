@@ -193,20 +193,18 @@ export const getTransactionsByUser = async (req, res) => {
             { $unwind: "$categories_info" }
         ]).then((result) => {
             allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
-            console.log(allTransactions);
-
             //Distinction between route accessed by Admins or Regular users for functions that can be called by both
             //and different behaviors and access rights
             if (req.url.indexOf("/transactions/users/") >= 0) {
                 //admin
                 //all transactions for each user
-                res.json(allTransactions.filter(tr => tr.username === req.params.username))
+                res.status(401).json(allTransactions.filter(tr => tr.username === req.params.username))
                 //TODO! => controll if the user is an admin
             } else {
                 //users
                 //all transactions for the logged user 
                 //TODO! => controll if the username is the logged user
-                res.json(allTransactions.filter(tr => tr.username === req.params.username))
+                res.status(401).json(allTransactions.filter(tr => tr.username === req.params.username))
             }
         }).catch(error => { res.status(401).json({ err: error }) })
     } catch (error) {

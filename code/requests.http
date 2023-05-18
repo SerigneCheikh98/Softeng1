@@ -1,0 +1,200 @@
+// NO AUTHENTICATION
+
+### Register
+
+POST /api/register HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+Content-Length: 73
+
+{"username":"edith", "email":"edith.ra@polito.it", "password":"password"}
+
+### RegisterAdmin
+
+POST /api/admin HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+Content-Length: 95
+
+{"username":"Giacomo Garaccione", "email":"giacomo.ga@polito.it", "password":"secure_password"}
+
+### Login
+
+POST /api/login HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+Content-Length: 55
+
+{"email":"maurizio.mo@polito.it", "password":"softeng"}
+
+
+### Logout
+
+GET /api/logout HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+Content-Length: 95
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MjMyNzU5LCJleHAiOjE2ODQyMzYzNTl9.7pIiMXO_VQh0W2aKDR6avQ70Dty4HlIIY20YeMKq_8w;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MjMyNzU5LCJleHAiOjE2ODQ4Mzc1NTl9.szDQ6NwG2WXNHWULq809LfHYkP2sP_Slqe-zxNkvI-4
+
+// ***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+// AUTHENTICATED
+
+### GetCategories
+
+GET /api/categories HTTP/1.1
+Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByb3ZhLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ1ZTQxNmQ4MDNkZDdiNTU0MmNjMDdhIiwidXNlcm5hbWUiOiJQcm92YSIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjgzOTY4NTA3LCJleHAiOjE2ODM5NzIxMDd9.CNwN4iz6sLRHeMDejaBd5UPLqfb2oUXBJJhbQ90fOLI;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByb3ZhLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ1ZTQxNmQ4MDNkZDdiNTU0MmNjMDdhIiwidXNlcm5hbWUiOiJQcm92YSIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjgzOTY4NTA3LCJleHAiOjE2ODQ1NzMzMDd9.e22nUzEyS-WnpTRTzgTieI8lwh9x95w6LQzVfC553JI
+
+
+### GetUser
+
+GET /api/users/maurizio HTTP/1.1
+Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQzMzg4MjZ9.m4mNtCHFB1QDB_GHXFyoBhG0k43mJcWdorztXGXs9Qc;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQ5NDAwMjZ9.CV2kAaIVRH_KPyiVwgLXqNDFMjRDebI856fPGokQGyg
+
+### CreateTransaction
+POST /api/users/maurizio/transactions HTTP/1.1
+Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQzMzg4MjZ9.m4mNtCHFB1QDB_GHXFyoBhG0k43mJcWdorztXGXs9Qc;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQ5NDAwMjZ9.CV2kAaIVRH_KPyiVwgLXqNDFMjRDebI856fPGokQGyg 
+Content-Type: application/json
+
+{"username": "maurizio", "type": "investment", "amount":"400000"}
+
+### GetTransactionByUser
+
+GET /api/users/maurizio/transactions HTTP/1.1
+Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQzMzg4MjZ9.m4mNtCHFB1QDB_GHXFyoBhG0k43mJcWdorztXGXs9Qc;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQ5NDAwMjZ9.CV2kAaIVRH_KPyiVwgLXqNDFMjRDebI856fPGokQGyg
+
+### DeleteTransaction
+
+DELETE /api/users/maurizio/transactions HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQzMzg4MjZ9.m4mNtCHFB1QDB_GHXFyoBhG0k43mJcWdorztXGXs9Qc;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQ5NDAwMjZ9.CV2kAaIVRH_KPyiVwgLXqNDFMjRDebI856fPGokQGyg
+
+{"_id": "646246250646424945a77f84"}
+
+### getTransactionsByUserByCategory
+
+GET /api/users/:username/transactions/category/:category HTTP/1.1
+Host: localhost:3000
+
+### CreateGroup
+
+POST /api/groups HTTP/1.1
+Host: localhost:3000
+
+### getGroup
+
+GET /api/groups/:name HTTP/1.1
+Host: localhost:3000
+
+### getTransactionsByGroup
+
+GET /api/groups/:name/transactions HTTP/1.1
+Host: localhost:3000
+
+### getTransactionsByGroupByCategory
+
+GET /api/groups/:name/transactions/category/:category HTTP/1.1
+Host: localhost:3000
+
+### addToGroup
+
+PATCH /api/groups/:name/add HTTP/1.1
+Host: localhost:3000
+
+### removeFromGroup
+
+PATCH /api/groups/:name/remove HTTP/1.1
+Host: localhost:3000
+
+
+// ***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+// ADMIN EXCLUSIVE
+
+### createCategories
+
+POST /api/categories HTTP/1.1
+Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByb3ZhLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ1ZTQxNmQ4MDNkZDdiNTU0MmNjMDdhIiwidXNlcm5hbWUiOiJQcm92YSIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjgzOTY4NTA3LCJleHAiOjE2ODM5NzIxMDd9.CNwN4iz6sLRHeMDejaBd5UPLqfb2oUXBJJhbQ90fOLI;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByb3ZhLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ1ZTQxNmQ4MDNkZDdiNTU0MmNjMDdhIiwidXNlcm5hbWUiOiJQcm92YSIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjgzOTY4NTA3LCJleHAiOjE2ODQ1NzMzMDd9.e22nUzEyS-WnpTRTzgTieI8lwh9x95w6LQzVfC553JI
+Content-Type: application/json
+Content-Length: 34
+
+{"type":"school", "color":"black"}
+
+### updateCategory
+
+PATCH /api/categories/:type HTTP/1.1
+Host: localhost:3000
+
+
+### deleteCategory
+
+DELETE /api/categories HTTP/1.1
+Host: localhost:3000
+
+### getAllTransactions
+
+GET /api/transactions HTTP/1.1
+Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByb3ZhLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ1ZTQxNmQ4MDNkZDdiNTU0MmNjMDdhIiwidXNlcm5hbWUiOiJQcm92YSIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjgzOTY4NTA3LCJleHAiOjE2ODM5NzIxMDd9.CNwN4iz6sLRHeMDejaBd5UPLqfb2oUXBJJhbQ90fOLI;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByb3ZhLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ1ZTQxNmQ4MDNkZDdiNTU0MmNjMDdhIiwidXNlcm5hbWUiOiJQcm92YSIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjgzOTY4NTA3LCJleHAiOjE2ODQ1NzMzMDd9.e22nUzEyS-WnpTRTzgTieI8lwh9x95w6LQzVfC553JI
+
+### deleteTransactions
+
+DELETE /api/transactions HTTP/1.1
+Host: localhost:3000
+
+### getTransactionsByUser
+
+GET /api/transactions/users/prova HTTP/1.1
+Host: localhost:3000
+Cookie: 
+
+### getTransactionsByUserByCategory
+
+GET /api/transactions/users/:username/category/:category HTTP/1.1
+Host: localhost:3000
+
+### getGroups
+
+GET /api/groups HTTP/1.1
+Host: localhost:3000
+
+### deleteGroup
+
+DELETE /api/groups HTTP/1.1
+Host: localhost:3000
+
+### getUsers
+
+GET /api/users HTTP/1.1
+Host: localhost:3000
+
+### deleteUser
+
+DELETE /api/users HTTP/1.1
+Host: localhost:3000
+
+{"email": "prova.ga@polito.it"}
+
+### getTransactionsByGroup
+
+GET /api/transactions/groups/:name HTTP/1.1
+Host: localhost:3000
+
+### getTransactionsByGroupByCategory
+
+GET /api/transactions/groups/:name/category/:category HTTP/1.1
+Host: localhost:3000
+
+### addToGroup
+
+PATCH /api/groups/:name/insert HTTP/1.1
+Host: localhost:3000
+
+### removeFromGroup
+
+PATCH /api/groups/:name/pull HTTP/1.1
+Host: localhost:3000
