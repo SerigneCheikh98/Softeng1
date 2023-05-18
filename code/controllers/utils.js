@@ -39,22 +39,22 @@ export const handleDateFilterParams = (req) => {
 export const verifyAuth = (req, res, info) => {
     const cookie = req.cookies
     if (!cookie.accessToken || !cookie.refreshToken) {
-        res.status(401).json({ message: "Unauthorized" });
+        //res.status(401).json({ message: "Unauthorized" });
         return false;
     }
     try {
         const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
         const decodedRefreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
         if (!decodedAccessToken.username || !decodedAccessToken.email || !decodedAccessToken.role) {
-            res.status(401).json({ message: "Token is missing information" })
+            //res.status(401).json({ message: "Token is missing information" })
             return false
         }
         if (!decodedRefreshToken.username || !decodedRefreshToken.email || !decodedRefreshToken.role) {
-            res.status(401).json({ message: "Token is missing information" })
+            //res.status(401).json({ message: "Token is missing information" })
             return false
         }
         if (decodedAccessToken.username !== decodedRefreshToken.username || decodedAccessToken.email !== decodedRefreshToken.email || decodedAccessToken.role !== decodedRefreshToken.role) {
-            res.status(401).json({ message: "Mismatched users" });
+            //res.status(401).json({ message: "Mismatched users" });
             return false;
         }
         return true
@@ -72,15 +72,15 @@ export const verifyAuth = (req, res, info) => {
                 res.locals.message = 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls'
                 return true
             } catch (err) {
-                if (err.name === "TokenExpiredError") {
+                /*if (err.name === "TokenExpiredError") {
                     res.status(401).json({ message: "Perform login again" });
                 } else {
                     res.status(401).json({ message: err.name });
-                }
+                }*/
                 return false;
             }
         } else {
-            res.status(401).json({ message: err.name });
+            //res.status(401).json({ message: err.name });
             return false;
         }
     }

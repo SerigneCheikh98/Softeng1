@@ -12,9 +12,11 @@ import { verifyAuth } from "./utils.js";
 export const getUsers = async (req, res) => {
     try {
         const users = await User.find();
-        res.status(200).json(users);
+        let usersFields = users.map(v => Object.assign({}, {  username: v.username,email:v.email,role:v.role }))
+
+        res.status(200).json({data: usersFields});
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).json({message:error.message});
     }
 }
 
@@ -34,10 +36,13 @@ export const getUser = async (req, res) => {
         const username = req.params.username
         const user = await User.findOne({ refreshToken: cookie.refreshToken })
         if (!user) return res.status(401).json({ message: "User not found" })
-        if (user.username !== username) return res.status(401).json({ message: "Unauthorized" })
-        res.status(200).json(user)
+        if (user.username !== username)
+          return res.status(401).json({ message: "Unauthorized" })
+       
+
+        res.status(200).json({data:{username: user.username,email:user.email,role:user.role}})
     } catch (error) {
-        res.status(500).json(error.message)
+        res.status(500).json(  {message: error.message  });
     }
 }
 
