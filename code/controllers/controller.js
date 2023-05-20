@@ -207,8 +207,9 @@ export const getAllTransactions = async (req, res) => {
  */
 export const getTransactionsByUser = async (req, res) => {
     try {
-        //ATTENZIONE: il filtro dobbiamo prenderlo come parametro nell'url [ ?filter=data ]
-        const filter = handleDateFilterParams(req.query);
+        const filterByDate = handleDateFilterParams(req.query);
+        const filterByAmount = handleAmountFilterParams(req.query);
+        console.log(filterByDate);
         //find all transactions then 
         let allTransactions = new Array();
         transactions.aggregate([
@@ -220,7 +221,7 @@ export const getTransactionsByUser = async (req, res) => {
                     as: "categories_info"
                 }
             },
-            {$match: filter},
+            {$match: { $and: [filterByDate, filterByAmount]}},
             { $unwind: "$categories_info" }
         ]).then((result) => {
             allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))

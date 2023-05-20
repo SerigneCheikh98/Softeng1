@@ -162,7 +162,7 @@ Content-Type: application/json
 
 ### getTransactionsByUser
 
-GET /api/transactions/users/maurizio?date=2023-05-15 HTTP/1.1
+GET /api/transactions/users/maurizio?from=2023-05-10&upTo=2023-05-30&min=2000&max=26000 HTTP/1.1
 Host: localhost:3000
 Cookie: 
 

@@ -180,4 +180,25 @@ export const getUser = async (req, res) => {
  *  Example: {amount: {$gte: 100}} returns all transactions whose `amount` parameter is greater or equal than 100
  */
 export const handleAmountFilterParams = (req) => {
+    const {min, max} = req;
+    if(min && !max){
+        // filter only by 'min'
+        let minFilter = parseInt(min);
+        return { amount: { $gte: minFilter} };
+    }
+    else if(max && !min){
+        // filter only by 'max'
+        let maxFilter = parseInt(max);
+        return { amount: { $lte: maxFilter} };
+    }
+    else if(min && max){
+        // filter by 'min' and 'max'
+        let minFilter = parseInt(min);
+        let maxFilter = parseInt(max);
+        return { amount: { $gte: minFilter, $lte: maxFilter} };
+    }
+    else{
+        // no filtering
+        return {}
+    }
 }
