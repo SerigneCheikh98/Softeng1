@@ -89,10 +89,10 @@ export const verifyAuth = (req, res, info) => {
         }
         // User authType check
         if (info.authType === 'User' && info.username !== decodedAccessToken.username ) {
-            return res.status(401).json({ authorized: false, cause: "User: Mismatched users" });
+            return { authorized: false, cause: "User: Mismatched users" };
         }
         if (info.authType === 'Admin' && (decodedAccessToken.role !== 'Admin' || decodedRefreshToken.role !== 'Admin')) {
-            return res.status(401).json({ authorized: false, cause: "Admin: Mismatched role" });
+            return { authorized: false, cause: "Admin: Mismatched role" };
         }
         if (info.authType === 'Group') {
             let in_group = false;
@@ -102,7 +102,7 @@ export const verifyAuth = (req, res, info) => {
                 }
             }
             if (in_group === false) {
-                return res.status(401).json({ authorized: false, cause: "Group: user not in group" });
+                return { authorized: false, cause: "Group: user not in group" };
             }
         }
         return { authorized: true, cause: "Authorized" }
@@ -112,10 +112,10 @@ export const verifyAuth = (req, res, info) => {
                 // Access Token expired
                 const refreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY)
                 if (info.username !== refreshToken.username) {
-                    return res.status(401).json({ authorized: false, cause: "Token Expired: Mismatched users" });
+                    return { authorized: false, cause: "Token Expired: Mismatched users" };
                 }
                 if (info.authType === 'Admin' && refreshToken.role !== 'Admin') {
-                    return res.status(401).json({ authorized: false, cause: "Admin: Access Token Expired and Mismatched role" });
+                    return { authorized: false, cause: "Admin: Access Token Expired and Mismatched role" };
                 }
                 if (info.authType === 'Group') {
                     let in_group = false;
@@ -125,7 +125,7 @@ export const verifyAuth = (req, res, info) => {
                         }
                     }
                     if (in_group === false) {
-                        return res.status(401).json({ authorized: false, cause: "Group: Access Token Expired and user not in group" });
+                        return { authorized: false, cause: "Group: Access Token Expired and user not in group" };
                     }
                 }
                 const newAccessToken = jwt.sign({
