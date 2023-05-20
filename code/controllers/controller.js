@@ -151,31 +151,49 @@ export const createTransaction = async (req, res) => {
  */
 export const getAllTransactions = async (req, res) => {
     try {
-        /*const cookie = req.cookies
-        if (!cookie.accessToken) {
-            return res.status(400).json({ message: "Unauthorized" }) // unauthorized
-        }*/
-        /**
-         * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
-         */
-        transactions.aggregate([
-            {
-                $lookup: {
-                    from: "categories",
-                    localField: "type",
-                    foreignField: "type",
-                    as: "categories_info"
-                }
-            },
-            { $unwind: "$categories_info" }
-        ]).then((result) => {
+        const cookie = req.cookies;
+        const user = await User.findOne({refreshToken: cookie.refreshToken})
+        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
+        if (userAuth.authorized) {
+          //User auth successful
+            try {
+                //console.log(verifyAuth(req, res, { authType: "User", username: "edit" }));
+                /*const cookie = req.cookies
+                if (!cookie.accessToken) {
+                    return res.status(400).json({ message: "Unauthorized" }) // unauthorized
+                }*/
+                /**
+                 * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
+                 */
+                transactions.aggregate([
+                    {
+                        $lookup: {
+                            from: "categories",
+                            localField: "type",
+                            foreignField: "type",
+                            as: "categories_info"
+                        }
+                    },
+                    { $unwind: "$categories_info" }
+                ]).then((result) => {
 
-            let data = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date}))
-            res.json({data: data});
-        }).catch(err => { res.status(400).json({ message: err }) })
-    } catch (error) {
-        res.status(400).json({ message: error.message })
-    }
+                    let data = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
+                    res.json({ data: data });
+                }).catch(err => { res.status(400).json({ message: err }) })
+            } catch (error) {
+                res.status(400).json({ message: error.message })
+            }
+        } else {
+          /*const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+          if (adminAuth.authorized) {
+            //Admin auth successful
+          } else {
+            res.status(401).json({ error: adminAuth.cause})
+          }*/
+        }
+      } catch (error) {
+        res.status(500).json({ error: error.message })
+      }
 }
 
 /**

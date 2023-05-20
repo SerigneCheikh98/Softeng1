@@ -67,6 +67,10 @@ export const handleDateFilterParams = (req) => {
  *  Refreshes the accessToken if it has expired and the refreshToken is still valid
  */
 export const verifyAuth = (req, res, info) => {
+    // Simple Authtype check
+    if (info.authType === "Simple") {
+        return { authorized: true, cause: "Authorized" }
+    }
     const cookie = req.cookies
     if (!cookie.accessToken || !cookie.refreshToken) {
         return { authorized: false, cause: "Unauthorized" };
@@ -83,11 +87,19 @@ export const verifyAuth = (req, res, info) => {
         if (decodedAccessToken.username !== decodedRefreshToken.username || decodedAccessToken.email !== decodedRefreshToken.email || decodedAccessToken.role !== decodedRefreshToken.role) {
             return { authorized: false, cause: "Mismatched users" };
         }
+        // User authType check
+        if (info.authType === 'User' && info.username !== decodedAccessToken.username ) {
+            return res.status(401).json({ authorized: false, cause: "User: Mismatched users" });
+        }
         return { authorized: true, cause: "Authorized" }
     } catch (err) {
         if (err.name === "TokenExpiredError") {
             try {
+                // Access Token expired
                 const refreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY)
+                if (info.username !== refreshToken.username) {
+                    return res.status(401).json({ authorized: false, cause: "Token Expired: Mismatched users" });
+                }
                 const newAccessToken = jwt.sign({
                     username: refreshToken.username,
                     email: refreshToken.email,
@@ -98,6 +110,7 @@ export const verifyAuth = (req, res, info) => {
                 res.locals.refreshedTokenMessage= 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls'
                 return { authorized: true, cause: "Authorized" }
             } catch (err) {
+                // Refresh Token expired
                 if (err.name === "TokenExpiredError") {
                     return { authorized: false, cause: "Perform login again" }
                 } else {
