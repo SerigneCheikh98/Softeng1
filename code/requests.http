@@ -58,7 +58,7 @@ Host: localhost:3000
 Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQzMzg4MjZ9.m4mNtCHFB1QDB_GHXFyoBhG0k43mJcWdorztXGXs9Qc;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQ5NDAwMjZ9.CV2kAaIVRH_KPyiVwgLXqNDFMjRDebI856fPGokQGyg 
 Content-Type: application/json
 
-{"username": "maurizio", "type": "investment", "amount":"400000"}
+{"username": "maurizio", "type": "school", "amount":"400000"}
 
 ### GetTransactionByUser
 
@@ -84,6 +84,10 @@ Host: localhost:3000
 
 POST /api/groups HTTP/1.1
 Host: localhost:3000
+Content-Type: application/json
+
+{"name": "gruppo","memberEmails":["gae.ga@polito.it","domenico.ga@polito.it"]}
+
 
 ### getGroup
 
@@ -102,13 +106,18 @@ Host: localhost:3000
 
 ### addToGroup
 
-PATCH /api/groups/:name/add HTTP/1.1
+PATCH /api/groups/gruppo7/add HTTP/1.1
 Host: localhost:3000
+Content-Type: application/json
 
+{"name": "gruppo","memberEmails":["truvell.ga@polito.it","domenico.ga@polito.it"]}
 ### removeFromGroup
 
-PATCH /api/groups/:name/remove HTTP/1.1
+PATCH /api/groups/gruppo/remove HTTP/1.1
 Host: localhost:3000
+Content-Type: application/json
+
+{"users":["gae.ga@polito.it"]}
 
 
 // ***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
@@ -134,6 +143,9 @@ Host: localhost:3000
 
 DELETE /api/categories HTTP/1.1
 Host: localhost:3000
+Content-Type: application/json
+
+{"types" :["school"] }
 
 ### getAllTransactions
 
@@ -145,6 +157,9 @@ Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByb3ZhLmd
 
 DELETE /api/transactions HTTP/1.1
 Host: localhost:3000
+Content-Type: application/json
+
+{"_ids" :[" "] }
 
 ### getTransactionsByUser
 
@@ -177,7 +192,6 @@ Host: localhost:3000
 DELETE /api/users HTTP/1.1
 Host: localhost:3000
 
-{"email": "prova.ga@polito.it"}
 
 ### getTransactionsByGroup
 
