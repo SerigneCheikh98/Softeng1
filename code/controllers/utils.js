@@ -9,6 +9,36 @@ import jwt from 'jsonwebtoken'
  * @throws an error if the query parameters include `date` together with at least one of `from` or `upTo`
  */
 export const handleDateFilterParams = (req) => {
+    const {from, upTo, date} = req;
+    if(date){
+        if(from || upTo){
+            throw ("Unauthorized query parameters");
+        }
+        // filter by date
+        let StartDateFilter = new Date(`${date}T00:00:00.000Z`); 
+        let EndDateFilter = new Date(`${date}T23:59:59.999Z`); 
+        return { date: { $gte: StartDateFilter, $lte: EndDateFilter} };
+    }
+    else{
+
+        if(from && !upTo){  //filter only by 'from' parameter
+            let fromDateFilter = new Date(`${from}T00:00:00.000Z`);
+            return {date: { $gte: fromDateFilter }};
+        }
+        else if (upTo && !from){ //filter only by 'upTo' parameter
+            let upToDateFilter = new Date(`${upTo}T23:59:59.999Z`);
+            return {date: { $lte: upToDateFilter }};
+        }
+        else if (from && upTo){ //filter by 'from' and 'upTo' parameter
+            let fromDateFilter = new Date(`${from}T00:00:00.000Z`);
+            let upToDateFilter = new Date(`${upTo}T23:59:59.999Z`);
+            
+            return { date: { $gte: fromDateFilter, $lte: upToDateFilter} };
+        }
+        else{   // no filtering
+            return {}
+        }
+    }
 }
 
 /**

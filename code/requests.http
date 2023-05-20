@@ -148,7 +148,7 @@ Host: localhost:3000
 
 ### getTransactionsByUser
 
-GET /api/transactions/users/prova HTTP/1.1
+GET /api/transactions/users/maurizio?date=2023-05-15 HTTP/1.1
 Host: localhost:3000
 Cookie: 
 
