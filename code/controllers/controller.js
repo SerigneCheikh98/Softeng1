@@ -153,15 +153,10 @@ export const getAllTransactions = async (req, res) => {
     try {
         const cookie = req.cookies;
         const user = await User.findOne({refreshToken: cookie.refreshToken})
-        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
-        if (userAuth.authorized) {
-          //User auth successful
+        const adminAuth = verifyAuth(req, res, { authType: "Admin", username: user.username })
+        if (adminAuth.authorized) {
+            //Admin auth successful
             try {
-                //console.log(verifyAuth(req, res, { authType: "User", username: "edit" }));
-                /*const cookie = req.cookies
-                if (!cookie.accessToken) {
-                    return res.status(400).json({ message: "Unauthorized" }) // unauthorized
-                }*/
                 /**
                  * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
                  */
@@ -184,12 +179,7 @@ export const getAllTransactions = async (req, res) => {
                 res.status(400).json({ message: error.message })
             }
         } else {
-          /*const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-          if (adminAuth.authorized) {
-            //Admin auth successful
-          } else {
-            res.status(401).json({ error: adminAuth.cause})
-          }*/
+            return res.status(401).json({ error: adminAuth.cause});
         }
       } catch (error) {
         res.status(500).json({ error: error.message })
