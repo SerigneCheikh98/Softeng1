@@ -91,6 +91,20 @@ export const verifyAuth = (req, res, info) => {
         if (info.authType === 'User' && info.username !== decodedAccessToken.username ) {
             return res.status(401).json({ authorized: false, cause: "User: Mismatched users" });
         }
+        if (info.authType === 'Admin' && (decodedAccessToken.role !== 'Admin' || decodedRefreshToken.role !== 'Admin')) {
+            return res.status(401).json({ authorized: false, cause: "Admin: Mismatched role" });
+        }
+        if (info.authType === 'Group') {
+            let in_group = false;
+            for (let email of info.emails) {
+                if (email === decodedAccessToken.email) {
+                    in_group = true;
+                }
+            }
+            if (in_group === false) {
+                return res.status(401).json({ authorized: false, cause: "Group: user not in group" });
+            }
+        }
         return { authorized: true, cause: "Authorized" }
     } catch (err) {
         if (err.name === "TokenExpiredError") {
@@ -99,6 +113,20 @@ export const verifyAuth = (req, res, info) => {
                 const refreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY)
                 if (info.username !== refreshToken.username) {
                     return res.status(401).json({ authorized: false, cause: "Token Expired: Mismatched users" });
+                }
+                if (info.authType === 'Admin' && refreshToken.role !== 'Admin') {
+                    return res.status(401).json({ authorized: false, cause: "Admin: Access Token Expired and Mismatched role" });
+                }
+                if (info.authType === 'Group') {
+                    let in_group = false;
+                    for (let email of info.emails) {
+                        if (email === refreshToken.email) {
+                            in_group = true;
+                        }
+                    }
+                    if (in_group === false) {
+                        return res.status(401).json({ authorized: false, cause: "Group: Access Token Expired and user not in group" });
+                    }
                 }
                 const newAccessToken = jwt.sign({
                     username: refreshToken.username,
