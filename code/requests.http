@@ -7,7 +7,7 @@ Host: localhost:3000
 Content-Type: application/json
 Content-Length: 73
 
-{"username":"gae", "email":"gae@polito.it", "password":"gaetano"}
+{"username":"peppo", "email":"peppo@polito.it", "password":"peppo"}
 
 ### RegisterAdmin
 
@@ -25,9 +25,9 @@ Host: localhost:3000
 Content-Type: application/json
 Content-Length: 55
 
-{"email":"gae@polito.it", "password":"gaetano"}
+//{"email":"gae@polito.it", "password":"gaetano"}
 //{"email": "minicucc.ga@polito.it","password":"minicucc"}
-//{"email":"admin.ga@polito.it", "password":"secure_password"}
+{"email":"admin.ga@polito.it", "password":"secure_password"}
 
 
 ### Logout
@@ -45,7 +45,7 @@ Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpeml
 
 GET /api/categories HTTP/1.1
 Host: localhost:3000
-Cookie : accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0NzY2NTMzLCJleHAiOjE2ODQ3NzAxMzN9.V11aj9VR8wEVvnT3qe5qDwTnkmeC-388XJuLqmhhUMM;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0NzY2NTMzLCJleHAiOjE2ODUzNzEzMzN9.r7hrHXFXaf6o8RPibjC4z818HRW7bjbsq9mdJR-RHiw
+Cookie : accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
 #Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg0NzY5MDkxfQ.N5YY0V1jDsaWpJ3ZKMigsH9RArrGr0DVOTWH1ku4niM;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg1MzcwMjkxfQ.iDLyH3mdEtMqRwVSeJjySiiBJsbHWzxvMUAq-HKMUJM
 
 
@@ -116,7 +116,7 @@ PATCH /api/groups/gruppo_prova/add HTTP/1.1
 Host: localhost:3000
 Content-Type: application/json
 
-{"name": "gruppo_prova","memberEmails":["gae@polito.it"]}
+{"name": "gruppo_prova","memberEmails":["peppo@polito.it"]}
 ### removeFromGroup
 
 PATCH /api/groups/gruppo/remove HTTP/1.1
@@ -129,35 +129,40 @@ Content-Type: application/json
 // ***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 // ADMIN EXCLUSIVE
 
-### createCategories
+### createCategory
 
 POST /api/categories HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg0NzY5MDkxfQ.N5YY0V1jDsaWpJ3ZKMigsH9RArrGr0DVOTWH1ku4niM;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg1MzcwMjkxfQ.iDLyH3mdEtMqRwVSeJjySiiBJsbHWzxvMUAq-HKMUJM
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
 Content-Type: application/json
 Content-Length: 34
 
-{"type":"school", "color":"black"}
+{"type":"vespa", "color":"black"}
 
 ### updateCategory
 
-PATCH /api/categories/:type HTTP/1.1
+PATCH /api/categories/vespa HTTP/1.1
 Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
+Content-Type: application/json
+
+{"type":"vespaa", "color":"black"}
 
 
 ### deleteCategory
 
 DELETE /api/categories HTTP/1.1
 Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
 Content-Type: application/json
 
-{"types" :["school"] }
+{"types" :["bici"] }
 
 ### getAllTransactions
 
 GET /api/transactions HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDU3ODMwNiwiZXhwIjoxNjg0NTgxOTA2fQ.k0tO-zkG2Sxw21EUzBx7Y6FBJ_NZxNEp6BJ6koPotnU;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDU3ODMwNiwiZXhwIjoxNjg1MTgzMTA2fQ.kf7bn6ggN0d83PXDgJ4uSXGT2RCfNtl2aJPv5Y1r5SA
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
 ### deleteTransactions
 
 DELETE /api/transactions HTTP/1.1
@@ -192,12 +197,15 @@ Host: localhost:3000
 
 GET /api/users HTTP/1.1
 Host: localhost:3000
-
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
 ### deleteUser
 
 DELETE /api/users HTTP/1.1
 Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
+Content-Type: application/json
 
+{"email": "peppo@polito.it"}
 
 ### getTransactionsByGroup
 

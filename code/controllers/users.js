@@ -68,6 +68,9 @@ export const getUser = async (req, res) => {
 export const createGroup = async (req, res) => {
   try {
     const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
+    if (user === null) {
+      return res.status(401).json({ error: "Invalid Cookies" });
+    }
     const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
     if (userAuth.authorized) {
       //User | Admin auth successful
@@ -155,6 +158,9 @@ export const getGroups = async (req, res) => {
 export const getGroup = async (req, res) => {
     try {
       const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
+      if (user === null) {
+        return res.status(401).json({ error: "Invalid Cookies" });
+      }
       const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
       const adminAuth = verifyAuth(req, res, { authType: "Admin" })
       if (userAuth.authorized && !adminAuth) {
@@ -260,7 +266,6 @@ export const removeFromGroup = async (req, res) => {
       let updated_group ;
       let firstUser = await Group.findOne({name: name});
       firstUser = firstUser.members[0];
-      console.log(firstUser);
       for (let email of users) {
         // verify that the user exists
         let user = await User.findOne({email: email});
@@ -278,13 +283,10 @@ export const removeFromGroup = async (req, res) => {
           } else {
             // if user the group
             membersToDelete.push({ email: email, user: user._id });
-            console.log("memberstodelete"+membersToDelete[0].email);
 
           } 
-          console.log(firstUser.email + "  " + email)
           if(firstUser.email != email){
             updated_group = await Group.findOneAndUpdate({ name: name }, { $pull: { members: { email:email,user:user} } }, { new: true });
-            console.log("updated"+updated_group);
 
           }
         }
@@ -317,15 +319,33 @@ export const removeFromGroup = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    /*// return the number of deleted user (in our case possible values are only 1 or 0, since email is unique)
-    const n_el_deleted = await User.deleteOne({email: req.body.email});
-    if (n_el_deleted.deletedCount === 0) {
-      // no user deleted, the user does not exist
-      res.status(400).json({error: "User Does Not exist"});
+    const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+    if (adminAuth.authorized) {
+      //Admin auth successful
+      // remove the user from his group (if the user has one)
+      const user = await User.findOne({email: req.body.email});
+      if (user === null) {
+        return res.status(400).json({ error: "User Does Not exist" });
+      } else {
+        const updated_group = await Group.findOneAndUpdate({ "members.email": req.body.email }, { $pull: { members: { email: req.body.email, user: user._id } } }, { new: true });
+        // return the number of deleted user (in our case possible values are only 1 or 0, since email is unique)
+        const n_el_deleted = await User.deleteOne({ email: req.body.email });
+        //if (n_el_deleted.deletedCount === 0) {
+          // no user deleted, the user does not exist
+        //  res.status(400).json({ error: "User Does Not exist" });
+        //} else {
+          // user deleted wuth success
+          res.status(200).json({ message: "User deleted Successfully" });
+        //}
+      }
     } else {
-      // user deleted wuth success
-      res.status(200).json({message: "User deleted Successfully"});
-    }*/
+      res.status(401).json({ error: adminAuth.cause })
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+  try {
+    
   } catch (err) {
       res.status(500).json(err.message)
   }
@@ -339,17 +359,23 @@ export const deleteUser = async (req, res) => {
     - error 400 is returned if the group does not exist
  */
 export const deleteGroup = async (req, res) => {
-    try {
+  try {
+    const groupAuth = verifyAuth(req, res, { authType: "Group", emails: [req.body.email] });
+    if (groupAuth.authorized || adminAuth.authorized) {
+      //Group auth successful
       // return the number of deleted groups (in our case possible values are only 1 or 0, since name is unique)
-      const n_el_deleted = await Group.deleteOne({name: req.body.name});
+      const n_el_deleted = await Group.deleteOne({ name: req.body.name });
       if (n_el_deleted.deletedCount === 0) {
         // no group deleted, the group does not exist
-        res.status(400).json({error: "Group Does Not exist"});
+        res.status(400).json({ error: "Group Does Not exist" });
       } else {
         // group deleted wuth success
-        res.status(200).json({message: "Group deleted Successfully"});
+        res.status(200).json({ message: "Group deleted Successfully" });
       }
-    } catch (err) {
-        res.status(500).json(err.message)
+    } else {
+      res.status(401).json({error: (adminAuth.authorized) ? adminAuth.cause : groupAuth.cause})
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
 }

@@ -107,6 +107,9 @@ export const deleteCategory = async (req, res) => {
 export const getCategories = async (req, res) => {
     try {
         const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
+        if (user === null) {
+            return res.status(401).json({ error: "Invalid Cookies" });
+        }
         const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (userAuth.authorized || adminAuth.authorized) {
@@ -185,7 +188,7 @@ export const getAllTransactions = async (req, res) => {
                 },
                 { $unwind: "$categories_info" }
             ]).then((result) => {
-
+                console.log(result);
                 let data = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
                 res.status(200).json({ data: data });
             }).catch(err => { res.status(400).json({ error: err.message }) })
@@ -299,6 +302,9 @@ export const getTransactionsByUserByCategory = async (req, res) => {
 export const getTransactionsByGroup = async (req, res) => {
     try {
         const user = await User.findOne({refreshToken: req.cookies.refreshToken});
+        if (user === null) {
+            return res.status(401).json({ error: "Invalid Cookies" });
+        }
         const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (userAuth.authorized || adminAuth.authorized) {
@@ -381,6 +387,9 @@ export const getTransactionsByGroup = async (req, res) => {
 export const getTransactionsByGroupByCategory = async (req, res) => {
     try {
         const user = await User.findOne({refreshToken: req.cookies.refreshToken});
+        if (user === null) {
+            return res.status(401).json({ error: "Invalid Cookies" });
+        }
         const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (userAuth.authorized || adminAuth.authorized) {
