@@ -9,17 +9,19 @@ import { handleDateFilterParams, handleAmountFilterParams, verifyAuth } from "./
  */
 export const createCategory = (req, res) => {
     try {
-      /*  const cookie = req.cookies
-        if (!cookie.accessToken) {
-            return res.status(400).json({ message: "Unauthorized" }) // unauthorized
-        }*/
-        const { type, color } = req.body;
-        const new_categories = new categories({ type, color });
-        new_categories.save()
-            .then(data => res.json({data: {type :data.type , color :data.color}}))
-            .catch(err => { res.status(400).json({ message: "Category already exist!" }) }) //No need to crash the server 
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (adminAuth.authorized) {
+            //Admin auth successful
+            const { type, color } = req.body;
+            const new_categories = new categories({ type, color });
+            new_categories.save()
+                .then(data => res.status(200).json({ data: { type: data.type, color: data.color } }))
+                .catch(err => { res.status(400).json({ message: "Category already exist!" }) }) //No need to crash the server
+        } else {
+            res.status(401).json({ error: adminAuth.cause })
+        }
     } catch (error) {
-        res.status(400).json({data: { }, message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -33,21 +35,27 @@ export const createCategory = (req, res) => {
  */
 export const updateCategory = async (req, res) => {
     try {
-        // if type or color are undefined or only spaces, consider them as invalid values
-        if (!req.body.type || !req.body.color || req.body.type.trim().length === 0 || req.body.color.trim().length === 0) {
-            res.status(400).json({ message: 'Invalid Values.' });
-        } else {
-            const data = await categories.findOneAndUpdate({ type: req.params.type }, { $set: { type: req.body.type, color: req.body.color } });
-            if (data === null) {
-                res.status(400).json({ message: 'This category does not exist.' });
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (adminAuth.authorized) {
+            //Admin auth successful
+            // if type or color are undefined or only spaces, consider them as invalid values
+            if (!req.body.type || !req.body.color || req.body.type.trim().length === 0 || req.body.color.trim().length === 0) {
+                res.status(400).json({ message: 'Invalid Values.' });
             } else {
-                // change all related transactions
-                const updated_transactions = await transactions.updateMany({ type: req.params.type }, { type: req.body.type });
-                res.status(200).json({ data: {count: updated_transactions.modifiedCount },message: 'Category Edited With Success'});
+                const data = await categories.findOneAndUpdate({ type: req.params.type }, { $set: { type: req.body.type, color: req.body.color } });
+                if (data === null) {
+                    res.status(400).json({ message: 'This category does not exist.' });
+                } else {
+                    // change all related transactions
+                    const updated_transactions = await transactions.updateMany({ type: req.params.type }, { type: req.body.type });
+                    res.status(200).json({ data: { count: updated_transactions.modifiedCount }, message: 'Category Edited With Success' });
+                }
             }
+        } else {
+            res.status(401).json({ error: adminAuth.cause })
         }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -60,29 +68,32 @@ export const updateCategory = async (req, res) => {
  */
 export const deleteCategory = async (req, res) => {
     try {
-        for (let type of req.body.types) {
-            //find category 
-            const el_finded = await categories.findOne({ type: type });
-            if (el_finded === null) {
-                return res.status(400).json({ message: "One or more Categories do not exists" });
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (adminAuth.authorized) {
+            //Admin auth successful
+            for (let type of req.body.types) {
+                //find category 
+                const el_finded = await categories.findOne({ type: type });
+                if (el_finded === null) {
+                    return res.status(400).json({ message: "One or more Categories do not exists" });
+                }
             }
+            let count = 0;
+            for (let type of req.body.types) {
+                //find category 
+                //occhio a non cancellare investmentb 
+                const updated_transactions = await transactions.updateMany({ type: type }, { type: "investment" });
+                const n_el_deleted = await categories.deleteOne({ type: type });
+                count += updated_transactions.modifiedCount;
+            }
+            res.status(200).json({ data: { count: count }, message: 'Category Deleted With Success, ' + count.toString() + ' transactions updated' });
+            //transazioni solo dell'utente loggato
+            //res.status(200).json({ message: 'Categories Deleted With Success', count: updated_transactions.nModified });
+        } else {
+            res.status(401).json({ error: adminAuth.cause })
         }
-        let count = 0;
-        for (let type of req.body.types) {
-            //find category 
-            //occhio a non cancellare investmentb 
-            const updated_transactions = await transactions.updateMany({ type: type }, { type: "investment" });
-            const n_el_deleted = await categories.deleteOne({ type: type });
-            count += updated_transactions.modifiedCount;
-        }
-
-        res.status(200).json({data: {count: count }, message: 'Category Deleted With Success, ' + count.toString() + ' transactions updated' });
-
-        //transazioni solo dell'utente loggato
-        //res.status(200).json({ message: 'Categories Deleted With Success', count: updated_transactions.nModified });
-    }
-    catch (error) {
-        res.status(400).json({ message: error.message })
+    } catch (error) {
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -95,17 +106,19 @@ export const deleteCategory = async (req, res) => {
  */
 export const getCategories = async (req, res) => {
     try {
-        /*const cookie = req.cookies
-        if (!cookie.accessToken) {
-            return res.status(400).json({ message: "Unauthorized" }) // unauthorized
-        }*/
-        let data = await categories.find({})
-
-        let filter = data.map(v => Object.assign({}, { type: v.type, color: v.color }))
-
-        return res.json( { data: filter  } )
+        const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
+        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (userAuth.authorized || adminAuth.authorized) {
+            //User or Admin auth successful
+            let data = await categories.find({})
+            let filter = data.map(v => Object.assign({}, { type: v.type, color: v.color }))
+            return res.status(200).json({ data: filter, message: "all categories returned" })
+        } else {
+            res.status(401).json({ error: adminAuth.cause })
+        }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -118,27 +131,31 @@ export const getCategories = async (req, res) => {
  */
 export const createTransaction = async (req, res) => {
     try {
-       /* const cookie = req.cookies
-        if (!cookie.accessToken) {
-            return res.status(400).json({ message: "Unauthorized" }) // unauthorized
-        }*/
-        const { username, amount, type } = req.body;
-        //TODO 
-        //check :username is the logged user
-        //check username
-        /*const existingUser = await User.findOne({ username: username });
-        if (!existingUser) return res.status(400).json({ message: "Username does not exist!" });
-*/                  
-        //check category type
-        const category = await categories.findOne({ type: type })
-        if (!category) return res.status(400).json({ message: "Category does not exist!" })
-
-        const new_transactions = new transactions({ username, amount, type, date:new Date() });//date is also taken as default in the costructor but we insert it anyway
-        new_transactions.save()
-            .then(data => res.json({data: {username: data.username, amount: data.amount, type: data.type, date: data.date}}))
-            .catch(err => { res.status(400).json({ message: err }) })
+        if (req.params.username !== req.body.username) {
+            return res.status(400).json({ error: "Wrong Usernames" });
+        }
+        const userAuth = verifyAuth(req, res, { authType: "User", username: req.body.username })
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        console.log(userAuth.authorized)
+        console.log(adminAuth.authorized)
+        if (userAuth.authorized || adminAuth.authorized) {
+            //User or Admin auth successful
+            const { username, amount, type } = req.body;
+            //check category type
+            const category = await categories.findOne({ type: type })
+            if (!category) {
+                return res.status(400).json({ message: "Category does not exist!" })
+            }
+            // create transaction
+            const new_transactions = new transactions({ username, amount, type, date: new Date() });//date is also taken as default in the costructor but we insert it anyway
+            new_transactions.save()
+                .then(data => res.status(200).json({ data: { username: data.username, amount: data.amount, type: data.type, date: data.date }, message: "Transaction Created" }))
+                .catch(err => { res.status(400).json({ error: err.message }) })
+        } else {
+            res.status(401).json({ error: adminAuth.cause })
+        }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -151,39 +168,33 @@ export const createTransaction = async (req, res) => {
  */
 export const getAllTransactions = async (req, res) => {
     try {
-        const cookie = req.cookies;
-        const user = await User.findOne({refreshToken: cookie.refreshToken})
-        const adminAuth = verifyAuth(req, res, { authType: "Admin", username: user.username })
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.authorized) {
             //Admin auth successful
-            try {
-                /**
-                 * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
-                 */
-                transactions.aggregate([
-                    {
-                        $lookup: {
-                            from: "categories",
-                            localField: "type",
-                            foreignField: "type",
-                            as: "categories_info"
-                        }
-                    },
-                    { $unwind: "$categories_info" }
-                ]).then((result) => {
+            /**
+             * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
+             */
+            transactions.aggregate([
+                {
+                    $lookup: {
+                        from: "categories",
+                        localField: "type",
+                        foreignField: "type",
+                        as: "categories_info"
+                    }
+                },
+                { $unwind: "$categories_info" }
+            ]).then((result) => {
 
-                    let data = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
-                    res.json({ data: data });
-                }).catch(err => { res.status(400).json({ message: err }) })
-            } catch (error) {
-                res.status(400).json({ message: error.message })
-            }
+                let data = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
+                res.status(200).json({ data: data });
+            }).catch(err => { res.status(400).json({ error: err.message }) })
         } else {
-            return res.status(401).json({ error: adminAuth.cause});
+            return res.status(401).json({ error: adminAuth.cause})
         }
-      } catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message })
-      }
+    }
 }
 
 /**
@@ -197,40 +208,45 @@ export const getAllTransactions = async (req, res) => {
  */
 export const getTransactionsByUser = async (req, res) => {
     try {
-        const filterByDate = handleDateFilterParams(req.query);
-        const filterByAmount = handleAmountFilterParams(req.query);
-        console.log(filterByDate);
-        //find all transactions then 
-        let allTransactions = new Array();
-        transactions.aggregate([
-            {
-                $lookup: {
-                    from: "categories",
-                    localField: "type",
-                    foreignField: "type",
-                    as: "categories_info"
-                }
-            },
-            {$match: { $and: [filterByDate, filterByAmount]}},
-            { $unwind: "$categories_info" }
-        ]).then((result) => {
-            allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
-            //Distinction between route accessed by Admins or Regular users for functions that can be called by both
-            //and different behaviors and access rights
-            if (req.url.indexOf("/transactions/users/") >= 0) {
-                //admin
-                //all transactions for each user
-                res.status(400).json(allTransactions.filter(tr => tr.username === req.params.username))
-                //TODO! => controll if the user is an admin
+        const userAuth = verifyAuth(req, res, { authType: "User", username: req.params.username })
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (userAuth.authorized || adminAuth.authorized) {
+            //User or Admin auth successful
+            let filterByDate;
+            let filterByAmount;
+            if (adminAuth.authorized) {
+                //admin (not filtering, so all true to match in the query)
+                filterByDate = {};
+                filterByAmount = {};
             } else {
-                //users
-                //all transactions for the logged user 
-                //TODO! => controll if the username is the logged user
-                res.status(400).json(allTransactions.filter(tr => tr.username === req.params.username))
+                //users (filtering, so apply all the filters)
+                filterByDate = handleDateFilterParams(req.query);
+                filterByAmount = handleAmountFilterParams(req.query);
             }
-        }).catch(error => { res.status(400).json({ message: error }) })
+            //find all transactions then 
+            let allTransactions = [];
+            transactions.aggregate([
+                {
+                    $lookup: {
+                        from: "categories",
+                        localField: "type",
+                        foreignField: "type",
+                        as: "categories_info"
+                    }
+                },
+                { $match: { $and: [filterByDate, filterByAmount] } },
+                { $unwind: "$categories_info" }
+            ]).then((result) => {
+                allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
+                //Distinction between route accessed by Admins or Regular users for functions that can be called by both
+                //and different behaviors and access rights
+                res.status(200).json(allTransactions.filter(tr => tr.username === req.params.username))
+            }).catch(error => { res.status(400).json({ error: error.message }) })
+        } else {
+            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+        }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -244,8 +260,31 @@ export const getTransactionsByUser = async (req, res) => {
  */
 export const getTransactionsByUserByCategory = async (req, res) => {
     try {
+        const userAuth = verifyAuth(req, res, { authType: "User", username: req.params.username })
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (userAuth.authorized || adminAuth.authorized) {
+            //User or Admin auth successful
+            let allTransactions = [];
+            transactions.aggregate([
+                {
+                    $lookup: {
+                        from: "categories",
+                        localField: "type",
+                        foreignField: "type",
+                        as: "categories_info"
+                    }
+                },
+                { $unwind: "$categories_info" }
+            ]).then((result) => {
+                allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
+                // return the transactions
+                res.status(200).json(allTransactions.filter(tr => (tr.username === req.params.username && tr.type === req.params.category)))
+            }).catch(error => { res.status(400).json({ message: error }) })
+        } else {
+            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+        }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -259,8 +298,75 @@ export const getTransactionsByUserByCategory = async (req, res) => {
  */
 export const getTransactionsByGroup = async (req, res) => {
     try {
+        const user = await User.findOne({refreshToken: req.cookies.refreshToken});
+        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (userAuth.authorized || adminAuth.authorized) {
+            let allTransactions = [];
+            let group = await Group.findOne({name: req.params.name});
+            if (group === null) {
+                return res.status(400).json({ error: "Group does not exist." });
+            }
+            transactions.aggregate([
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'username',
+                        foreignField: 'username',
+                        as: 'user'
+                    }
+                },
+                {
+                    $unwind: '$user'
+                },
+                {
+                    $lookup: {
+                        from: 'groups',
+                        localField: 'user.email',
+                        foreignField: 'members.email',
+                        as: 'group'
+                    }
+                },
+                {
+                    $unwind: '$group'
+                },
+                {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'type',
+                        foreignField: 'type',
+                        as: 'category'
+                    }
+                },
+                {
+                    $unwind: '$category'
+                },
+                {
+                    $match: {
+                        'group.name': req.params.name
+                    }
+                },
+                {
+                    $project: {
+                        'user.username': 1,
+                        'user.email': 1,
+                        'group.name': 1,
+                        'category.type': 1,
+                        'amount': 1,
+                        'date': 1,
+                        'category.color': 1
+                    }
+                }
+            ]).then((result) => {
+                allTransactions = result.map(v => Object.assign({}, { username: v.user.username, type: v.category.type, amount: v.amount, date: v.date, color: v.category.color }))
+                // return the transactions
+                res.status(200).json(allTransactions);
+            }).catch(error => { res.status(400).json({ message: error.message }) });
+        } else {
+            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+        }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -274,6 +380,78 @@ export const getTransactionsByGroup = async (req, res) => {
  */
 export const getTransactionsByGroupByCategory = async (req, res) => {
     try {
+        const user = await User.findOne({refreshToken: req.cookies.refreshToken});
+        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (userAuth.authorized || adminAuth.authorized) {
+            let allTransactions = [];
+            let group = await Group.findOne({name: req.params.name});
+            if (group === null) {
+                return res.status(400).json({ error: "Group does not exist." });
+            }
+            let category = await categories.findOne({type: req.params.category});
+            if (category === null) {
+                return res.status(400).json({ error: "Category does not exist." });               
+            }
+            transactions.aggregate([
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'username',
+                        foreignField: 'username',
+                        as: 'user'
+                    }
+                },
+                {
+                    $unwind: '$user'
+                },
+                {
+                    $lookup: {
+                        from: 'groups',
+                        localField: 'user.email',
+                        foreignField: 'members.email',
+                        as: 'group'
+                    }
+                },
+                {
+                    $unwind: '$group'
+                },
+                {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'type',
+                        foreignField: 'type',
+                        as: 'category'
+                    }
+                },
+                {
+                    $unwind: '$category'
+                },
+                {
+                    $match: {
+                        'group.name': req.params.name,
+                        'category.type' : req.params.category
+                    }
+                },
+                {
+                    $project: {
+                        'user.username': 1,
+                        'user.email': 1,
+                        'group.name': 1,
+                        'category.type': 1,
+                        'amount': 1,
+                        'date': 1,
+                        'category.color': 1
+                    }
+                }
+            ]).then((result) => {
+                allTransactions = result.map(v => Object.assign({}, { username: v.user.username, type: v.category.type, amount: v.amount, date: v.date, color: v.category.color }))
+                // return the transactions
+                res.status(200).json(allTransactions);
+            }).catch(error => { res.status(400).json({ message: error.message }) });
+        } else {
+            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+        }
     } catch (error) {
         res.status(400).json({ message: error.message })
     }
@@ -288,20 +466,33 @@ export const getTransactionsByGroupByCategory = async (req, res) => {
  */
 export const deleteTransaction = async (req, res) => {
     try {
-        /*const cookie = req.cookies
-        if (!cookie.accessToken) {
-            return res.status(400).json({ message: "Unauthorized" }) // unauthorized
-        }*/
-
-        //check TODO if the user can delete this transactions or the user is NATU user
-        let data = await transactions.deleteOne({ _id: req.body._id });
-        if(data.deletedCount===1)
-        return res.status(200).json({message:"Transaction deleted successfully"});
-        else
-        return res.status(400).json({message:"Transaction doesn't exist"});
-
+        const userAuth = verifyAuth(req, res, { authType: "User", username: req.params.username })
+        if (userAuth.authorized) {
+            //User auth successful
+            let transaction = await transactions.findOne({ _id: req.body._id });
+            if (transaction.username !== req.params.username) {
+                return res.status(400).json({ error: "Transaction belongs to another User, you cannot delete it." });
+            }
+            let data = await transactions.deleteOne({ _id: req.body._id });
+            if (data.deletedCount === 1)
+                return res.status(200).json({ message: "Transaction deleted successfully" });
+            else
+                return res.status(400).json({ error: "Transaction doesn't exist" });
+        } else {
+            const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+            if (adminAuth.authorized) {
+                //Admin auth successful
+                let data = await transactions.deleteOne({ _id: req.body._id });
+                if (data.deletedCount === 1)
+                    return res.status(200).json({ message: "Transaction deleted successfully" });
+                else
+                    return res.status(400).json({ error: "Transaction doesn't exist" });
+            } else {
+                res.status(401).json({ error: adminAuth.cause })
+            }
+        }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -314,16 +505,22 @@ export const deleteTransaction = async (req, res) => {
  */
 export const deleteTransactions = async (req, res) => {
     try {
-        for (let id of req.body._ids) {
-            const el_finded = await transactions.findOne({ _id: id });
-            if (el_finded === null)
-                return res.status(400).json({data: { }, message: "One or more ids does not have a corresponding transaction" });
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        if (adminAuth.authorized) {
+            //Admin auth successful
+            for (let id of req.body._ids) {
+                const el_finded = await transactions.findOne({ _id: id });
+                if (el_finded === null)
+                    return res.status(400).json({ data: {}, message: "One or more ids does not have a corresponding transaction" });
+            }
+            for (let id of req.body._ids) {
+                const n_el_deleted = await transactions.deleteOne({ _id: id });
+            }
+            res.status(200).json({ data: {}, message: "Transactions deleted successfully" });
+        } else {
+            res.status(401).json({ error: adminAuth.cause })
         }
-        for (let id of req.body._ids) {
-            const n_el_deleted = await transactions.deleteOne({ _id: id });
-        }
-        res.status(200).json({data: { },message:"Transactions deleted successfully"});
-    } catch (error) {
-        res.status(400).json({ data: { },message: error.message })
-    }
+      } catch (error) {
+        res.status(500).json({ error: error.message })
+      }
 }
