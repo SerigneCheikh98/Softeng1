@@ -158,6 +158,7 @@ export const getCategories = async (req, res) => {
     }
 }
 
+
 /**
  * Create a new transaction made by a specific user
   - Request Body Content: An object having attributes `username`, `type` and `amount`
