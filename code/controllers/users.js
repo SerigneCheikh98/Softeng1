@@ -112,7 +112,7 @@ export const createGroup = async (req, res) => {
         }
       } catch (error) {
         // already an existing group with the same name error
-        res.status(400).json(error.message);
+        res.status(400).json({error: "Group already exists"});
       }
     }
     else {

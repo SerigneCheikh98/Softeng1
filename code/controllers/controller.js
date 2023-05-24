@@ -78,15 +78,48 @@ export const deleteCategory = async (req, res) => {
                     return res.status(400).json({ message: "One or more Categories do not exists" });
                 }
             }
+// MOTO, AUTO, VESPA       MOTO  => AUTO,VESPA   3>1  [ && type !== firstCat.type]
+// MOTO,AUTO,VESPA  MOTO,AUTO, => VESPA
+// MOTO,AUTO,VESPA  MOTO,AUTO,VESPA => MOTO
+//MOTO,AUTO,VESPA  MOTO,AUTO,VESPA,gigi => MOTO 
+
             let count = 0;
             for (let type of req.body.types) {
-                //find category 
-                //occhio a non cancellare investmentb 
-                const updated_transactions = await transactions.updateMany({ type: type }, { type: "investment" });
-                const n_el_deleted = await categories.deleteOne({ type: type });
-                count += updated_transactions.modifiedCount;
-            }
+
+                let numbCateg = await categories.count();
+                if(numbCateg === 1){
+                    return res.status(400).json({ error: "You can't delete all categories! Now you have just one category saved" })        
+                }
+                let firstCat = await categories.findOne({}, null, { sort: { _id: 1 } })//assigning of default
+                
+
+                if(numbCateg > req.body.types.length  ){
+                    //case:  MOTO,AUTO,VESPA  MOTO,AUTO => rimane VESPA
+
+                    let prova=await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
+                    console.log("Categorie non in body "+prova+"vaffanculo")
+                    
+                    firstCat = await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
+                    console.log("firstCat1"+firstCat);
+                    const n_el_deleted = await categories.deleteOne({ type: type });
+                    const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
+                    count += updated_transactions.modifiedCount;
+                }else if( numbCateg <= req.body.types.length && type !== firstCat.type ){
+                    
+                    // case: MOTO,AUTO,VESPA   MOTO,AUTO,VESPA => rimane MOTO
+                    console.log("firstCat2"+firstCat);
+                    const n_el_deleted = await categories.deleteOne({ type: type });
+                    const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
+                    count += updated_transactions.modifiedCount;
+                } 
+
+                
+
+            }     
+
             res.status(200).json({ data: { count: count }, message: 'Category Deleted With Success, ' + count.toString() + ' transactions updated' });
+            
+            
             //transazioni solo dell'utente loggato
             //res.status(200).json({ message: 'Categories Deleted With Success', count: updated_transactions.nModified });
         } else {
@@ -188,7 +221,6 @@ export const getAllTransactions = async (req, res) => {
                 },
                 { $unwind: "$categories_info" }
             ]).then((result) => {
-                console.log(result);
                 let data = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
                 res.status(200).json({ data: data });
             }).catch(err => { res.status(400).json({ error: err.message }) })
