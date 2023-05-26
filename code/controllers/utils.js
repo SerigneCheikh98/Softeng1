@@ -69,11 +69,11 @@ export const handleDateFilterParams = (req) => {
 
 export const verifyAuth = (req, res, info) => {
     // Simple Authtype check
+    const cookie = req.cookies;
 
-    if (info.authType === "Simple") {
+    if (info.authType === "Simple" && (cookie.accessToken || cookie.refreshToken) ) {
         return { authorized: true, cause: "Authorized" }
     }
-    const cookie = req.cookies;
     if (!cookie.accessToken || !cookie.refreshToken) {
         return { authorized: false, cause: "Unauthorized" };
     }

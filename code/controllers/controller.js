@@ -168,14 +168,13 @@ export const getCategories = async (req, res) => {
  */
 export const createTransaction = async (req, res) => {
     try {
-        if (req.params.username !== req.body.username) {
+        
+        if (req.params.username !== req.body.username ) {
             return res.status(400).json({ error: "Wrong Usernames" });
         }
-        const userAuth = verifyAuth(req, res, { authType: "User", username: req.body.username })
-        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
+        const userAuth = verifyAuth(req, res, {authType: "User", username: req.params.username})
         console.log(userAuth.authorized)
-        console.log(adminAuth.authorized)
-        if (userAuth.authorized || adminAuth.authorized) {
+        if (userAuth.authorized) {
             //User or Admin auth successful
             const { username, amount, type } = req.body;
             //check category type
@@ -189,7 +188,7 @@ export const createTransaction = async (req, res) => {
                 .then(data => res.status(200).json({ data: { username: data.username, amount: data.amount, type: data.type, date: data.date }, message: "Transaction Created" }))
                 .catch(err => { res.status(400).json({ error: err.message }) })
         } else {
-            res.status(401).json({ error: adminAuth.cause })
+            res.status(401).json({ error: userAuth.cause })
         }
     } catch (error) {
         res.status(500).json({ error: error.message })
