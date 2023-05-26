@@ -3,6 +3,7 @@ import { transactions } from "../models/model.js";
 import { verifyAuth } from "./utils.js";
 
 /**
+ * ADMIN
  * Return all the users
   - Request Body Content: None
   - Response `data` Content: An array of objects, each one having attributes `username`, `email` and `role`
@@ -18,7 +19,7 @@ export const getUsers = async (req, res) => {
         const users = await User.find();
         let usersFields = users.map(v => Object.assign({}, {  username: v.username,email:v.email,role:v.role }))
 
-        res.status(200).json({data: usersFields});
+        res.status(200).json({data: usersFields, refreshedTokenMessage: res.locals.refreshedTokenMessage})
       } 
       else {
         res.status(401).json({ error: adminAuth.cause})
@@ -29,6 +30,7 @@ export const getUsers = async (req, res) => {
 }
 
 /**
+ * USER his info /ADMIN info of a generic user
  * Return information of a specific user
   - Request Body Content: None
   - Response `data` Content: An object having attributes `username`, `email` and `role`.
@@ -44,8 +46,7 @@ export const getUser = async (req, res) => {
         const user = await User.findOne({ username: req.params.username })
         if (!user) return res.status(400).json({ message: "User not found" })
         
-        res.status(200).json({data:{username: user.username,email:user.email,role:user.role}})
-      } 
+        res.status(200).json({data: {username: user.username, email: user.email, role: user.role}, refreshedTokenMessage: res.locals.refreshedTokenMessage})      } 
       else {
         res.status(401).json({error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause})
       }
