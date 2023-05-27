@@ -46,12 +46,12 @@ export const getUser = async (req, res) => {
         const user = await User.findOne({ username: req.params.username })
         if (!user) return res.status(400).json({ message: "User not found" })
         
-        res.status(200).json({data: {username: user.username, email: user.email, role: user.role}, refreshedTokenMessage: res.locals.refreshedTokenMessage})      } 
+        res.status(200).json({data: {username: user.username, email: user.email, role: user.role}, refreshedTokenMessage: res.locals.refreshedTokenMessage})} 
       else {
         res.status(401).json({error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause})
       }
     } catch (error) {
-        res.status(500).json(  {message: error.message  });
+        res.status(500).json({error: error.message });
     }
 }
 
