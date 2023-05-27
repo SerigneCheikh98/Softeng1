@@ -344,14 +344,11 @@ export const getTransactionsByUser = async (req, res) => {
 export const getTransactionsByUserByCategory = async (req, res) => {
     try {
         let auth;
-        let is_admin;
         const {username, category} = req.params;
         if (req.url.indexOf("/transactions/users/") >= 0) {
             auth = verifyAuth(req, res, { authType: "Admin" });
-            is_admin = true;
         } else {
             auth = verifyAuth(req, res, { authType: "User", username: username });
-            is_admin = false;
         }
         const url_user = await User.findOne({username: username});
         if (url_user === null) {
@@ -398,18 +395,20 @@ export const getTransactionsByUserByCategory = async (req, res) => {
  */
 export const getTransactionsByGroup = async (req, res) => {
     try {
-        const user = await User.findOne({refreshToken: req.cookies.refreshToken});
-        if (user === null) {
-            return res.status(401).json({ error: "Invalid Cookies" });
+        let auth;
+        const group_name = req.params.name;
+        const url_group = await Group.findOne({name: group_name});
+        if (url_group === null) {
+            return res.status(400).json({ error: "Group not Found." });
         }
-        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
-        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (userAuth.authorized || adminAuth.authorized) {
+        const emails = url_group.members.map((member) => member.email);
+        if (req.url.indexOf("/transactions/groups/") >= 0) {
+            auth = verifyAuth(req, res, { authType: "Admin"});
+        } else {
+            auth = verifyAuth(req, res, { authType: "Group", emails: emails });
+        }
+        if (auth.authorized) {
             let allTransactions = [];
-            let group = await Group.findOne({name: req.params.name});
-            if (group === null) {
-                return res.status(400).json({ error: "Group does not exist." });
-            }
             transactions.aggregate([
                 {
                     $lookup: {
@@ -463,10 +462,10 @@ export const getTransactionsByGroup = async (req, res) => {
             ]).then((result) => {
                 allTransactions = result.map(v => Object.assign({}, { username: v.user.username, type: v.category.type, amount: v.amount, date: v.date, color: v.category.color }))
                 // return the transactions
-                res.status(200).json(allTransactions);
-            }).catch(error => { res.status(400).json({ message: error.message }) });
+                res.status(200).json({data: allTransactions , refreshedTokenMessage: res.locals.refreshedTokenMessage});
+            }).catch(error => { res.status(400).json({ error: error.message }) });
         } else {
-            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+            return res.status(401).json({ error: auth.cause })
         }
     } catch (error) {
         res.status(500).json({ error: error.message })
@@ -483,13 +482,23 @@ export const getTransactionsByGroup = async (req, res) => {
  */
 export const getTransactionsByGroupByCategory = async (req, res) => {
     try {
-        const user = await User.findOne({refreshToken: req.cookies.refreshToken});
-        if (user === null) {
-            return res.status(401).json({ error: "Invalid Cookies" });
+        let auth;
+        const {name, category} = req.params;
+        const url_group = await Group.findOne({name: name});
+        if (url_group === null) {
+            return res.status(400).json({ error: "Group not Found." });
         }
-        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
-        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (userAuth.authorized || adminAuth.authorized) {
+        const url_category = await categories.findOne({type: category});
+        if (url_category === null) {
+            return res.status(400).json({ error: "Category not Found." });
+        }
+        const emails = url_group.members.map((member) => member.email);
+        if (req.url.indexOf("/transactions/groups/") >= 0) {
+            auth = verifyAuth(req, res, { authType: "Admin"});
+        } else {
+            auth = verifyAuth(req, res, { authType: "Group", emails: emails });
+        }
+        if (auth.authorized) {
             let allTransactions = [];
             let group = await Group.findOne({name: req.params.name});
             if (group === null) {
@@ -553,13 +562,13 @@ export const getTransactionsByGroupByCategory = async (req, res) => {
             ]).then((result) => {
                 allTransactions = result.map(v => Object.assign({}, { username: v.user.username, type: v.category.type, amount: v.amount, date: v.date, color: v.category.color }))
                 // return the transactions
-                res.status(200).json(allTransactions);
-            }).catch(error => { res.status(400).json({ message: error.message }) });
+                res.status(200).json({data: allTransactions , refreshedTokenMessage: res.locals.refreshedTokenMessage});
+            }).catch(error => { res.status(400).json({ error: error.message }) });
         } else {
-            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+            return res.status(401).json({ error: auth.cause })
         }
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(400).json({ error: error.message })
     }
 }
 
@@ -572,30 +581,28 @@ export const getTransactionsByGroupByCategory = async (req, res) => {
  */
 export const deleteTransaction = async (req, res) => {
     try {
-        const userAuth = verifyAuth(req, res, { authType: "User", username: req.params.username })
+        let id = req.body._id;
+        let username = req.params.username;
+        if (!id) {
+            return res.status(400).json({ error: "Some Parameter is Missing" });
+        }
+        const url_user = await User.findOne({username: username });
+        if (url_user === null) {
+            return res.status(400).json({ error: "User not Found." });
+        }
+        // pass in the query also the username to check that the id corresponds to the actual user who called
+        // this to avoid that one user delete transaction of others
+        const transaction = await transactions.findOne({ _id: req.body._id, username: username });
+        if (transaction === null) {
+            return res.status(400).json({ error: "Transaction not Found." });
+        }
+        const userAuth = verifyAuth(req, res, { authType: "User", username: username });
         if (userAuth.authorized) {
-            //User auth successful
-            let transaction = await transactions.findOne({ _id: req.body._id });
-            if (transaction.username !== req.params.username) {
-                return res.status(400).json({ error: "Transaction belongs to another User, you cannot delete it." });
-            }
+            //User/Admin auth successful
             let data = await transactions.deleteOne({ _id: req.body._id });
-            if (data.deletedCount === 1)
-                return res.status(200).json({ message: "Transaction deleted successfully" });
-            else
-                return res.status(400).json({ error: "Transaction doesn't exist" });
+            res.status(200).json({data: {message: "Transaction deleted"}, refreshedTokenMessage: res.locals.refreshedTokenMessage})
         } else {
-            const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-            if (adminAuth.authorized) {
-                //Admin auth successful
-                let data = await transactions.deleteOne({ _id: req.body._id });
-                if (data.deletedCount === 1)
-                    return res.status(200).json({ message: "Transaction deleted successfully" });
-                else
-                    return res.status(400).json({ error: "Transaction doesn't exist" });
-            } else {
-                res.status(401).json({ error: adminAuth.cause })
-            }
+            res.status(401).json({ error: userAuth.cause })
         }
     } catch (error) {
         res.status(500).json({ error: error.message })
@@ -611,18 +618,26 @@ export const deleteTransaction = async (req, res) => {
  */
 export const deleteTransactions = async (req, res) => {
     try {
+        let ids = req.body._ids;
+        if (!ids) {
+            return res.status(400).json({ error: "Some Parameter is Missing" });
+        }
+        for (let id of ids) {
+            if (id.trim().length === 0) {
+                return res.status(400).json({ error: "Some Parameter is an Empty String" });
+            }
+            const el_finded = await transactions.findOne({ _id: id });
+            if (el_finded === null) {
+                return res.status(400).json({ error: "Transaction not found." });
+            }
+        }
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.authorized) {
             //Admin auth successful
-            for (let id of req.body._ids) {
-                const el_finded = await transactions.findOne({ _id: id });
-                if (el_finded === null)
-                    return res.status(400).json({ data: {}, message: "One or more ids does not have a corresponding transaction" });
+            for (let id of ids) {
+                await transactions.deleteOne({ _id: id });
             }
-            for (let id of req.body._ids) {
-                const n_el_deleted = await transactions.deleteOne({ _id: id });
-            }
-            res.status(200).json({ data: {}, message: "Transactions deleted successfully" });
+            res.status(200).json({data: {message: "Transactions deleted"}, refreshedTokenMessage: res.locals.refreshedTokenMessage});
         } else {
             res.status(401).json({ error: adminAuth.cause })
         }
