@@ -50,7 +50,7 @@ export const register = async (req, res) => {
 export const registerAdmin = async (req, res) => {
     try {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" });
-        if (adminAuth.authorized) {
+        if (adminAuth.flag) {
             //Admin auth successful
             const { username, email, password } = req.body;
             if (!username || !email || !password) {
@@ -78,7 +78,7 @@ export const registerAdmin = async (req, res) => {
             res.status(200).json('admin added succesfully');
         } else {
             // Da chiedere
-            res.status(401).json({ error: "Not Authorized" });
+            res.status(401).json({ error: "Not flag" });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -150,7 +150,7 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {    
     try {
         const simpleAuth = verifyAuth(req, res, { authType: "Simple" });
-        if (simpleAuth.authorized) {
+        if (simpleAuth.flag) {
             const refreshToken = req.cookies.refreshToken;
             //if (!refreshToken) return res.status(400).json("user not found");
             const user = await User.findOne({ refreshToken: refreshToken })

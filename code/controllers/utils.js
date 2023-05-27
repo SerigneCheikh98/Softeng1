@@ -9,10 +9,13 @@ import jwt from 'jsonwebtoken'
  * @throws an error if the query parameters include `date` together with at least one of `from` or `upTo`
  */
 export const handleDateFilterParams = (req) => {
-    try {
         const { from, upTo, date } = req;
-
+         
+            
         if (date) {
+
+            if(new Date(date) == "Invalid Date")
+                throw ("Date not valid");
             if (from || upTo) {
                 throw ("Unauthorized query parameters");
             }
@@ -22,7 +25,10 @@ export const handleDateFilterParams = (req) => {
             return { date: { $gte: StartDateFilter, $lte: EndDateFilter } };
         }
         else {
-
+            if(from && upTo){
+            if(new Date(from) == "Invalid Date"|| new Date(upTo) == "Invalid Date")
+                throw ("From or upTo not valid");
+            }   
             if (from && !upTo) {  //filter only by 'from' parameter
                 let fromDateFilter = new Date(`${from}T00:00:00.000Z`);
                 return { date: { $gte: fromDateFilter } };
@@ -41,9 +47,6 @@ export const handleDateFilterParams = (req) => {
                 return {}
             }
         }
-    } catch (err) {
-        throw err;
-    }
 }
 
 /**
@@ -77,11 +80,11 @@ export const verifyAuth = (req, res, info) => {
     const cookie = req.cookies;
     try {
         if (!cookie.accessToken || !cookie.refreshToken) {
-            return { authorized: false, cause: "Unauthorized" };
+            return { flag: false, cause: "Unauthorized" };
         }
         
         if (info.authType === "Simple" && (cookie.accessToken || cookie.refreshToken) ) {
-            return { authorized: true, cause: "Authorized" }
+            return { flag: true, cause: "Authorized" }
         }
         
         const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
@@ -110,20 +113,20 @@ export const verifyAuth = (req, res, info) => {
         console.log('Remaining time in hours:', remainingHours2);
 
         if (!decodedAccessToken.username || !decodedAccessToken.email || !decodedAccessToken.role) {
-            return { authorized: false, cause: "Token is missing information" }
+            return { flag: false, cause: "Token is missing information" }
         }
         if (!decodedRefreshToken.username || !decodedRefreshToken.email || !decodedRefreshToken.role) {
-            return { authorized: false, cause: "Token is missing information" }
+            return { flag: false, cause: "Token is missing information" }
         }
         if (decodedAccessToken.username !== decodedRefreshToken.username || decodedAccessToken.email !== decodedRefreshToken.email || decodedAccessToken.role !== decodedRefreshToken.role) {
-            return { authorized: false, cause: "Mismatched users" };
+            return { flag: false, cause: "Mismatched users" };
         }
         // User authType check
         if (info.authType === 'User' && info.username !== decodedAccessToken.username ) {
-            return { authorized: false, cause: "User: Mismatched users" };
+            return { flag: false, cause: "User: Mismatched users" };
         }
         if (info.authType === 'Admin' && (decodedAccessToken.role !== 'Admin' || decodedRefreshToken.role !== 'Admin')) {
-            return { authorized: false, cause: "Admin: Mismatched role" };
+            return { flag: false, cause: "Admin: Mismatched role" };
         }
         if (info.authType === 'Group') {
             let in_group = false;
@@ -133,19 +136,19 @@ export const verifyAuth = (req, res, info) => {
                 }
             }
             if (in_group === false) {
-                return { authorized: false, cause: "Group: user not in group" };
+                return { flag: false, cause: "Group: user not in group" };
             }
         }
-        return { authorized: true, cause: "Authorized" }
+        return { flag: true, cause: "Authorized" }
     } catch (err) {
         if (err.name === "TokenExpiredError") {
             try {
                 const refreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
                 if ( info.authType==="User" && info.username !== refreshToken.username ) {
-                    return { authorized: false, cause: "Token Expired: Mismatched users" };
+                    return { flag: false, cause: "Token Expired: Mismatched users" };
                 }
                 if (info.authType === 'Admin' && refreshToken.role !== 'Admin') {
-                    return { authorized: false, cause: "Admin: Access Token Expired and Mismatched role" };
+                    return { flag: false, cause: "Admin: Access Token Expired and Mismatched role" };
                 }
                 if (info.authType === 'Group') {
                     let in_group = false;
@@ -155,7 +158,7 @@ export const verifyAuth = (req, res, info) => {
                         }
                     }
                     if (in_group === false) {
-                        return { authorized: false, cause: "Group: Access Token Expired and user not in group" };
+                        return { flag: false, cause: "Group: Access Token Expired and user not in group" };
                     }
                 }
                 const newAccessToken = jwt.sign({
@@ -188,42 +191,21 @@ export const verifyAuth = (req, res, info) => {
                 
                 console.log('Catch:Remaining time in minutes:', remainingMinutes2);
                 console.log('Catch:Remaining time in hours:', remainingHours2);
-                return { authorized: true, cause: "Authorized" }
+                return { flag: true, cause: "Authorized" }
 
             } catch (err) {
                 // Refresh Token expired
                 if (err.name === "TokenExpiredError") {
-                    return { authorized: false, cause: "Perform login again" }
+                    return { flag: false, cause: "Perform login again" }
                 } else {
-                    return { authorized: false, cause: err.name }
+                    return { flag: false, cause: err.name }
                 }
             }
         } else {
-            return { authorized: false, cause: err.name };
+            return { flag: false, cause: err.name };
         }
     }
 }
-
-//CHIAMATA A VERIFYAUTH
-/*
-export const getUser = async (req, res) => {
-  try {
-    const userAuth = verifyAuth(req, res, { authType: "User", username: req.params.username })
-    if (userAuth.authorized) {
-      //User auth successful
-    } else {
-      const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-      if (adminAuth.authorized) {
-        //Admin auth successful
-      } else {
-        res.status(401).json({ error: adminAuth.cause})
-      }
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
-*/
 
 /**
  * Handle possible amount filtering options in the query parameters for getTransactionsByUser when called by a Regular user.
@@ -234,20 +216,21 @@ export const getUser = async (req, res) => {
  */
 export const handleAmountFilterParams = (req) => {
     const {min, max} = req;
+    if(isNaN(Number(min)) || isNaN(Number((max))))
+        throw ("Min or Max values are not valid")
+    let minFilter = parseInt(min);
+    let maxFilter = parseInt(max);
     if(min && !max){
         // filter only by 'min'
-        let minFilter = parseInt(min);
         return { amount: { $gte: minFilter} };
     }
     else if(max && !min){
         // filter only by 'max'
-        let maxFilter = parseInt(max);
         return { amount: { $lte: maxFilter} };
     }
     else if(min && max){
         // filter by 'min' and 'max'
-        let minFilter = parseInt(min);
-        let maxFilter = parseInt(max);
+        
         return { amount: { $gte: minFilter, $lte: maxFilter} };
     }
     else{

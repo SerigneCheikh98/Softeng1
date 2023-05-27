@@ -13,7 +13,7 @@ import { verifyAuth } from "./utils.js";
 export const getUsers = async (req, res) => {
     try {
       const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-      if (adminAuth.authorized) {
+      if (adminAuth.flag) {
         //Admin auth successful
 
         const users = await User.find();
@@ -45,11 +45,11 @@ export const getUser = async (req, res) => {
       if (!user) 
         return res.status(400).json({ message: "User not found" })
     
-      if (userAuth.authorized || adminAuth.authorized) {
+      if (userAuth.flag || adminAuth.flag) {
         //User|Admin auth successful
         res.status(200).json({data: {username: user.username, email: user.email, role: user.role}, refreshedTokenMessage: res.locals.refreshedTokenMessage})      } 
       else {
-        res.status(401).json({error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause})
+        res.status(401).json({error: (adminAuth.flag) ? adminAuth.cause : userAuth.cause})
       }
     } catch (error) {
         res.status(500).json(  {error: error.message  });
@@ -76,7 +76,7 @@ export const createGroup = async (req, res) => {
       return res.status(400).json({ message: "User not found" })
 
     }
-    if (userAuth.authorized) {
+    if (userAuth.flag) {
       //User | Admin auth successful
       let name = req.body.name;
       let memberEmails = req.body.memberEmails;
@@ -154,7 +154,7 @@ export const createGroup = async (req, res) => {
 export const getGroups = async (req, res) => {
     try {
       const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-      if (adminAuth.authorized) {
+      if (adminAuth.flag) {
         //Admin auth successful
         const groups = await Group.find();
         return res.status(200).json({data:groups, refreshedTokenMessage: res.locals.refreshedTokenMessage})
@@ -191,7 +191,7 @@ export const getGroup = async (req, res) => {
       const groupAuth = verifyAuth(req, res, { authType: "Group", emails:emails})
       const adminAuth = verifyAuth(req, res, { authType: "Admin"})
 
-      if (groupAuth.authorized || adminAuth.authorized ) {
+      if (groupAuth.flag || adminAuth.flag ) {
         //User auth successful
           res.status(200).json({data: group,refreshedTokenMessage: res.locals.refreshedTokenMessage})
         } else {
@@ -235,7 +235,7 @@ export const addToGroup = async (req, res) => {
     } else {
       auth = verifyAuth(req, res, { authType: "Group", emails: emailsInGroup });
     }
-    if (auth.authorized) {
+    if (auth.flag) {
 
       for (let email of memberEmails) {
         //check string not empty
@@ -312,7 +312,7 @@ export const removeFromGroup = async (req, res) => {
       } else {
         auth = verifyAuth(req, res, { authType: "Group", emails: emailsInGroup });
       }
-      if (auth.authorized) {
+      if (auth.flag) {
         
       let firstUser = await Group.findOne({name: name});
       firstUser = firstUser.members[0];
@@ -381,7 +381,7 @@ export const deleteUser = async (req, res) => {
             return res.status(400).json({ error: "Invalid email format" });
     }
     const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-    if (adminAuth.authorized) {
+    if (adminAuth.flag) {
       //Admin auth successful
       // remove the user from his group (if the user has one)
       const user = await User.findOne({email: email});
@@ -431,7 +431,7 @@ export const deleteGroup = async (req, res) => {
       return res.status(400).json({ error: "Some Parameter is an Empty String" });
     }
     const adminAuth = verifyAuth(req, res, { authType: "Admin" });
-    if ( adminAuth.authorized) {
+    if ( adminAuth.flag) {
       //Group auth successful
       // return the number of deleted groups (in our case possible values are only 1 or 0, since name is unique)
       const n_el_deleted = await Group.deleteOne({ name: name });

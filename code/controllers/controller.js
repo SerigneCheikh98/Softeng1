@@ -10,7 +10,7 @@ import { handleDateFilterParams, handleAmountFilterParams, verifyAuth } from "./
 export const createCategory = (req, res) => {
     try {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (adminAuth.authorized) {
+        if (adminAuth.flag) {
             //Admin auth successful
             const { type, color } = req.body;
             if (!type || !color) {
@@ -42,7 +42,7 @@ export const createCategory = (req, res) => {
 export const updateCategory = async (req, res) => {
     try {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (adminAuth.authorized) {
+        if (adminAuth.flag) {
             //Admin auth successful
             // if type or color are undefined or only spaces, consider them as invalid values
             const { type, color } = req.body;
@@ -87,7 +87,7 @@ export const updateCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
     try {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (adminAuth.authorized) {
+        if (adminAuth.flag) {
             //Admin auth successful
             if (!req.body.types) {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
@@ -162,7 +162,7 @@ export const deleteCategory = async (req, res) => {
 export const getCategories = async (req, res) => {
     try {
         const simpleAuth = verifyAuth(req, res, { authType: "Simple" });
-        if (simpleAuth.authorized) {
+        if (simpleAuth.flag) {
             //User or Admin auth successful
             let data = await categories.find({})
             let filter = data.map(v => Object.assign({}, { type: v.type, color: v.color }))
@@ -211,7 +211,7 @@ export const createTransaction = async (req, res) => {
             return res.status(400).json({ message: "Amount not valid" })
         }
         const userAuth = verifyAuth(req, res, {authType: "User", username: req.params.username})
-        if (userAuth.authorized) {
+        if (userAuth.flag) {
             //User or Admin auth successful
             // create transaction
             const new_transaction = new transactions({ username, amount, type, date: new Date() });//date is also taken as default in the costructor but we insert it anyway
@@ -237,7 +237,7 @@ export const createTransaction = async (req, res) => {
 export const getAllTransactions = async (req, res) => {
     try {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (adminAuth.authorized) {
+        if (adminAuth.flag) {
             //Admin auth successful
             /**
              * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
@@ -291,7 +291,7 @@ export const getTransactionsByUser = async (req, res) => {
         if (url_user === null) {
             return res.status(400).json({ error: "User not Found." });
         }
-        if (auth.authorized) {
+        if (auth.flag) {
             //User or Admin auth successful
             let filterByDate;
             let filterByAmount;
@@ -358,7 +358,7 @@ export const getTransactionsByUserByCategory = async (req, res) => {
         if (url_category === null) {
             return res.status(400).json({ error: "Category not Found." });
         }
-        if (auth.authorized) {
+        if (auth.flag) {
             //User or Admin auth successful
             let allTransactions = [];
             transactions.aggregate([
@@ -407,7 +407,7 @@ export const getTransactionsByGroup = async (req, res) => {
         } else {
             auth = verifyAuth(req, res, { authType: "Group", emails: emails });
         }
-        if (auth.authorized) {
+        if (auth.flag) {
             let allTransactions = [];
             transactions.aggregate([
                 {
@@ -498,7 +498,7 @@ export const getTransactionsByGroupByCategory = async (req, res) => {
         } else {
             auth = verifyAuth(req, res, { authType: "Group", emails: emails });
         }
-        if (auth.authorized) {
+        if (auth.flag) {
             let allTransactions = [];
             let group = await Group.findOne({name: req.params.name});
             if (group === null) {
@@ -597,7 +597,7 @@ export const deleteTransaction = async (req, res) => {
             return res.status(400).json({ error: "Transaction not Found." });
         }
         const userAuth = verifyAuth(req, res, { authType: "User", username: username });
-        if (userAuth.authorized) {
+        if (userAuth.flag) {
             //User/Admin auth successful
             let data = await transactions.deleteOne({ _id: req.body._id });
             res.status(200).json({data: {message: "Transaction deleted"}, refreshedTokenMessage: res.locals.refreshedTokenMessage})
@@ -632,7 +632,7 @@ export const deleteTransactions = async (req, res) => {
             }
         }
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (adminAuth.authorized) {
+        if (adminAuth.flag) {
             //Admin auth successful
             for (let id of ids) {
                 await transactions.deleteOne({ _id: id });
