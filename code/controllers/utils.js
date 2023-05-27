@@ -70,15 +70,14 @@ export const handleDateFilterParams = (req) => {
 export const verifyAuth = (req, res, info) => {
     // Simple Authtype check
     const cookie = req.cookies;
-
-    if (info.authType === "Simple" && (cookie.accessToken || cookie.refreshToken) ) {
-        return { authorized: true, cause: "Authorized" }
-    }
-    if (!cookie.accessToken || !cookie.refreshToken) {
-        return { authorized: false, cause: "Unauthorized" };
-    }
-
     try {
+        if (!cookie.accessToken || !cookie.refreshToken) {
+            return { authorized: false, cause: "Unauthorized" };
+        }
+        
+        if (info.authType === "Simple" && (cookie.accessToken || cookie.refreshToken) ) {
+            return { authorized: true, cause: "Authorized" }
+        }
         
         const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
         const decodedRefreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
@@ -104,6 +103,7 @@ export const verifyAuth = (req, res, info) => {
         
         console.log('Remaining time in minutes:', remainingMinutes2);
         console.log('Remaining time in hours:', remainingHours2);
+
         if (!decodedAccessToken.username || !decodedAccessToken.email || !decodedAccessToken.role) {
             return { authorized: false, cause: "Token is missing information" }
         }
@@ -135,9 +135,7 @@ export const verifyAuth = (req, res, info) => {
     } catch (err) {
         if (err.name === "TokenExpiredError") {
             try {
-                // Access Token expired
-                const refreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY)
-                
+                const refreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
                 if ( info.authType==="User" && info.username !== refreshToken.username ) {
                     return { authorized: false, cause: "Token Expired: Mismatched users" };
                 }

@@ -2,8 +2,8 @@ import { categories, transactions } from "../models/model.js";
 import { Group, User } from "../models/User.js";
 import { handleDateFilterParams, handleAmountFilterParams, verifyAuth } from "./utils.js";
 
-/**
- * Create a new category
+/** ADMIN ONLY
+ * Create a new category 
   - Request Body Content: An object having attributes `type` and `color`
   - Response `data` Content: An object having attributes `type` and `color`
  */
@@ -13,10 +13,16 @@ export const createCategory = (req, res) => {
         if (adminAuth.authorized) {
             //Admin auth successful
             const { type, color } = req.body;
+            if (!type || !color) {
+                return res.status(400).json({ error: "Some Parameter is Missing" });
+            }
+            if (type.trim().length===0 || color.trim().length===0) {
+                return res.status(400).json({ error: "Some Parameter is an Empty String" });
+            }
             const new_categories = new categories({ type, color });
             new_categories.save()
-                .then(data => res.status(200).json({ data: { type: data.type, color: data.color } }))
-                .catch(err => { res.status(400).json({ message: "Category already exist!" }) }) //No need to crash the server
+                .then(() => res.status(200).json({data: {type: type , color: color}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
+                .catch(() => { res.status(400).json({ error: "Category already exist!" }) }) //No need to crash the server
         } else {
             res.status(401).json({ error: adminAuth.cause })
         }
@@ -25,7 +31,7 @@ export const createCategory = (req, res) => {
     }
 }
 
-/**
+/** ADMIN ONLY
  * Edit a category's type or color
   - Request Body Content: An object having attributes `type` and `color` equal to the new values to assign to the category
   - Response `data` Content: An object with parameter `message` that confirms successful editing and a parameter `count` that is equal to the count of transactions whose category was changed with the new type
@@ -39,18 +45,30 @@ export const updateCategory = async (req, res) => {
         if (adminAuth.authorized) {
             //Admin auth successful
             // if type or color are undefined or only spaces, consider them as invalid values
-            if (!req.body.type || !req.body.color || req.body.type.trim().length === 0 || req.body.color.trim().length === 0) {
-                res.status(400).json({ message: 'Invalid Values.' });
-            } else {
-                const data = await categories.findOneAndUpdate({ type: req.params.type }, { $set: { type: req.body.type, color: req.body.color } });
-                if (data === null) {
-                    res.status(400).json({ message: 'This category does not exist.' });
-                } else {
-                    // change all related transactions
-                    const updated_transactions = await transactions.updateMany({ type: req.params.type }, { type: req.body.type });
-                    res.status(200).json({ data: { count: updated_transactions.modifiedCount }, message: 'Category Edited With Success' });
-                }
+            const { type, color } = req.body;
+            if (!type || !color) {
+                return res.status(400).json({ error: "Some Parameter is Missing" });
             }
+            if (type.trim().length === 0 || color.trim().length === 0) {
+                return res.status(400).json({ error: "Some Parameter is an Empty String" });
+            } 
+            const url_type = await categories.findOne({ type: req.params.type });
+            if (url_type === null) {
+                return res.status(400).json({ error: 'This category does not exist.' });
+            }
+            const new_exists = await categories.findOne({ type: type });
+            // se url moto e {"type":"moto", "color":"red"} quindi cambio solo colore devo poterlo fare
+            if (new_exists !== null && new_exists.type !== req.params.type) {
+                return res.status(400).json({ error: 'New Category Type already exists.' });
+            }
+            const data = await categories.findOneAndUpdate({ type: req.params.type }, { $set: { type: type, color: color } });
+            /*if (data === null) {
+                res.status(400).json({ message: 'This category does not exist.' });
+            } else {*/
+            // change all related transactions
+            const updated_transactions = await transactions.updateMany({ type: req.params.type }, { type: type });
+            res.status(200).json({ data: { message: "Category edited successfully", count: updated_transactions.modifiedCount }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
+                //}
         } else {
             res.status(401).json({ error: adminAuth.cause })
         }
@@ -59,8 +77,8 @@ export const updateCategory = async (req, res) => {
     }
 }
 
-/**
- * Delete a category
+/** ADMIN ONLY
+ * Delete a category 
   - Request Body Content: An array of strings that lists the `types` of the categories to be deleted
   - Response `data` Content: An object with parameter `message` that confirms successful deletion and a parameter `count` that is equal to the count of affected transactions (deleting a category sets all transactions with that category to have `investment` as their new category)
   - Optional behavior:
@@ -71,17 +89,23 @@ export const deleteCategory = async (req, res) => {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.authorized) {
             //Admin auth successful
+            if (!req.body.types) {
+                return res.status(400).json({ error: "Some Parameter is Missing" });
+            }
             for (let type of req.body.types) {
                 //find category 
+                if (type.trim().length === 0) {
+                    return res.status(400).json({ error: "Some Parameter is an Empty String" });
+                }
                 const el_finded = await categories.findOne({ type: type });
                 if (el_finded === null) {
                     return res.status(400).json({ message: "One or more Categories do not exists" });
                 }
             }
-// MOTO, AUTO, VESPA       MOTO  => AUTO,VESPA   3>1  [ && type !== firstCat.type]
-// MOTO,AUTO,VESPA  MOTO,AUTO, => VESPA
-// MOTO,AUTO,VESPA  MOTO,AUTO,VESPA => MOTO
-//MOTO,AUTO,VESPA  MOTO,AUTO,VESPA,gigi => MOTO 
+            // MOTO, AUTO, VESPA       MOTO  => AUTO,VESPA   3>1  [ && type !== firstCat.type]
+            // MOTO,AUTO,VESPA  MOTO,AUTO, => VESPA
+            // MOTO,AUTO,VESPA  MOTO,AUTO,VESPA => MOTO
+            //MOTO,AUTO,VESPA  MOTO,AUTO,VESPA,gigi => MOTO 
 
             let count = 0;
             for (let type of req.body.types) {
@@ -96,8 +120,8 @@ export const deleteCategory = async (req, res) => {
                 if(numbCateg > req.body.types.length  ){
                     //case:  MOTO,AUTO,VESPA  MOTO,AUTO => rimane VESPA
 
-                    let prova=await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
-                    console.log("Categorie non in body "+prova+"vaffanculo")
+                    //let prova=await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
+                    //console.log("Categorie non in body "+prova+"vaffanculo")
                     
                     firstCat = await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
                     console.log("firstCat1"+firstCat);
@@ -116,9 +140,7 @@ export const deleteCategory = async (req, res) => {
                 
 
             }     
-
-            res.status(200).json({ data: { count: count }, message: 'Category Deleted With Success, ' + count.toString() + ' transactions updated' });
-            
+            res.status(200).json({data: {message: "Categories deleted", count: count}, refreshedTokenMessage: res.locals.refreshedTokenMessage})            
             
             //transazioni solo dell'utente loggato
             //res.status(200).json({ message: 'Categories Deleted With Success', count: updated_transactions.nModified });
@@ -130,8 +152,8 @@ export const deleteCategory = async (req, res) => {
     }
 }
 
-/**
- * Return all the categories
+/** ADMIN/USER
+ * Return all the categories 
   - Request Body Content: None
   - Response `data` Content: An array of objects, each one having attributes `type` and `color`
   - Optional behavior:
@@ -139,19 +161,14 @@ export const deleteCategory = async (req, res) => {
  */
 export const getCategories = async (req, res) => {
     try {
-        const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
-        if (user === null) {
-            return res.status(401).json({ error: "Invalid Cookies" });
-        }
-        const userAuth = verifyAuth(req, res, { authType: "User", username: user.username })
-        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (userAuth.authorized || adminAuth.authorized) {
+        const simpleAuth = verifyAuth(req, res, { authType: "Simple" });
+        if (simpleAuth.authorized) {
             //User or Admin auth successful
             let data = await categories.find({})
             let filter = data.map(v => Object.assign({}, { type: v.type, color: v.color }))
-            return res.status(200).json({ data: filter, message: "all categories returned" })
+            return res.status(200).json({data: filter, refreshedTokenMessage: res.locals.refreshedTokenMessage})
         } else {
-            res.status(401).json({ error: adminAuth.cause })
+            res.status(401).json({ error: simpleAuth.cause })
         }
     } catch (error) {
         res.status(500).json({ error: error.message })
@@ -159,8 +176,8 @@ export const getCategories = async (req, res) => {
 }
 
 
-/**
- * Create a new transaction made by a specific user
+/** ADMIN/USER
+ * Create a new transaction made by a specific user 
   - Request Body Content: An object having attributes `username`, `type` and `amount`
   - Response `data` Content: An object having attributes `username`, `type`, `amount` and `date`
   - Optional behavior:
@@ -168,24 +185,39 @@ export const getCategories = async (req, res) => {
  */
 export const createTransaction = async (req, res) => {
     try {
-        
-        if (req.params.username !== req.body.username ) {
+        let { username, amount, type } = req.body;
+        if (!username || !amount || !type) {
+            return res.status(400).json({ error: "Some Parameter is Missing" });
+        }
+        if (username.trim().length === 0 || amount.trim().length === 0 || type.trim().length === 0) {
+            return res.status(400).json({ error: "Some Parameter is an Empty String" });
+        }
+        //check category type
+        const category = await categories.findOne({ type: type })
+        if (!category) {
+            return res.status(400).json({ message: "Category does not exist!" })
+        }
+        // check mismatched usernames
+        if (req.params.username !== username) {
             return res.status(400).json({ error: "Wrong Usernames" });
         }
+        const user = await User.findOne({ username: username });
+        if (user === null) {
+            return res.status(400).json({ message: "User does not exist!" })
+        }
+        try {
+            amount = parseFloat(amount);
+        } catch (error) {
+            return res.status(400).json({ message: "Amount not valid" })
+        }
         const userAuth = verifyAuth(req, res, {authType: "User", username: req.params.username})
-        console.log(userAuth.authorized)
         if (userAuth.authorized) {
             //User or Admin auth successful
-            const { username, amount, type } = req.body;
-            //check category type
-            const category = await categories.findOne({ type: type })
-            if (!category) {
-                return res.status(400).json({ message: "Category does not exist!" })
-            }
             // create transaction
-            const new_transactions = new transactions({ username, amount, type, date: new Date() });//date is also taken as default in the costructor but we insert it anyway
-            new_transactions.save()
-                .then(data => res.status(200).json({ data: { username: data.username, amount: data.amount, type: data.type, date: data.date }, message: "Transaction Created" }))
+            const new_transaction = new transactions({ username, amount, type, date: new Date() });//date is also taken as default in the costructor but we insert it anyway
+            console.log(new_transaction.date);
+            new_transaction.save()
+                .then(data => res.status(200).json({data: {username: username, amount: amount, type: type, date: new_transaction.date}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
                 .catch(err => { res.status(400).json({ error: err.message }) })
         } else {
             res.status(401).json({ error: userAuth.cause })
@@ -195,8 +227,8 @@ export const createTransaction = async (req, res) => {
     }
 }
 
-/**
- * Return all transactions made by all users
+/** ADMIN ONLY
+ * Return all transactions made by all users 
   - Request Body Content: None
   - Response `data` Content: An array of objects, each one having attributes `username`, `type`, `amount`, `date` and `color`
   - Optional behavior:
@@ -221,8 +253,8 @@ export const getAllTransactions = async (req, res) => {
                 },
                 { $unwind: "$categories_info" }
             ]).then((result) => {
-                let data = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
-                res.status(200).json({ data: data });
+                let data = result.map(v => Object.assign({}, { username: v.username, type: v.type, amount: v.amount, date: v.date, color: v.categories_info.color }))
+                res.status(200).json({data: data, refreshedTokenMessage: res.locals.refreshedTokenMessage});
             }).catch(err => { res.status(400).json({ error: err.message }) })
         } else {
             return res.status(401).json({ error: adminAuth.cause})
@@ -232,8 +264,8 @@ export const getAllTransactions = async (req, res) => {
     }
 }
 
-/**
- * Return all transactions made by a specific user
+/** ADMIN(all transaction of a given user)/USER(only his transactions)
+ * Return all transactions made by a specific user 
   - Request Body Content: None
   - Response `data` Content: An array of objects, each one having attributes `username`, `type`, `amount`, `date` and `color`
   - Optional behavior:
@@ -243,13 +275,27 @@ export const getAllTransactions = async (req, res) => {
  */
 export const getTransactionsByUser = async (req, res) => {
     try {
-        const userAuth = verifyAuth(req, res, { authType: "User", username: req.params.username })
-        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (userAuth.authorized || adminAuth.authorized) {
+        //Distinction between route accessed by Admins or Regular users for functions that can be called by both
+        //and different behaviors and access rights
+        let auth;
+        let is_admin;
+        const username = req.params.username;
+        if (req.url.indexOf("/transactions/users/") >= 0) {
+            auth = verifyAuth(req, res, { authType: "Admin" });
+            is_admin = true;
+        } else {
+            auth = verifyAuth(req, res, { authType: "User", username: username });
+            is_admin = false;
+        }
+        const url_user = await User.findOne({username: username});
+        if (url_user === null) {
+            return res.status(400).json({ error: "User not Found." });
+        }
+        if (auth.authorized) {
             //User or Admin auth successful
             let filterByDate;
             let filterByAmount;
-            if (adminAuth.authorized) {
+            if (is_admin) {
                 //admin (not filtering, so all true to match in the query)
                 filterByDate = {};
                 filterByAmount = {};
@@ -272,21 +318,23 @@ export const getTransactionsByUser = async (req, res) => {
                 { $match: { $and: [filterByDate, filterByAmount] } },
                 { $unwind: "$categories_info" }
             ]).then((result) => {
-                allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
+                console.log(result);
+                allTransactions = result.map(v => Object.assign({}, { username: v.username, type: v.type, amount: v.amount, date: v.date, color: v.categories_info.color }))
+                .filter(tr => tr.username === username);
                 //Distinction between route accessed by Admins or Regular users for functions that can be called by both
                 //and different behaviors and access rights
-                res.status(200).json(allTransactions.filter(tr => tr.username === req.params.username))
+                res.status(200).json({data: allTransactions, refreshedTokenMessage: res.locals.refreshedTokenMessage})
             }).catch(error => { res.status(400).json({ error: error.message }) })
         } else {
-            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+            return res.status(401).json({ error: auth.cause })
         }
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
 }
 
-/**
- * Return all transactions made by a specific user filtered by a specific category
+/** ADMIN(all transaction of a given user)/USER(only his transactions)
+ * Return all transactions made by a specific user filtered by a specific category 
   - Request Body Content: None
   - Response `data` Content: An array of objects, each one having attributes `username`, `type`, `amount`, `date` and `color`, filtered so that `type` is the same for all objects
   - Optional behavior:
@@ -295,9 +343,25 @@ export const getTransactionsByUser = async (req, res) => {
  */
 export const getTransactionsByUserByCategory = async (req, res) => {
     try {
-        const userAuth = verifyAuth(req, res, { authType: "User", username: req.params.username })
-        const adminAuth = verifyAuth(req, res, { authType: "Admin" })
-        if (userAuth.authorized || adminAuth.authorized) {
+        let auth;
+        let is_admin;
+        const {username, category} = req.params;
+        if (req.url.indexOf("/transactions/users/") >= 0) {
+            auth = verifyAuth(req, res, { authType: "Admin" });
+            is_admin = true;
+        } else {
+            auth = verifyAuth(req, res, { authType: "User", username: username });
+            is_admin = false;
+        }
+        const url_user = await User.findOne({username: username});
+        if (url_user === null) {
+            return res.status(400).json({ error: "User not Found." });
+        }
+        const url_category = await categories.findOne({type: category});
+        if (url_category === null) {
+            return res.status(400).json({ error: "Category not Found." });
+        }
+        if (auth.authorized) {
             //User or Admin auth successful
             let allTransactions = [];
             transactions.aggregate([
@@ -311,19 +375,20 @@ export const getTransactionsByUserByCategory = async (req, res) => {
                 },
                 { $unwind: "$categories_info" }
             ]).then((result) => {
-                allTransactions = result.map(v => Object.assign({}, { username: v.username, amount: v.amount, type: v.type, color: v.categories_info.color, date: v.date }))
+                allTransactions = result.map(v => Object.assign({}, { username: v.username, type: v.type, amount: v.amount, date: v.date, color: v.categories_info.color }))
+                .filter(tr => (tr.username === req.params.username && tr.type === req.params.category))
                 // return the transactions
-                res.status(200).json(allTransactions.filter(tr => (tr.username === req.params.username && tr.type === req.params.category)))
-            }).catch(error => { res.status(400).json({ message: error }) })
+                res.status(200).json({data: allTransactions , refreshedTokenMessage: res.locals.refreshedTokenMessage})
+            }).catch(error => { res.status(400).json({ error: error }) })
         } else {
-            return res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+            return res.status(401).json({ error: auth.cause })
         }
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
 }
 
-/**
+/** ADMIN(all transaction of a given group)/USER(only his group)
  * Return all transactions made by members of a specific group
   - Request Body Content: None
   - Response `data` Content: An array of objects, each one having attributes `username`, `type`, `amount`, `date` and `color`
@@ -408,7 +473,7 @@ export const getTransactionsByGroup = async (req, res) => {
     }
 }
 
-/**
+/** ADMIN(all transaction of a given group)/USER(only his group)
  * Return all transactions made by members of a specific group filtered by a specific category
   - Request Body Content: None
   - Response `data` Content: An array of objects, each one having attributes `username`, `type`, `amount`, `date` and `color`, filtered so that `type` is the same for all objects.
@@ -498,7 +563,7 @@ export const getTransactionsByGroupByCategory = async (req, res) => {
     }
 }
 
-/**
+/** ADMIN/USER
  * Delete a transaction made by a specific user
   - Request Body Content: The `_id` of the transaction to be deleted
   - Response `data` Content: A string indicating successful deletion of the transaction
@@ -537,7 +602,7 @@ export const deleteTransaction = async (req, res) => {
     }
 }
 
-/**
+/** ADMIN
  * Delete multiple transactions identified by their ids
   - Request Body Content: An array of strings that lists the `_ids` of the transactions to be deleted
   - Response `data` Content: A message confirming successful deletion

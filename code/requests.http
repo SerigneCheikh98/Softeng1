@@ -13,6 +13,7 @@ Content-Length: 73
 
 POST /api/admin HTTP/1.1
 Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTEwODYyOCwiZXhwIjoxNjg1MTEyMjI4fQ.B8t_og0bGQDElxpH0R3ebaGJVOlNrmC5Z5gOjic-6K4;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTEwODYyOCwiZXhwIjoxNjg1NzEzNDI4fQ.nrtpl8m0EPjHEib-vxldRP3Iw-lH3fUan5-Uq5J0Aec
 Content-Type: application/json
 Content-Length: 95
 
@@ -25,8 +26,8 @@ Host: localhost:3000
 Content-Type: application/json
 Content-Length: 55
 
-{"email":"admin.ga@polito.it", "password":"secure_password"}
-//{"email": "minicucc.ga@polito.it","password":"minicucc"}
+//{"email":"admin.ga@polito.it", "password":"secure_password"}
+{"email": "minicucc.ga@polito.it","password":"minicucc"}
 //{"email":"admin.ga@polito.it", "password":"secure_password"}
 
 
@@ -36,7 +37,7 @@ GET /api/logout HTTP/1.1
 Host: localhost:3000
 Content-Type: application/json
 Content-Length: 95
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MjMyNzU5LCJleHAiOjE2ODQyMzYzNTl9.7pIiMXO_VQh0W2aKDR6avQ70Dty4HlIIY20YeMKq_8w;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MjMyNzU5LCJleHAiOjE2ODQ4Mzc1NTl9.szDQ6NwG2WXNHWULq809LfHYkP2sP_Slqe-zxNkvI-4
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1MTE1NTE3fQ.7Zhfcs-9BJdFjLwa3LDdib5QlILzXf0lRrrGxDvi6Yw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1NzE2NzE3fQ.PQ8cdUDpmO98dUqRdafSO94hrMppYdyiIyin57XAL04
 
 // ***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 // AUTHENTICATED
@@ -45,7 +46,7 @@ Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpeml
 
 GET /api/categories HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkxODYyMiwiZXhwIjoxNjg0OTIyMjIyfQ.2b1_zZfnzJ6L6k566CfVnofrrA2mIGP2bZYWY3UD1eQ;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkxODYyMiwiZXhwIjoxNjg1NTIzNDIyfQ.i3fJSKq4NYs90do3DOjtoOB5gHPPGwd5tRpYmgUQH1s
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1MTE1NTE3fQ.7Zhfcs-9BJdFjLwa3LDdib5QlILzXf0lRrrGxDvi6Yw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1NzE2NzE3fQ.PQ8cdUDpmO98dUqRdafSO94hrMppYdyiIyin57XAL04
 #Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg0NzY5MDkxfQ.N5YY0V1jDsaWpJ3ZKMigsH9RArrGr0DVOTWH1ku4niM;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg1MzcwMjkxfQ.iDLyH3mdEtMqRwVSeJjySiiBJsbHWzxvMUAq-HKMUJM
 
 
@@ -56,18 +57,23 @@ Host: localhost:3000
 Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQzMzg4MjZ9.m4mNtCHFB1QDB_GHXFyoBhG0k43mJcWdorztXGXs9Qc;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdXJpemlvLm1vQHBvbGl0by5pdCIsImlkIjoiNjQ2MjQ1YTAwNjQ2NDI0OTQ1YTc3ZjdjIiwidXNlcm5hbWUiOiJtYXVyaXppbyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0MzM1MjI2LCJleHAiOjE2ODQ5NDAwMjZ9.CV2kAaIVRH_KPyiVwgLXqNDFMjRDebI856fPGokQGyg
 
 ### CreateTransaction
-POST /api/users/gae/transactions HTTP/1.1
+POST /api/users/Minicucc/transactions HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkzNDc2NSwiZXhwIjoxNjg0OTM4MzY1fQ.Ujg6EFmb_nm2J-UdOLluHdR-4kl9CFZ4reZUVnCHpHA;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkzNDc2NSwiZXhwIjoxNjg1NTM5NTY1fQ.30wANgRCAmdVBX1DFoPF61nRZtWbCfnim4JuVMyF2DI
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg1MTIxODk1LCJleHAiOjE2ODUxMjU0OTV9.6AnmlJFqRdMl7Rtcoe1jNF3RISdtPzsayvW3DNQbfcw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg1MTIxODk1LCJleHAiOjE2ODU3MjY2OTV9.NbO48fdVFLj4e5jLST-KqOKFrcFReUB6r0YmVC_dPIA
 Content-Type: application/json
 
-{"username": "gae", "type": "admin", "amount":"-1"}
+{"username": "Minicucc", "type": "gigi", "amount":"1"}
 
-### GetTransactionByUser
-
-GET /api/users/Minicucc/transactions?from=2023-05-10&upTo=2023-05-30&min=2000&max=26000 HTTP/1.1
+### GetTransactionByUser (User Route)
+GET /api/users/Minicucc/transactions?from=2023-05-22&upTo=2023-05-30&min=0&max=26000 HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0NzcwNTAxLCJleHAiOjE2ODQ3NzQxMDF9.-uLd4A7sX10dXCI4VNzzG-pCDCsYZEZMJThoKaqb5sc;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg0NzcwNTAxLCJleHAiOjE2ODUzNzUzMDF9.i9jtJtMY-0bQ7aSi528cyvO2XWLOcLkwGrFiFHt5sx8
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg1MTkzMDY0LCJleHAiOjE2ODUxOTY2NjR9.LocLi7oztTISO-zjRkpx35ldQ_zZ3rW2YeLx2RwD26g;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg1MTkzMDY0LCJleHAiOjE2ODU3OTc4NjR9.wJl5NRDbD-Q5UF6FSkvzxDpPJcZqC2SMZvxjtQSBUrs
+
+### GetTransactionByUser (Admin Route)
+GET /api/transactions/users/Minicucc?from=2023-05-28&upTo=2023-05-30&min=5&max=26000 HTTP/1.1
+Host: localhost:3000
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg1MTIyMTMzLCJleHAiOjE2ODUxMjU3MzN9.EAXjmeB4IfCaOmgWvw-Gpt5ZzTxUFPQkCq484JKRdLQ;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pbmljdWNjLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ0YmQwMjEzZWU1ZjQ1MGM4NDEzODg2IiwidXNlcm5hbWUiOiJNaW5pY3VjYyIsInJvbGUiOiJSZWd1bGFyIiwiaWF0IjoxNjg1MTIyMTMzLCJleHAiOjE2ODU3MjY5MzN9.OIbw9rlWYEMEi9S8v9cXLVZTWI-1OhGI7V8TziqilrU
+
 
 ### DeleteTransaction
 
@@ -134,36 +140,36 @@ Content-Type: application/json
 
 POST /api/categories HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkyODIzMywiZXhwIjoxNjg0OTI4NTMzfQ.uqXMR_dPqyzbpfF7y_lc8JbM-8UIn-quEIrytbyvuBM;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkyODIzMywiZXhwIjoxNjg1NTMzMDMzfQ.prqIXRmWRNRa-cGekb6QHDhToGwp31X6w7_AqHSKsk0
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1MTE1NTE3fQ.7Zhfcs-9BJdFjLwa3LDdib5QlILzXf0lRrrGxDvi6Yw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1NzE2NzE3fQ.PQ8cdUDpmO98dUqRdafSO94hrMppYdyiIyin57XAL04
 Content-Type: application/json
 Content-Length: 34
 
-{"type":"gigi", "color":"black"}
+{"type":"moto", "color":"black"}
 
 ### updateCategory
 
-PATCH /api/categories/vespa HTTP/1.1
+PATCH /api/categories/auto HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg0NzkxOTUzfQ.-fe8Ni2pDtJ6nxG6hKDiyKNQh75dMbAipNiKMv7mQYg;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc4ODM1MywiZXhwIjoxNjg1MzkzMTUzfQ.zE4I5FQ-h7tLYTsenhAxFok62MLe20IawF-tzfdhjLs
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1MTE1NTE3fQ.7Zhfcs-9BJdFjLwa3LDdib5QlILzXf0lRrrGxDvi6Yw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1NzE2NzE3fQ.PQ8cdUDpmO98dUqRdafSO94hrMppYdyiIyin57XAL04
 Content-Type: application/json
 
-{"type":"vespaa", "color":"black"}
+{"type":"bicicletta", "color":"red"}
 
 
 ### deleteCategory
 
 DELETE /api/categories HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkyODIzMywiZXhwIjoxNjg0OTI4NTMzfQ.uqXMR_dPqyzbpfF7y_lc8JbM-8UIn-quEIrytbyvuBM;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkyODIzMywiZXhwIjoxNjg1NTMzMDMzfQ.prqIXRmWRNRa-cGekb6QHDhToGwp31X6w7_AqHSKsk0
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1MTE1NTE3fQ.7Zhfcs-9BJdFjLwa3LDdib5QlILzXf0lRrrGxDvi6Yw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1NzE2NzE3fQ.PQ8cdUDpmO98dUqRdafSO94hrMppYdyiIyin57XAL04
 Content-Type: application/json
 
-{"types" :["auto","scuola","vespa","gigi"] }
+{"types" :["gigi","moto"] }
 
 ### getAllTransactions
 
 GET /api/transactions HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkxODYyMiwiZXhwIjoxNjg0OTIyMjIyfQ.2b1_zZfnzJ6L6k566CfVnofrrA2mIGP2bZYWY3UD1eQ;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ZGI2MjFjNGNhOWM0OGQ5MTdlY2E2IiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDkxODYyMiwiZXhwIjoxNjg1NTIzNDIyfQ.i3fJSKq4NYs90do3DOjtoOB5gHPPGwd5tRpYmgUQH1s
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1MTE1NTE3fQ.7Zhfcs-9BJdFjLwa3LDdib5QlILzXf0lRrrGxDvi6Yw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1NzE2NzE3fQ.PQ8cdUDpmO98dUqRdafSO94hrMppYdyiIyin57XAL04
 ### deleteTransactions
 
 DELETE /api/transactions HTTP/1.1
@@ -174,9 +180,9 @@ Content-Type: application/json
 
 ### getTransactionsByUser
 
-GET /api/transactions/users/maurizio HTTP/1.1
+GET /api/transactions/users/Minicucc HTTP/1.1
 Host: localhost:3000
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg0NzY5MDkxfQ.N5YY0V1jDsaWpJ3ZKMigsH9RArrGr0DVOTWH1ku4niM;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NDc2NTQ5MSwiZXhwIjoxNjg1MzcwMjkxfQ.iDLyH3mdEtMqRwVSeJjySiiBJsbHWzxvMUAq-HKMUJM
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1MTE1NTE3fQ.7Zhfcs-9BJdFjLwa3LDdib5QlILzXf0lRrrGxDvi6Yw;refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluLmdhQHBvbGl0by5pdCIsImlkIjoiNjQ2ODlmZmFhODBiNDg5YzNlODBiMWNkIiwidXNlcm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4NTExMTkxNywiZXhwIjoxNjg1NzE2NzE3fQ.PQ8cdUDpmO98dUqRdafSO94hrMppYdyiIyin57XAL04
 
 
 ### getTransactionsByUserByCategory

@@ -13,10 +13,20 @@ import { verifyAuth } from './utils.js';
 export const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        const existingUserMail = await User.findOne({ email: req.body.email });
-        const existingUserUsername = await User.findOne({ username: req.body.username });
+        if (!username || !email || !password) {
+            return res.status(400).json({ error: "Some Parameter is Missing" });
+        }
+        if (username.trim().length===0 || email.trim().length===0 || password.trim().length===0) {
+            return res.status(400).json({ error: "Some Parameter is an Empty String" });
+        }
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (regex.test(email) === false) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+        const existingUserMail = await User.findOne({ email: email });
+        const existingUserUsername = await User.findOne({ username: username });
         if (existingUserMail || existingUserUsername) {
-            return res.status(400).json({ message: "you are already registered" });
+            return res.status(400).json({ error: "already existing user" });
         }
         const hashedPassword = await bcrypt.hash(password, 12);
         const newUser = await User.create({
@@ -24,9 +34,9 @@ export const register = async (req, res) => {
             email,
             password: hashedPassword,
         });
-        res.status(200).json('user added succesfully');
-    } catch (err) {
-        res.status(400).json(err);
+        res.status(200).json({data: {message: "User added successfully"}});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -39,21 +49,40 @@ export const register = async (req, res) => {
  */
 export const registerAdmin = async (req, res) => {
     try {
-        const { username, email, password } = req.body
-        const existingUser = await User.findOne({ email: req.body.email });
-        if (existingUser) return res.status(400).json({ message: "you are already registered" });
-        const hashedPassword = await bcrypt.hash(password, 12);
-        const newUser = await User.create({
-            username,
-            email,
-            password: hashedPassword,
-            role: "Admin"
-        });
-        res.status(200).json('admin added succesfully');
-    } catch (err) {
-        res.status(500).json(err);
+        const adminAuth = verifyAuth(req, res, { authType: "Admin" });
+        if (adminAuth.authorized) {
+            //Admin auth successful
+            const { username, email, password } = req.body;
+            if (!username || !email || !password) {
+                return res.status(400).json({ error: "Some Parameter is Missing" });
+            }
+            if (username.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0) {
+                return res.status(400).json({ error: "Some Parameter is an Empty String" });
+            }
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (regex.test(email) === false) {
+                return res.status(400).json({ error: "Invalid email format" });
+            }
+            const existingUserMail = await User.findOne({ email: email });
+            const existingUserUsername = await User.findOne({ username: username });
+            if (existingUserMail || existingUserUsername) {
+                return res.status(400).json({ error: "already existing user" });
+            }
+            const hashedPassword = await bcrypt.hash(password, 12);
+            const newUser = await User.create({
+                username,
+                email,
+                password: hashedPassword,
+                role: "Admin"
+            });
+            res.status(200).json('admin added succesfully');
+        } else {
+            // Da chiedere
+            res.status(401).json({ error: "Not Authorized" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
 }
 
 /**
@@ -65,13 +94,26 @@ export const registerAdmin = async (req, res) => {
     - error 400 is returned if the supplied password does not match with the one in the database
  */
 export const login = async (req, res) => {
-    const { email, password } = req.body
-    const cookie = req.cookies
-    const existingUser = await User.findOne({ email: email })
-    if (!existingUser) return res.status(400).json('please you need to register')
     try {
+        const { email, password } = req.body
+        if (!email || !password) {
+            return res.status(400).json({ error: "Some Parameter is Missing" });
+        }
+        if (email.trim().length === 0 || password.trim().length === 0) {
+            return res.status(400).json({ error: "Some Parameter is an Empty String" });
+        }
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (regex.test(email) === false) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+        const existingUser = await User.findOne({ email: email });
+        if (!existingUser) {
+            return res.status(400).json('please you need to register');
+        }
         const match = await bcrypt.compare(password, existingUser.password)
-        if (!match) return res.status(400).json('wrong credentials')
+        if (!match) {
+            return res.status(400).json('wrong credentials');
+        }
         //CREATE ACCESSTOKEN
         const accessToken = jwt.sign({
             email: existingUser.email,
@@ -91,9 +133,9 @@ export const login = async (req, res) => {
         const savedUser = await existingUser.save()
         res.cookie("accessToken", accessToken, { httpOnly: true, domain: "localhost", path: "/api", maxAge: 60 * 60 * 1000, sameSite: "none", secure: true })
         res.cookie('refreshToken', refreshToken, { httpOnly: true, domain: "localhost", path: '/api', maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'none', secure: true })
-        res.status(200).json({ data: { accessToken: accessToken, refreshToken: refreshToken } })
+        res.status(200).json({data: {accessToken: accessToken, refreshToken: refreshToken}})
     } catch (error) {
-        res.status(400).json(error)
+        res.status(500).json({ error: error.message });
     }
 }
 
@@ -105,18 +147,26 @@ export const login = async (req, res) => {
   - Optional behavior:
     - error 400 is returned if the user does not exist
  */
-export const logout = async (req, res) => {
-    const refreshToken = req.cookies.refreshToken
-    if (!refreshToken) return res.status(400).json("user not found")
-    const user = await User.findOne({ refreshToken: refreshToken })
-    if (!user) return res.status(400).json('user not found')
+export const logout = async (req, res) => {    
     try {
-        user.refreshToken = null
-        res.cookie("accessToken", "", { httpOnly: true, path: '/api', maxAge: 0, sameSite: 'none', secure: true })
-        res.cookie('refreshToken', "", { httpOnly: true, path: '/api', maxAge: 0, sameSite: 'none', secure: true })
-        const savedUser = await user.save()
-        res.status(200).json('logged out')
+        const simpleAuth = verifyAuth(req, res, { authType: "Simple" });
+        if (simpleAuth.authorized) {
+            const refreshToken = req.cookies.refreshToken;
+            //if (!refreshToken) return res.status(400).json("user not found");
+            const user = await User.findOne({ refreshToken: refreshToken })
+            if (!user) {
+                return res.status(400).json('user not found');
+            }
+            user.refreshToken = null
+            res.cookie("accessToken", "", { httpOnly: true, path: '/api', maxAge: 0, sameSite: 'none', secure: true })
+            res.cookie('refreshToken', "", { httpOnly: true, path: '/api', maxAge: 0, sameSite: 'none', secure: true })
+            const savedUser = await user.save()
+            res.status(200).json({data: {message: "User logged out"}})
+        } else {
+            // not have refresh token in the cookies
+            return res.status(400).json('refresh token not in the cookies');
+        }
     } catch (error) {
-        res.status(400).json(error)
+        res.status(500).json({ error: error.message });
     }
 }
