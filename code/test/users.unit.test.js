@@ -135,7 +135,7 @@ describe("getUser", () => {
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  /*test("should retrieve the requested username by Admin", async () => {
+  test("should retrieve the requested username by Admin", async () => {
     const mockReq = {
       params: {username: "edith"},
     }
@@ -157,7 +157,7 @@ describe("getUser", () => {
     expect(User.findOne).toHaveBeenCalled()
     expect(mockRes.status).toHaveBeenCalledWith(200)
     expect(mockRes.json).toHaveBeenCalledWith(response)
-  })*/
+  })
 
   test("should return empty list if user not found", async () => { 
     const mockReq = {
