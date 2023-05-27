@@ -127,7 +127,7 @@ export const verifyAuth = (req, res, info) => {
                     in_group = true;
                 }
             }
-            if (in_group === false && decodedAccessToken.role !== 'Admin') {
+            if (in_group === false) {
                 return { authorized: false, cause: "Group: user not in group" };
             }
         }
