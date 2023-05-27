@@ -23,40 +23,93 @@ beforeEach(() => {
   User.findOne.mockClear()
 });
 
+const VerifyAuthmodule = require('../controllers/utils');
+
+/**
+ * - Request Parameters: None
+ * - Request Body Content: None
+ * - Response `data` Content: An array of objects, each one having attributes `username`, `email` and `role`
+ *    - Example: `res.status(200).json({data: [{username: "Mario", email: "mario.red@email.com"}, {username: "Luigi", email: "luigi.red@email.com"}, {username: "admin", email: "admin@email.com"} ], refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
 describe("getUsers", () => {
-  test.skip("should return empty list if there are no users", async () => {
+  test("should return empty list if there are no users", async () => {
+    const mockReq = {}
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+    
+    const res = { authorized: true, cause: "Authorized" };
+    const response = {data: [], refreshedTokenMessage: undefined};
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
     //any time the `User.find()` method is called jest will replace its actual implementation with the one defined below
     jest.spyOn(User, "find").mockImplementation(() => [])
-    const response = await request(app)
-      .get("/api/users")
+    
+    await getUsers(mockReq, mockRes)
 
-    expect(response.status).toBe(200)
-    expect(response.body).toEqual([])
+    expect(User.find).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  test.skip("should retrieve list of all users", async () => {
-    const retrievedUsers = [{ username: 'test1', email: 'test1@example.com', password: 'hashedPassword1' }, { username: 'test2', email: 'test2@example.com', password: 'hashedPassword2' }]
-    jest.spyOn(User, "find").mockImplementation(() => retrievedUsers)
-    const response = await request(app)
-      .get("/api/users")
+  test("should retrieve list of all users", async () => {
+    const mockReq = {}
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
 
-    expect(response.status).toBe(200)
-    expect(response.body).toEqual(retrievedUsers)
+    const retrievedUsers = [
+      { username: 'test1', email: 'test1@example.com', role: 'Regular' }, 
+      { username: 'test2', email: 'test2@example.com', role: 'Regular' }
+    ]
+    const res = { authorized: true, cause: "Authorized" };
+    const response = {data: retrievedUsers, refreshedTokenMessage: undefined};
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(User, "find").mockImplementation(() => retrievedUsers)
+
+    await getUsers(mockReq, mockRes)
+
+    expect(User.find).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should return error if not authorized", async () => {
+    const mockReq = {}
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = { authorized: false, cause: "Admin: Mismatched role" };
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await getUsers(mockReq, mockRes)
+
+    expect(User.find).not.toHaveBeenCalled()
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith( {error: res.cause} )
   })
 })
 
-/*
-- Request Parameters: A string equal to the `username` of the involved user
-  - Example: `/api/users/Mario`
-- Request Body Content: None
-- Response `data` Content: An object having attributes `username`, `email` and `role`.
-  - Example: `res.status(200).json({data: {username: "mario", email: "mario.red@email.com", role: "Regular"}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
-- Returns a 400 error if the username passed as the route parameter does not represent a user in the database
-- Returns a 401 error if called by an authenticated user who is neither the same user as the one in the route parameter (authType = User) nor an admin (authType = Admin)
+/**
+ * - Request Parameters: A string equal to the `username` of the involved user
+ *    - Example: `/api/users/Mario`
+ * - Request Body Content: None
+ * - Response `data` Content: An object having attributes `username`, `email` and `role`.
+ *    - Example: `res.status(200).json({data: {username: "mario", email: "mario.red@email.com", role: "Regular"}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 400 error if the username passed as the route parameter does not represent a user in the database
+ * - Returns a 401 error if called by an authenticated user who is neither the same user as the one in the route parameter (authType = User) nor an admin (authType = Admin)
 */
 describe("getUser", () => {
-  const VerifyAuthmodule = require('../controllers/utils');
-
   test("should retrieve the requested username by User", async () => {
     const mockReq = {
       params: {username: "maurizio"},
@@ -142,7 +195,6 @@ describe("getUser", () => {
     const response = { authorized: false, cause: "User: Mismatched users" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => response) 
-    jest.spyOn(User, "findOne").mockImplementation(() => {})
 
     await getUser(mockReq, mockRes)
 
