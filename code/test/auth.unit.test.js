@@ -274,7 +274,6 @@ describe('login', () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
     test('User Login with not all necessary attributes, should return 400', async () => {
-        process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
                 password: "securePass"
@@ -287,33 +286,8 @@ describe('login', () => {
             locals: jest.fn(),
             cookie: jest.fn(),
         }
-
-        const existingUser = {
-            email: "mario.red@email.com",
-            id: '6429bef916d9643d863aa7b7',
-            username: "Mario",
-            role: "Regular",
-            password: "securePass",
-            refreshToken: '',
-            save: jest.fn().mockResolvedValue(null)
-        }
-        //CREATE ACCESSTOKEN
-        const accessToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '1h' })
-        //CREATE REFRESH TOKEN
-        const refreshToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '7d' })
-
+        
         const response = { error: "Some Parameter is Missing" };
-        //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
 
         await login(mockReq, mockRes)
 
@@ -321,7 +295,6 @@ describe('login', () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
     test('User Login with at least one of the parameters in the request body as an empty string, should return 400', async () => {
-        process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
                 email: " ",
@@ -336,32 +309,7 @@ describe('login', () => {
             cookie: jest.fn(),
         }
 
-        const existingUser = {
-            email: "mario.red@email.com",
-            id: '6429bef916d9643d863aa7b7',
-            username: "Mario",
-            role: "Regular",
-            password: "securePass",
-            refreshToken: '',
-            save: jest.fn().mockResolvedValue(null)
-        }
-        //CREATE ACCESSTOKEN
-        const accessToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '1h' })
-        //CREATE REFRESH TOKEN
-        const refreshToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '7d' })
-
         const response = { error: "Some Parameter is an Empty String" };
-        //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
 
         await login(mockReq, mockRes)
 
@@ -369,7 +317,6 @@ describe('login', () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
     test('User Login with the email not in a valid format, should return 400', async () => {
-        process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
                 email: "mario.redemail.com",
@@ -384,32 +331,7 @@ describe('login', () => {
             cookie: jest.fn(),
         }
 
-        const existingUser = {
-            email: "mario.red@email.com",
-            id: '6429bef916d9643d863aa7b7',
-            username: "Mario",
-            role: "Regular",
-            password: "securePass",
-            refreshToken: '',
-            save: jest.fn().mockResolvedValue(null)
-        }
-        //CREATE ACCESSTOKEN
-        const accessToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '1h' })
-        //CREATE REFRESH TOKEN
-        const refreshToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '7d' })
-
         const response = { error: "Invalid email format" };
-        //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
 
         await login(mockReq, mockRes)
 
@@ -417,7 +339,6 @@ describe('login', () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
     test('User Login with the email in the request body that does not identify a user in database, should return 400', async () => {
-        process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
                 email: "mario.red@email.com",
@@ -431,30 +352,6 @@ describe('login', () => {
             locals: jest.fn(),
             cookie: jest.fn(),
         }
-
-        const existingUser = {
-            email: "mario.red@email.com",
-            id: '6429bef916d9643d863aa7b7',
-            username: "Mario",
-            role: "Regular",
-            password: "securePass",
-            refreshToken: '',
-            save: jest.fn().mockResolvedValue(null)
-        }
-        //CREATE ACCESSTOKEN
-        const accessToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '1h' })
-        //CREATE REFRESH TOKEN
-        const refreshToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '7d' })
 
         const response = { error: 'please you need to register' };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
@@ -467,7 +364,6 @@ describe('login', () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
     test('User Login with the password that does not match with the one in the database, should return 400', async () => {
-        process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
                 email: "mario.red@email.com",
@@ -491,20 +387,6 @@ describe('login', () => {
             refreshToken: '',
             save: jest.fn().mockResolvedValue(null)
         }
-        //CREATE ACCESSTOKEN
-        const accessToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '1h' })
-        //CREATE REFRESH TOKEN
-        const refreshToken = jwt.sign({
-            email: existingUser.email,
-            id: existingUser.id,
-            username: existingUser.username,
-            role: existingUser.role
-        }, process.env.ACCESS_KEY, { expiresIn: '7d' })
 
         const response = {error: 'wrong credentials' };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
@@ -521,8 +403,7 @@ describe('login', () => {
 });
 
 describe('logout', () => {
-    test('User Logout, should logout with success', async () => {
-        
+    test('User Logout, should logout with success', async () => { 
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             cookies: {
@@ -561,7 +442,6 @@ describe('logout', () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
     test('User Logout with no refresh token in the request, should return with 400', async () => {
-        
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             cookies: {
@@ -587,7 +467,6 @@ describe('logout', () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
     test('User Logout with the refresh token that does not represent a user in the database, should return with 400', async () => {
-        
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             cookies: {
