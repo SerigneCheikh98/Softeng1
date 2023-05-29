@@ -108,11 +108,11 @@ export const login = async (req, res) => {
         }
         const existingUser = await User.findOne({ email: email });
         if (!existingUser) {
-            return res.status(400).json('please you need to register');
+            return res.status(400).json({ error: 'please you need to register' });
         }
         const match = await bcrypt.compare(password, existingUser.password)
         if (!match) {
-            return res.status(400).json('wrong credentials');
+            return res.status(400).json({error: 'wrong credentials' });
         }
         //CREATE ACCESSTOKEN
         const accessToken = jwt.sign({
@@ -155,7 +155,7 @@ export const logout = async (req, res) => {
             //if (!refreshToken) return res.status(400).json("user not found");
             const user = await User.findOne({ refreshToken: refreshToken })
             if (!user) {
-                return res.status(400).json('user not found');
+                return res.status(400).json({ error: 'user not found' });
             }
             user.refreshToken = null
             res.cookie("accessToken", "", { httpOnly: true, path: '/api', maxAge: 0, sameSite: 'none', secure: true })
@@ -164,7 +164,7 @@ export const logout = async (req, res) => {
             res.status(200).json({data: {message: "User logged out"}})
         } else {
             // not have refresh token in the cookies
-            return res.status(400).json('refresh token not in the cookies');
+            return res.status(400).json({ error: 'refresh token not in the cookies' });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
