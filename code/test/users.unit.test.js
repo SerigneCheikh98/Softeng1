@@ -1,8 +1,9 @@
 import request from 'supertest';
 import { app } from '../app';
-import { User } from '../models/User.js';
+import { Group,User } from '../models/User.js';
 import { getUsers, getUser  } from '../controllers/users';
 import { verifyAuth } from '../controllers/utils';
+import { response } from 'express';
 
 /**
  * In order to correctly mock the calls to external modules it is necessary to mock them using the following line.
@@ -21,6 +22,8 @@ beforeEach(() => {
   User.find.mockClear()
   //additional `mockClear()` must be placed here
   User.findOne.mockClear()
+  Group.create.mockClear()
+  Group.find.mockClear()
 });
 
 const VerifyAuthmodule = require('../controllers/utils');
@@ -41,7 +44,7 @@ describe("getUsers", () => {
       locals: jest.fn(),
     }
     
-    const res = { authorized: true, cause: "Authorized" };
+    const res = { flag: true, cause: "Authorized" };
     const response = {data: [], refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -67,7 +70,7 @@ describe("getUsers", () => {
       { username: 'test1', email: 'test1@example.com', role: 'Regular' }, 
       { username: 'test2', email: 'test2@example.com', role: 'Regular' }
     ]
-    const res = { authorized: true, cause: "Authorized" };
+    const res = { flag: true, cause: "Authorized" };
     const response = {data: retrievedUsers, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -88,7 +91,7 @@ describe("getUsers", () => {
       locals: jest.fn(),
     }
 
-    const res = { authorized: false, cause: "Admin: Mismatched role" };
+    const res = { flag: false, cause: "Admin: Mismatched role" };
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
 
     await getUsers(mockReq, mockRes)
@@ -122,7 +125,7 @@ describe("getUser", () => {
     }
    
     const retrieveUser = {username: 'maurizio', email: 'maurizio.mo@polito.it', role: 'Regular'};
-    const res = { authorized: true, cause: "Authorized" };
+    const res = { flag: true, cause: "Authorized" };
     const response = {data: retrieveUser, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -146,7 +149,7 @@ describe("getUser", () => {
     }
 
     const retrieveUser = {username: 'edith', email: 'edith.ra@polito.it', role: 'Regular'};
-    const res = { authorized: true, cause: "Authorized" };
+    const res = { flag: true, cause: "Authorized" };
     const response = {data: retrieveUser, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res) 
@@ -169,7 +172,7 @@ describe("getUser", () => {
       locals: jest.fn(),
     }
 
-    const res = { authorized: true, cause: "Authorized" };
+    const res = { flag: true, cause: "Authorized" };
     const response = { message: "User not found" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res) 
@@ -192,7 +195,7 @@ describe("getUser", () => {
       locals: jest.fn(),
     }
 
-    const response = { authorized: false, cause: "User: Mismatched users" };
+    const response = { flag: false, cause: "User: Mismatched users" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => response) 
 
@@ -205,9 +208,151 @@ describe("getUser", () => {
   })
 })
 
-describe("createGroup", () => { })
+describe("createGroup", () => { 
+  // expected behaviour for simplest case
+  test("should return a group object, with empty array for members already in group and for members not found", async () => {
+    const mockReq = {
+      params: {name: "testgroup1", memberEmails: ["notingroup1@example.com", "notingroup2@example.com", "notingroup3@example.com" ]}
+    }
 
-describe("getGroups", () => { })
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+
+    const returnedGroupObject = {name: "testgroup1", members: ["notingroup1@example.com", "notingroup2@example.com", "notingroup3@example.com" ]}
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: {group: returnedGroupObject, membersNotFound: [], alreadyInGroup: []}}
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(Group, "create").mockImplementation(() => returnedGroupObject)
+
+    await createGroup(mockReq, mockRes)
+
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+
+  })
+
+  test("should return a group object, with non-empty array for members already in group and for members not found", async () => {
+    const mockReq = {
+      params: {name: "testgroup1", memberEmails: ["notingroup@example.com", "alreadyingroup@example.com", "notfound@example.com" ]}
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+
+    const returnedGroupObject = {name: "testgroup1", members: ["notingroup1@example.com"]}
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: {group: returnedGroupObject, membersNotFound: ["notfound@example.com"], alreadyInGroup: ["alreadyingroup@example.com"]}}
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(Group, "create").mockImplementation(() => returnedGroupObject)
+
+    await createGroup(mockReq, mockRes)
+
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if there is already a group with the same name", async () => {
+    const mockReq = {
+      params: {name: "testgroup1", memberEmails: ["test1@example.com", "test2@example.com", "test2@example.com" ]}
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: {error: "Group already exists"}}
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await createGroup(mockReq, mockRes)
+
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if all the member emails do not exist or are already in a group", async () => {
+    const mockReq = {
+      params: {name: "testgroup1", memberEmails: ["notexists@example.com", "alreadyingroup1@example.com", "alreadyingroup2@example.com" ]}
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: { error: "All memberEmails does not exist or Already in Group" }}
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await createGroup(mockReq, mockRes)
+
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  // TODO authentication tests
+})
+
+describe("getGroups", () => { 
+  test("should return empty list if there are no groups", async () => {
+    const mockReq = {}
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: [], refreshedTokenMessage: undefined}; // refreshedTokenMessage is to be handled?
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(Group, "find").mockImplementation(() => [])
+
+    await getGroups(mockReq, mockRes)
+
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should retrieve list of all groups", async () => {
+    const mockReq = {}
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const retrievedGroups = [
+      { group: 'testgroup1', members: ["test1@example.com", "test2@example.com"]}, 
+      { group: 'testgroup2', members: ["test3@example.com", "test4@example.com"]}
+    ]
+
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: retrievedUsers, refreshedTokenMessage: undefined};
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(Group, "find").mockImplementation(() => retrievedGroups)
+
+    await getGroups(mockReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  // TODO authentication tests
+})
 
 describe("getGroup", () => { })
 
