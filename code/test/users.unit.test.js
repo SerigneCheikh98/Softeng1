@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { app } from '../app';
-import { User } from '../models/User.js';
+import { Group,User } from '../models/User.js';
 import { getUsers, getUser  } from '../controllers/users';
 import { verifyAuth } from '../controllers/utils';
 import { response } from 'express';
