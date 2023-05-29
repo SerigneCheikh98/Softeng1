@@ -11,35 +11,37 @@ import jwt from 'jsonwebtoken'
 export const handleDateFilterParams = (req) => {
         const { from, upTo, date } = req;
          
-            
         if (date) {
-
-            if(new Date(date) == "Invalid Date")
-                throw ("Date not valid");
             if (from || upTo) {
                 throw ("Unauthorized query parameters");
             }
+            if(new Date(date) == "Invalid Date")
+                throw ("Date not valid");
             // filter by date
             let StartDateFilter = new Date(`${date}T00:00:00.000Z`);
-            let EndDateFilter = new Date(`${date}T23:59:59.999Z`);
+            let EndDateFilter = new Date(`${date}T23:59:59.000Z`);
             return { date: { $gte: StartDateFilter, $lte: EndDateFilter } };
         }
         else {
-            if(from && upTo){
-            if(new Date(from) == "Invalid Date"|| new Date(upTo) == "Invalid Date")
-                throw ("From or upTo not valid");
-            }   
             if (from && !upTo) {  //filter only by 'from' parameter
-                let fromDateFilter = new Date(`${from}T00:00:00.000Z`);
-                return { date: { $gte: fromDateFilter } };
+                if(new Date(from) == "Invalid Date")
+                    throw ("From or upTo not valid");
+                else{
+                    let fromDateFilter = new Date(`${from}T00:00:00.000Z`);
+                    return { date: { $gte: fromDateFilter } };
+                }
             }
             else if (upTo && !from) { //filter only by 'upTo' parameter
-                let upToDateFilter = new Date(`${upTo}T23:59:59.999Z`);
+                if(new Date(upTo) == "Invalid Date")
+                    throw ("From or upTo not valid");
+                let upToDateFilter = new Date(`${upTo}T23:59:59.000Z`);
                 return { date: { $lte: upToDateFilter } };
             }
             else if (from && upTo) { //filter by 'from' and 'upTo' parameter
+                if(new Date(from) == "Invalid Date"|| new Date(upTo) == "Invalid Date")
+                    throw ("From or upTo not valid");
                 let fromDateFilter = new Date(`${from}T00:00:00.000Z`);
-                let upToDateFilter = new Date(`${upTo}T23:59:59.999Z`);
+                let upToDateFilter = new Date(`${upTo}T23:59:59.000Z`);
 
                 return { date: { $gte: fromDateFilter, $lte: upToDateFilter } };
             }
@@ -82,14 +84,13 @@ export const verifyAuth = (req, res, info) => {
         if (!cookie.accessToken || !cookie.refreshToken) {
             return { flag: false, cause: "Unauthorized" };
         }
-        
-        if (info.authType === "Simple" && (cookie.accessToken || cookie.refreshToken) ) {
-            return { flag: true, cause: "Authorized" }
-        }
-        
         const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
         const decodedRefreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
+        if (info.authType === "Simple" && (decodedAccessToken.accessToken || decodedRefreshToken.refreshToken) ) {
+            return { flag: true, cause: "Authorized" }
+        }
 
+        /*
         const currentTime2 = Date.now();
         const remainingTime2 = decodedAccessToken.exp*1000 - currentTime2;
         
@@ -111,7 +112,7 @@ export const verifyAuth = (req, res, info) => {
         
         console.log('Remaining time in minutes:', remainingMinutes2);
         console.log('Remaining time in hours:', remainingHours2);
-
+*/
         if (!decodedAccessToken.username || !decodedAccessToken.email || !decodedAccessToken.role) {
             return { flag: false, cause: "Token is missing information" }
         }
@@ -169,7 +170,7 @@ export const verifyAuth = (req, res, info) => {
                 }, process.env.ACCESS_KEY, { expiresIn: '1h' })
                 res.cookie('accessToken', newAccessToken, { httpOnly: true, path: '/api', maxAge: 60 * 60 * 1000, sameSite: 'none', secure: true })
                 res.locals.refreshedTokenMessage= 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls'
-                const currentTime2 = Date.now();
+                /*const currentTime2 = Date.now();
                 const axxx = jwt.verify(newAccessToken,process.env.ACCESS_KEY)
                 const remainingTime2 = axxx.exp*1000 - currentTime2;
                 
@@ -190,7 +191,7 @@ export const verifyAuth = (req, res, info) => {
                 const remainingHours2= Math.floor(remainingTime / 3600000);
                 
                 console.log('Catch:Remaining time in minutes:', remainingMinutes2);
-                console.log('Catch:Remaining time in hours:', remainingHours2);
+                console.log('Catch:Remaining time in hours:', remainingHours2);*/
                 return { flag: true, cause: "Authorized" }
 
             } catch (err) {
@@ -216,21 +217,24 @@ export const verifyAuth = (req, res, info) => {
  */
 export const handleAmountFilterParams = (req) => {
     const {min, max} = req;
-    if(isNaN(Number(min)) || isNaN(Number((max))))
-        throw ("Min or Max values are not valid")
     let minFilter = parseInt(min);
     let maxFilter = parseInt(max);
     if(min && !max){
         // filter only by 'min'
+        if(isNaN(Number(min)))
+            throw ("Min or Max values are not valid")
         return { amount: { $gte: minFilter} };
     }
     else if(max && !min){
         // filter only by 'max'
+        if(isNaN(Number((max))))
+            throw ("Min or Max values are not valid")
         return { amount: { $lte: maxFilter} };
     }
     else if(min && max){
         // filter by 'min' and 'max'
-        
+        if(isNaN(Number(min)) || isNaN(Number((max))))
+            throw ("Min or Max values are not valid")
         return { amount: { $gte: minFilter, $lte: maxFilter} };
     }
     else{
