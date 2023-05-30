@@ -7,7 +7,7 @@ import { handleDateFilterParams, handleAmountFilterParams, verifyAuth } from "./
   - Request Body Content: An object having attributes `type` and `color`
   - Response `data` Content: An object having attributes `type` and `color`
  */
-export const createCategory = (req, res) => {
+export const createCategory = async (req, res) => {
     try {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.flag) {
@@ -20,8 +20,8 @@ export const createCategory = (req, res) => {
                 return res.status(400).json({ error: "Some Parameter is an Empty String" });
             }
             const new_categories = new categories({ type, color });
-            new_categories.save()
-                .then(() => res.status(200).json({data: {type: type , color: color}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
+            await new_categories.save()
+                .then(() => { res.status(200).json({data: {type: type , color: color}, refreshedTokenMessage: res.locals.refreshedTokenMessage})})
                 .catch(() => { res.status(400).json({ error: "Category already exist!" }) }) //No need to crash the server
         } else {
             res.status(401).json({ error: adminAuth.cause })
