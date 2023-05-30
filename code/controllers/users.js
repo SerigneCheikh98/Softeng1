@@ -392,7 +392,7 @@ export const deleteUser = async (req, res) => {
         const updated_group = await Group.findOneAndUpdate({ "members.email": email}, { $pull: { members: { email: email, user: user._id } } }, { new: true });
 
         if(updated_group !== null && updated_group.members.length === 0){
-           await Group.deleteOne({ name: updated_group.name });
+          await Group.deleteOne({ name: updated_group.name });
         }
 
                // return the number of deleted user (in our case possible values are only 1 or 0, since email is unique)
