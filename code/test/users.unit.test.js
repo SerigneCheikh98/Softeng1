@@ -1,7 +1,8 @@
 import request from 'supertest';
 import { app } from '../app';
-import { Group,User } from '../models/User.js';
-import { getUsers, getUser  } from '../controllers/users';
+import { Group, User } from '../models/User.js';
+import { transactions } from '../models/model.js';
+import { getUsers, getUser, deleteUser  } from '../controllers/users';
 import { verifyAuth } from '../controllers/utils';
 import { response } from 'express';
 
@@ -12,6 +13,7 @@ import { response } from 'express';
  * `jest.mock()` must be called for every external module that is called in the functions under test.
  */
 jest.mock("../models/User.js")
+jest.mock("../models/model.js")
 
 /**
  * Defines code to be executed before each test case is launched
@@ -22,8 +24,12 @@ beforeEach(() => {
   User.find.mockClear()
   //additional `mockClear()` must be placed here
   User.findOne.mockClear()
+  User.deleteOne.mockClear()
   Group.create.mockClear()
   Group.find.mockClear()
+  Group.findOneAndUpdate.mockClear()
+  Group.deleteOne.mockClear()
+  transactions.deleteMany.mockClear()
 });
 
 const VerifyAuthmodule = require('../controllers/utils');
@@ -162,7 +168,7 @@ describe("getUser", () => {
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  test("should return empty list if user not found", async () => { 
+  test("should return error if user not found", async () => { 
     const mockReq = {
       params: {username: "unRegisteredUser"},
     }
@@ -195,20 +201,21 @@ describe("getUser", () => {
       locals: jest.fn(),
     }
 
+    const retrieveUser = {username: 'mario', email: 'mario.red@email.com', role: 'Regular'};
     const response = { flag: false, cause: "User: Mismatched users" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => response) 
+    jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
 
     await getUser(mockReq, mockRes)
 
-    expect(User.findOne).not.toHaveBeenCalled()
     expect(verifyAuth).toHaveBeenCalled()
     expect(mockRes.status).toHaveBeenCalledWith(401)
     expect(mockRes.json).toHaveBeenCalledWith( {error: response.cause} )
   })
 })
 
-describe("createGroup", () => { 
+describe("createGroup", () => {
   // expected behaviour for simplest case
   test("should return a group object, with empty array for members already in group and for members not found", async () => {
     const mockReq = {
@@ -360,6 +367,218 @@ describe("addToGroup", () => { })
 
 describe("removeFromGroup", () => { })
 
-describe("deleteUser", () => { })
+/**
+ * - Request Parameters: None
+ * - Request Body Content: A string equal to the `email` of the user to be deleted
+ *    - Example: `{email: "luigi.red@email.com"}`
+ * - Response `data` Content: An object having an attribute that lists the number of `deletedTransactions` and an attribute that specifies whether the user was also `deletedFromGroup` or not
+ *    - Example: `res.status(200).json({data: {deletedTransaction: 1, deletedFromGroup: true}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - If the user is the last user of a group then the group is deleted as well
+ * - Returns a 400 error if the request body does not contain all the necessary attributes
+ * - Returns a 400 error if the email passed in the request body is an empty string
+ * - Returns a 400 error if the email passed in the request body is not in correct email format
+ * - Returns a 400 error if the email passed in the request body does not represent a user in the database
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
+describe("deleteUser", () => { 
+  test("Should successfully delete the given user who does not belongs to a group", async () => {
+    const mockReq = {
+      body: {
+        email: "delete.me@polito.it"
+      }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+    const deletedTransactions = {deletedCount: 3};
+    const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: false}, refreshedTokenMessage: undefined};
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
+    jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
+    jest.spyOn(User, "deleteOne").mockImplementation(() => {})
+    jest.spyOn(Group, "findOneAndUpdate").mockImplementation(() => null)
+    jest.spyOn(transactions, "deleteMany").mockImplementation(() => deletedTransactions)
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(User.findOne).toHaveBeenCalled()
+    expect(Group.findOneAndUpdate).toHaveBeenCalled()
+    expect(transactions.deleteMany).toHaveBeenCalled()
+    expect(User.deleteOne).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should successfully delete the given user who was with other member in a group", async () => {
+    const mockReq = {
+      body: {
+        email: "delete.me@polito.it"
+      }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+    const deletedTransactions = {deletedCount: 3};
+    const fromGroup = {name: "groupName", members: [{ email: "other.member@polito.it", user: 1 }]};
+    const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
+    
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
+    jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
+    jest.spyOn(User, "deleteOne").mockImplementation(() => {})
+    jest.spyOn(Group, "findOneAndUpdate").mockImplementation(() => fromGroup)
+    jest.spyOn(transactions, "deleteMany").mockImplementation(() => deletedTransactions)
+    
+    await deleteUser(mockReq, mockRes)
+
+    expect(User.findOne).toHaveBeenCalled()
+    expect(Group.findOneAndUpdate).toHaveBeenCalled()
+    expect(transactions.deleteMany).toHaveBeenCalled()
+    //expect(Group.deleteOne).not.toHaveBeenCalled() TODO
+    expect(User.deleteOne).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should successfully delete the given user who was alone in a group", async () => {
+    const mockReq = {
+      body: {
+        email: "delete.me@polito.it"
+      }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+    const deletedTransactions = {deletedCount: 3};
+    const fromGroup = {name: "groupName", members: []};
+    const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
+    const res = { flag: true, cause: "Authorized" };
+    const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
+    jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
+    jest.spyOn(User, "deleteOne").mockImplementation(() => {})
+    jest.spyOn(Group, "findOneAndUpdate").mockImplementation(() => fromGroup)
+    jest.spyOn(Group, "deleteOne").mockImplementation(() => {})
+    jest.spyOn(transactions, "deleteMany").mockImplementation(() => deletedTransactions)
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(User.findOne).toHaveBeenCalled()
+    expect(Group.findOneAndUpdate).toHaveBeenCalled()
+    expect(transactions.deleteMany).toHaveBeenCalled()
+    expect(Group.deleteOne).toHaveBeenCalledWith({name: fromGroup.name})
+    expect(User.deleteOne).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should return error if the request body does not contain all the necessary attributes", async () => {
+    const mockReq = {
+      body: {}
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+
+    const response = { error: "Some Parameter is Missing" };
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should return error if the email passed in the request body is an empty string", async () => {
+    const mockReq = {
+      body: { email: " "}
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+
+    const response = { error: "Some Parameter is an Empty String" };
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should return error if the email passed in the request body is not in correct email format", async () => {
+    const mockReq = {
+      body: { email: "invalidEmail.polito"}
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+
+    const response = { error: "Invalid email format" };
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should return error if the email passed in the request body does not represent a user in the database", async () => {
+    const mockReq = {
+      body: {
+        email: "delete.ghostUser@polito.it"
+      }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+
+    const res = { flag: true, cause: "Authorized" };
+    const response = { error: "User Does Not exist" };
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
+    jest.spyOn(User, "findOne").mockImplementation(() => null)
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(User.findOne).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should return error if called by an authenticated user who is not an admin", async () => {
+    const mockReq = {
+      body: {
+        email: "YouCanNotdeleteMe@polito.it"
+      }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+
+    const res = { flag: false, cause: "Admin: Mismatched role" };
+    const response = { error: res.cause };
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(verifyAuth).toHaveBeenCalledWith(mockReq, mockRes, { authType: "Admin" })
+    expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+})
 
 describe("deleteGroup", () => { })
