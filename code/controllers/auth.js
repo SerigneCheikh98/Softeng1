@@ -49,37 +49,31 @@ export const register = async (req, res) => {
  */
 export const registerAdmin = async (req, res) => {
     try {
-        const adminAuth = verifyAuth(req, res, { authType: "Admin" });
-        if (adminAuth.flag) {
-            //Admin auth successful
-            const { username, email, password } = req.body;
-            if (!username || !email || !password) {
-                return res.status(400).json({ error: "Some Parameter is Missing" });
-            }
-            if (username.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0) {
-                return res.status(400).json({ error: "Some Parameter is an Empty String" });
-            }
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (regex.test(email) === false) {
-                return res.status(400).json({ error: "Invalid email format" });
-            }
-            const existingUserMail = await User.findOne({ email: email });
-            const existingUserUsername = await User.findOne({ username: username });
-            if (existingUserMail || existingUserUsername) {
-                return res.status(400).json({ error: "already existing user" });
-            }
-            const hashedPassword = await bcrypt.hash(password, 12);
-            const newUser = await User.create({
-                username,
-                email,
-                password: hashedPassword,
-                role: "Admin"
-            });
-            res.status(200).json('admin added succesfully');
-        } else {
-            // Da chiedere
-            res.status(401).json({ error: "Not flag" });
+        //Admin auth successful
+        const { username, email, password } = req.body;
+        if (!username || !email || !password) {
+            return res.status(400).json({ error: "Some Parameter is Missing" });
         }
+        if (username.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0) {
+            return res.status(400).json({ error: "Some Parameter is an Empty String" });
+        }
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (regex.test(email) === false) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+        const existingUserMail = await User.findOne({ email: email });
+        const existingUserUsername = await User.findOne({ username: username });
+        if (existingUserMail || existingUserUsername) {
+            return res.status(400).json({ error: "already existing user" });
+        }
+        const hashedPassword = await bcrypt.hash(password, 12);
+        const newUser = await User.create({
+            username,
+            email,
+            password: hashedPassword,
+            role: "Admin"
+        });
+        res.status(200).json({data: {message: "User added successfully"}});
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -2,18 +2,15 @@ import request from 'supertest';
 import { app } from '../app';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
-import { login, logout, register } from '../controllers/auth';
+import { login, logout, register, registerAdmin } from '../controllers/auth';
 const bcrypt = require("bcryptjs")
 
 jest.mock("bcryptjs")
 jest.mock('../models/User.js');
 
 beforeEach(() => {
-    User.find.mockClear()
-    //additional `mockClear()` must be placed here
     User.findOne.mockClear()
-    //Group.create.mockClear()
-    //Group.find.mockClear()
+    User.create.mockClear()
 });
 
 const VerifyAuthmodule = require('../controllers/utils');
@@ -71,8 +68,7 @@ describe('register', () => {
     test('Register an User with missing body parameters, should return 400', async () => {
         const mockReq = {
             body: {
-                username: "Mario",
-                password: "securePass"
+                
             }
         }
         const mockRes = {
@@ -92,9 +88,9 @@ describe('register', () => {
     test('Register an User with empty string body parameters, should return 400', async () => {
         const mockReq = {
             body: {
-                username: "Mario",
+                username: " ",
                 email: " ",
-                password: "securePass"
+                password: " "
             }
         }
         const mockRes = {
@@ -203,9 +199,174 @@ describe('register', () => {
 });
 
 describe("registerAdmin", () => {
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
+    test('Register an Admin, should register it with success', async () => {
+        const mockReq = {
+            body: {
+                username: "Mario",
+                email: "mario.red@email.com",
+                password: "securePass"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+
+        const resAuth = { flag: true, cause: "Authorized" };
+        const response = { data: { message: "User added successfully" } };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
+        //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
+        jest.spyOn(User, "findOne").mockImplementation(() => null)
+        jest.spyOn(User, "create").mockImplementation(() => null)
+
+        await registerAdmin(mockReq, mockRes)
+
+        expect(User.findOne).toHaveBeenCalledWith({ email: "mario.red@email.com" })
+        expect(User.findOne).toHaveBeenCalledWith({ username: "Mario" })
+        expect(User.create).toHaveBeenCalledWith({
+            username: "Mario",
+            email: "mario.red@email.com",
+            password: await bcrypt.hash("securePass", 12),
+            role: "Admin"
+        })
+        expect(mockRes.status).toHaveBeenCalledWith(200)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
     });
+
+    test('Register an Admin with missing body parameters, should return 400', async () => {
+        const mockReq = {
+            body: {
+                
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+
+        const response = { error: "Some Parameter is Missing" };
+
+        await registerAdmin(mockReq, mockRes)
+
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Register an Admin with empty string body parameters, should return 400', async () => {
+        const mockReq = {
+            body: {
+                username: " ",
+                email: " ",
+                password: " "
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+
+        const response = { error: "Some Parameter is an Empty String" };
+
+        await registerAdmin(mockReq, mockRes)
+
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Register an Admin with wrong email format, should return 400', async () => {
+        const mockReq = {
+            body: {
+                username: "Mario",
+                email: "mario.redemail.com",
+                password: "securePass"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+
+        const response = { error: "Invalid email format" };
+
+        await registerAdmin(mockReq, mockRes)
+
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Register an Admin, username already existing, should return 400', async () => {
+        const mockReq = {
+            body: {
+                username: "Mario",
+                email: "mario.red@email.com",
+                password: "securePass"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+
+        const resAuth = { flag: true, cause: "Authorized" };
+        const response = { error: "already existing user" };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
+        //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
+        jest.spyOn(User, "findOne").mockImplementation(() => {
+            return {
+                username: "Mario",
+                email: "luigi.red@email.com",
+                password: "pass"
+            };
+        });
+
+        await registerAdmin(mockReq, mockRes)
+
+        expect(User.findOne).toHaveBeenCalledWith({ username: "Mario" })
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Register an Admin, email already existing, should return 400', async () => {
+        const mockReq = {
+            body: {
+                username: "Mario",
+                email: "mario.red@email.com",
+                password: "securePass"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+
+        const resAuth = { flag: true, cause: "Authorized" };
+        const response = { error: "already existing user" };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
+        //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
+        jest.spyOn(User, "findOne").mockImplementation(() => {
+            return {
+                username: "Luigi",
+                email: "mario.red@email.com",
+                password: "pass"
+            };
+        });
+
+        await registerAdmin(mockReq, mockRes)
+
+        expect(User.findOne).toHaveBeenCalledWith({ email: "mario.red@email.com" })
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
 })
 /*
 login
