@@ -68,6 +68,10 @@ export const getUser = async (req, res) => {
     - error 400 is returned if there is already an existing group with the same name
     - error 400 is returned if all the `memberEmails` either do not exist or are already in a group
  */
+/* se è in un gruppo caller => 400
+   una email non valida, se caller non in un group ma tutto array di email si => 400
+
+*/
 export const createGroup = async (req, res) => {
   try {
     const userAuth = verifyAuth(req, res, { authType: "Simple" })
@@ -289,6 +293,8 @@ export const addToGroup = async (req, res) => {
     - error 400 is returned if the group does not exist
     - error 400 is returned if all the `memberEmails` either do not exist or are not in the group
  */
+
+  //a user has to remain int the group
 export const removeFromGroup = async (req, res) => {
     try {
       // users = user to remove from group, name = name of the group to delete
@@ -383,7 +389,7 @@ export const deleteUser = async (req, res) => {
     const adminAuth = verifyAuth(req, res, { authType: "Admin" })
     if (adminAuth.flag) {
       //Admin auth successful
-      // remove the user from his group (if the user has one)
+      //remove the user from his group (if the user has one)
       const user = await User.findOne({email: email});
       if (user === null) {
         return res.status(400).json({ error: "User Does Not exist" });
@@ -392,19 +398,13 @@ export const deleteUser = async (req, res) => {
         const updated_group = await Group.findOneAndUpdate({ "members.email": email}, { $pull: { members: { email: email, user: user._id } } }, { new: true });
 
         if(updated_group !== null && updated_group.members.length === 0){
-           await Group.deleteOne({ name: updated_group.name });
+          await Group.deleteOne({ name: updated_group.name });
         }
 
-               // return the number of deleted user (in our case possible values are only 1 or 0, since email is unique)
+        //return the number of deleted user (in our case possible values are only 1 or 0, since email is unique)
         let trans = await transactions.deleteMany({username: user.username})
-        const n_el_deleted = await User.deleteOne({ email: email });
-        //if (n_el_deleted.deletedCount === 0) {
-          // no user deleted, the user does not exist
-        //  res.status(400).json({ error: "User Does Not exist" });
-        //} else {
-          // user deleted wuth success
-          res.status(200).json({data: {deletedTransaction: trans.deletedCount, deletedFromGroup: updated_group !== null}, refreshedTokenMessage: res.locals.refreshedTokenMessage})
-        //}
+        await User.deleteOne({ email: email });
+        res.status(200).json({data: {deletedTransaction: trans.deletedCount, deletedFromGroup: updated_group !== null}, refreshedTokenMessage: res.locals.refreshedTokenMessage})
       }
     } else {
       res.status(401).json({ error: adminAuth.cause })
