@@ -208,7 +208,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: true,
+            authorized: true,
             cause: 'Authorized',
         };
 
@@ -231,7 +231,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Unauthorized",
         };
 
@@ -255,7 +255,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Token is missing information",
         };
 
@@ -279,7 +279,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Token is missing information",
         };
 
@@ -305,7 +305,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: true,
+            authorized: true,
             cause: 'Authorized',
         };
 
@@ -329,7 +329,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "User: Mismatched users",
         };
 
@@ -354,7 +354,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Mismatched users",
         };
 
@@ -379,7 +379,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Mismatched users",
         };
 
@@ -403,7 +403,7 @@ describe('verifyAuth', () => {
             username: 'testuser',
         };
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Token Expired: Mismatched users",
         };
 
@@ -427,7 +427,7 @@ describe('verifyAuth', () => {
             username: 'testuser',
         };
         const response = {
-            flag: true,
+            authorized: true,
             cause: "Authorized",
         };
 
@@ -452,7 +452,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: true,
+            authorized: true,
             cause: 'Authorized',
         };
 
@@ -476,7 +476,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Admin: Mismatched role",
         };
 
@@ -500,7 +500,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Admin: Mismatched role",
         };
 
@@ -524,7 +524,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Admin: Access Token Expired and Mismatched role",
         };
 
@@ -548,7 +548,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: true,
+            authorized: true,
             cause: "Authorized",
         };
 
@@ -574,7 +574,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: true,
+            authorized: true,
             cause: "Authorized",
         };
 
@@ -599,7 +599,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Group: user not in group",
         };
 
@@ -624,7 +624,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Group: user not in group",
         };
 
@@ -649,7 +649,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Group: Access Token Expired and user not in group",
         };
 
@@ -674,7 +674,7 @@ describe('verifyAuth', () => {
         };
 
         const response = {
-            flag: true,
+            authorized: true,
             cause: "Authorized",
         };
 
@@ -697,7 +697,7 @@ describe('verifyAuth', () => {
         };
        
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Perform login again",
         };
 
@@ -721,7 +721,7 @@ describe('verifyAuth', () => {
         };
        
         const response = {
-            flag: false,
+            authorized: false,
             cause: "Perform login again",
         };
 

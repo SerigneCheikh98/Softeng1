@@ -82,12 +82,12 @@ export const verifyAuth = (req, res, info) => {
     const cookie = req.cookies;
     try {
         if (!cookie.accessToken || !cookie.refreshToken) {
-            return { flag: false, cause: "Unauthorized" };
+            return { authorized: false, cause: "Unauthorized" };
         }
         const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
         const decodedRefreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
         if (info.authType === "Simple" && (!decodedAccessToken.accessToken || !decodedRefreshToken.refreshToken) ) {
-            return { flag: true, cause: "Authorized" }
+            return { authorized: true, cause: "Authorized" }
         }
         /*
         const currentTime2 = Date.now();
@@ -113,22 +113,22 @@ export const verifyAuth = (req, res, info) => {
         console.log('Remaining time in hours:', remainingHours2);
 */
         if (!decodedAccessToken.username || !decodedAccessToken.email || !decodedAccessToken.role) {
-            return { flag: false, cause: "Token is missing information" }
+            return { authorized: false, cause: "Token is missing information" }
         }
         if (!decodedRefreshToken.username || !decodedRefreshToken.email || !decodedRefreshToken.role) {
-            return { flag: false, cause: "Token is missing information" }
+            return { authorized: false, cause: "Token is missing information" }
         }
         //        if (decodedAccessToken.username !== decodedRefreshToken.username || decodedAccessToken.email !== decodedRefreshToken.email || decodedAccessToken.role !== decodedRefreshToken.role) { prima ma fallisce test
         //|| decodedAccessToken.email !== decodedRefreshToken.email) ho levato questo perchè altrimenti in Group error test non funziona
         if (decodedAccessToken.username !== decodedRefreshToken.username)  {
-            return { flag: false, cause: "Mismatched users" };
+            return { authorized: false, cause: "Mismatched users" };
         }
         // User authType check
         if (info.authType === 'User' && info.username !== decodedAccessToken.username ) {
-            return { flag: false, cause: "User: Mismatched users" };
+            return { authorized: false, cause: "User: Mismatched users" };
         }
         if (info.authType === 'Admin' && (decodedAccessToken.role !== 'Admin' || decodedRefreshToken.role !== 'Admin')) {
-            return { flag: false, cause: "Admin: Mismatched role" };
+            return { authorized: false, cause: "Admin: Mismatched role" };
         }
         if (info.authType === 'Group') {
             let in_group = false;
@@ -138,19 +138,19 @@ export const verifyAuth = (req, res, info) => {
                 }
             }
             if (in_group === false) {
-                return { flag: false, cause: "Group: user not in group" };
+                return { authorized: false, cause: "Group: user not in group" };
             }
         }
-        return { flag: true, cause: "Authorized" }
+        return { authorized: true, cause: "Authorized" }
     } catch (err) {
         if (err.name === "TokenExpiredError") {
             try {
                 const refreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
                 if ( info.authType==="User" && info.username !== refreshToken.username ) {
-                    return { flag: false, cause: "Token Expired: Mismatched users" };
+                    return { authorized: false, cause: "Token Expired: Mismatched users" };
                 }
                 if (info.authType === 'Admin' && refreshToken.role !== 'Admin') {
-                    return { flag: false, cause: "Admin: Access Token Expired and Mismatched role" };
+                    return { authorized: false, cause: "Admin: Access Token Expired and Mismatched role" };
                 }
                 if (info.authType === 'Group') {
                     let in_group = false;
@@ -160,7 +160,7 @@ export const verifyAuth = (req, res, info) => {
                         }
                     }
                     if (in_group === false) {
-                        return { flag: false, cause: "Group: Access Token Expired and user not in group" };
+                        return { authorized: false, cause: "Group: Access Token Expired and user not in group" };
                     }
                 }
                 const newAccessToken = jwt.sign({
@@ -193,18 +193,18 @@ export const verifyAuth = (req, res, info) => {
                 
                 console.log('Catch:Remaining time in minutes:', remainingMinutes2);
                 console.log('Catch:Remaining time in hours:', remainingHours2);*/
-                return { flag: true, cause: "Authorized" }
+                return { authorized: true, cause: "Authorized" }
 
             } catch (err) {
                 // Refresh Token expired
                 if (err.name === "TokenExpiredError") {
-                    return { flag: false, cause: "Perform login again" }
+                    return { authorized: false, cause: "Perform login again" }
                 } else {
-                    return { flag: false, cause: err.name }
+                    return { authorized: false, cause: err.name }
                 }
             }
         } else {
-            return { flag: false, cause: err.name };
+            return { authorized: false, cause: err.name };
         }
     }
 }

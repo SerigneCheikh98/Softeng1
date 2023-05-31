@@ -44,7 +44,7 @@ describe('register', () => {
             locals: jest.fn(),
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = { data: { message: "User added successfully" } };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -143,7 +143,7 @@ describe('register', () => {
             locals: jest.fn(),
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = { error: "already existing user" };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -177,7 +177,7 @@ describe('register', () => {
             locals: jest.fn(),
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = { error: "already existing user" };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -213,7 +213,7 @@ describe("registerAdmin", () => {
             locals: jest.fn(),
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = { data: { message: "User added successfully" } };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -313,7 +313,7 @@ describe("registerAdmin", () => {
             locals: jest.fn(),
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = { error: "already existing user" };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -347,7 +347,7 @@ describe("registerAdmin", () => {
             locals: jest.fn(),
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = { error: "already existing user" };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -590,7 +590,7 @@ describe('logout', () => {
             save: jest.fn().mockResolvedValue(null)
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = {data: {message: "User logged out"}};
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -617,7 +617,7 @@ describe('logout', () => {
             cookie: jest.fn().mockResolvedValue(null),
         }
 
-        const resAuth = { flag: false, cause: "Unauthorized" };
+        const resAuth = { authorized: false, cause: "Unauthorized" };
         const response = { error: 'refresh token not in the cookies' };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
@@ -643,7 +643,7 @@ describe('logout', () => {
             cookie: jest.fn().mockResolvedValue(null),
         }
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         const response = { error: 'user not found' };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)

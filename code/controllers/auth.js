@@ -144,7 +144,7 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {    
     try {
         const simpleAuth = verifyAuth(req, res, { authType: "Simple" });
-        if (simpleAuth.flag) {
+        if (simpleAuth.authorized) {
             const refreshToken = req.cookies.refreshToken;
             //if (!refreshToken) return res.status(400).json("user not found");
             const user = await User.findOne({ refreshToken: refreshToken })

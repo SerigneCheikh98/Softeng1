@@ -7,16 +7,21 @@ import { Group, User } from '../models/User';
 import mongoose from 'mongoose';
 import { createCategory  } from '../controllers/controller';
 import { verifyAuth } from '../controllers/utils';
+import { response } from 'express';
 
 jest.mock('../models/model');
+jest.mock('../models/User');
 
 beforeEach(() => {
   categories.find.mockClear();
   categories.prototype.save.mockClear();
   transactions.find.mockClear();
+  transactions.findOne.mockClear();
   transactions.deleteOne.mockClear();
   transactions.aggregate.mockClear();
   transactions.prototype.save.mockClear();
+  Group.findOne.mockClear();
+  categories.findOne.mockClear();
 });
 
 const VerifyAuthmodule = require('../controllers/utils');
@@ -44,7 +49,7 @@ describe("createCategory", () => {
             json: jest.fn(),
             locals: jest.fn(),
         }
-        const res = { flag: true, cause: "Authorized" };
+        const res = { authorized: true, cause: "Authorized" };
         const response = {data: {type: mockReq.body.type , color: mockReq.body.color}, refreshedTokenMessage: undefined};
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -68,7 +73,7 @@ describe("createCategory", () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
         }
-        const res = { flag: true, cause: "Authorized" };
+        const res = { authorized: true, cause: "Authorized" };
         const response = { error: "Some Parameter is Missing" };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -92,7 +97,7 @@ describe("createCategory", () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
         }
-        const res = { flag: true, cause: "Authorized" };
+        const res = { authorized: true, cause: "Authorized" };
         const response = { error: "Some Parameter is an Empty String" };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -116,7 +121,7 @@ describe("createCategory", () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
         }
-        const res = { flag: true, cause: "Authorized" };
+        const res = { authorized: true, cause: "Authorized" };
         const response = { error: "Category already exist!" };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -141,7 +146,7 @@ describe("createCategory", () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
         }
-        const res = { flag: false, cause: "Admin: Mismatched role" };
+        const res = { authorized: false, cause: "Admin: Mismatched role" };
         const response = { error: res.cause };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -198,177 +203,326 @@ describe("getTransactionsByUserByCategory", () => {
 })
 
 describe("getTransactionsByGroup", () => { 
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
-    });
+    test('getTransactionsByGroup, should return 200', async () => {
+        // Mock dependencies
+        const { Group } = require('./yourModule');
+        Group.findOne.mockResolvedValueOnce({ name: 'groupName', members: [] });
+    
+        // Mock authentication
+        const { verifyAuth } = require('./yourModule');
+        const verifyAuthSpy = jest.spyOn({ verifyAuth }, 'verifyAuth');
+        verifyAuthSpy.mockReturnValueOnce({ authorized: true });
+    
+        // Mock aggregation result
+        const transactions = [
+          {
+            user: { username: 'user1', email: 'user1@example.com' },
+            group: { name: 'groupName' },
+            category: { type: 'categoryType', color: 'categoryColor' },
+            amount: 100,
+            date: '2023-05-31',
+          },
+        ];
+        const aggregateMock = jest.fn().mockResolvedValueOnce(transactions);
+        const transactionsMock = {
+          aggregate: jest.fn(() => ({
+            then: jest.fn((callback) => callback(transactions)),
+          })),
+        };
+        jest.doMock('./yourModule', () => ({
+          ...jest.requireActual('./yourModule'),
+          transactions: transactionsMock,
+        }));
+    
+        await getTransactionsByGroup(req, res);
+    
+        // Verify mocks
+        expect(Group.findOne).toHaveBeenCalledWith({ name: 'groupName' });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+          data: [
+            {
+              username: 'user1',
+              type: 'categoryType',
+              amount: 100,
+              date: '2023-05-31',
+              color: 'categoryColor',
+            },
+          ],
+          refreshedTokenMessage: undefined,
+        });
+        expect(verifyAuthSpy).toHaveBeenCalledWith(req, res, { authType: 'Admin' });
+        expect(transactionsMock.aggregate).toHaveBeenCalledTimes(1);
+        expect(aggregateMock).toHaveBeenCalledTimes(1);
+      });
 })
 
 describe("getTransactionsByGroupByCategory", () => { 
-    test('deleteTransaction, should delete the transaction with success', async () => { 
-        process.env.ACCESS_KEY = 'EZWALLET';
-        const mockReq = {
-            params: {name: "Gruppo1",category:"Food"},
-            cookies: {
-                accessToken: jwt.sign({ username: 'Mario', email: "mario.red@email.com", role: "User" }, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'Mario', email: "mario.red@email.com", role: "User" }, process.env.ACCESS_KEY),
+    test('getTransactionsByGroupByCategory, should return 200', async () => {
+        const req = {
+            params: {
+                name: 'Gruppo1',
+                category: 'Food',
             },
+            url: '/transactions/groups/Gruppo1',
         };
 
-        const mockRes = {
+        const res = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
-            locals: jest.fn().mockResolvedValue(null),
-            cookie: jest.fn().mockResolvedValue(null),
-        }
-        
-        const group = { name: mockReq.params.name , members: [{email: "mario.red@email.com", user: "6hjkohgfc8nvu786"}]};
-        const category = {type: mockReq.params.category , color: "Black"};
+            locals: {},
+        };
 
-        const pipeline = [
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'username',
-                    foreignField: 'username',
-                    as: 'user'
-                }
-            },
-            {
-                $unwind: '$user'
-            },
-            {
-                $lookup: {
-                    from: 'groups',
-                    localField: 'user.email',
-                    foreignField: 'members.email',
-                    as: 'group'
-                }
-            },
-            {
-                $unwind: '$group'
-            },
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'type',
-                    foreignField: 'type',
-                    as: 'category'
-                }
-            },
-            {
-                $unwind: '$category'
-            },
-            {
-                $match: {
-                    'group.name': group.name,
-                    'category.type' : category.type
-                }
-            },
-            {
-                $project: {
-                    'user.username': 1,
-                    'user.email': 1,
-                    'group.name': 1,
-                    'category.type': 1,
-                    'amount': 1,
-                    'date': 1,
-                    'category.color': 1
-                }
-            }
-        ];
+        // Set up the mock implementation for Group.findOne
+        Group.findOne.mockResolvedValue({
+          name: req.params.name,
+          members: [
+            { email: 'member1@example.com' },
+            { email: 'member2@example.com' },
+          ],
+        });
+    
+        // Set up the mock implementation for Category.findOne
+        categories.findOne.mockResolvedValue({
+          type: req.params.category,
+        });
         
-        const mockAggregate = jest.fn(() => ({
-            exec: jest.fn().mockResolvedValue([
-                {username: "Mario", amount: 100, type: "Food", date: "2023-05-19T00:00:00", color: "Black"}
-            ]),
-          }));
-      
-          // Create a mock model
-          const mockModel = {
-            aggregate: mockAggregate,
-          };
-      
-          // Mock the Mongoose model function
-          mongoose.model = jest.fn().mockReturnValue(mockModel);
-          
-          
-        const resAuth = { flag: true, cause: "Authorized" };
-        // NON SO SE VA BENE
-        const refreshedTokenMessage= undefined;
-        const response = {data: [{username: "Mario", amount: 100, type: "Food", date: "2023-05-19T00:00:00", color: "Black"}], refreshedTokenMessage: refreshedTokenMessage};
-        //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
-        jest.spyOn(Group, "findOne").mockImplementation(() => group);
-        jest.spyOn(categories, "findOne").mockImplementation(() => category);
+        // set up the verifyauth 
+        const resAuth = { authorized: true, cause: "Authorized" };
+        const response = {
+            data: [
+                {
+                    username: 'user1',
+                    type: req.params.category,
+                    amount: 10,
+                    date: '2022-01-01',
+                    color: 'blue',
+                },
+                {
+                    username: 'user2',
+                    type: req.params.category,
+                    amount: 15,
+                    date: '2022-01-02',
+                    color: 'red',
+                },
+            ],
+            refreshedTokenMessage: undefined,
+        };
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
-        jest.spyOn(transactions, "aggregate").mockImplementation(() => response)
 
-        await getTransactionsByGroupByCategory(mockReq, mockRes)
-
-        expect(Group.findOne).toHaveBeenCalledWith({ name: group.name });
-        expect(categories.findOne).toHaveBeenCalledWith({ type: category.type });
-        // Assert the result
-        /*expect(result).toEqual([
-            {username: "Mario", amount: 100, type: "Food", date: "2023-05-19T00:00:00", color: "Black"}
-          ]);*/
-      
-          // Verify that the mock aggregate function was called with the correct arguments
-          expect(mockAggregate).toHaveBeenCalledWith([
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'username',
-                    foreignField: 'username',
-                    as: 'user'
-                }
-            },
-            {
-                $unwind: '$user'
-            },
-            {
-                $lookup: {
-                    from: 'groups',
-                    localField: 'user.email',
-                    foreignField: 'members.email',
-                    as: 'group'
-                }
-            },
-            {
-                $unwind: '$group'
-            },
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'type',
-                    foreignField: 'type',
-                    as: 'category'
-                }
-            },
-            {
-                $unwind: '$category'
-            },
-            {
-                $match: {
-                    'group.name': group.name,
-                    'category.type' : category.type
-                }
-            },
-            {
-                $project: {
-                    'user.username': 1,
-                    'user.email': 1,
-                    'group.name': 1,
-                    'category.type': 1,
-                    'amount': 1,
-                    'date': 1,
-                    'category.color': 1
-                }
-            }
+        // Set up the mock implementation for Transaction.aggregate
+        transactions.aggregate.mockResolvedValue([
+          {
+            user: { username: 'user1', email: 'user1@example.com' },
+            group: { name: req.params.name },
+            category: { type: req.params.category, color: 'blue' },
+            amount: 10,
+            date: '2022-01-01',
+          },
+          {
+            user: { username: 'user2', email: 'user2@example.com' },
+            group: { name: req.params.name },
+            category: { type: req.params.category, color: 'red' },
+            amount: 15,
+            date: '2022-01-02',
+          },
         ]);
-      
-          // Verify that the exec function was called
-          expect(mockAggregate().exec).toHaveBeenCalled();
-        expect(mockRes.status).toHaveBeenCalledWith(200)
-        expect(mockRes.json).toHaveBeenCalledWith(response)
+    
+        await getTransactionsByGroupByCategory(req, res);
+    
+        expect(Group.findOne).toHaveBeenCalledWith({ name: req.params.name });
+        expect(categories.findOne).toHaveBeenCalledWith({ type: req.params.category });
+        expect(transactions.aggregate).toHaveBeenCalledWith([
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'username',
+                foreignField: 'username',
+                as: 'user',
+              },
+            },
+            {
+              $unwind: '$user',
+            },
+            {
+              $lookup: {
+                from: 'groups',
+                localField: 'user.email',
+                foreignField: 'members.email',
+                as: 'group',
+              },
+            },
+            {
+              $unwind: '$group',
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'type',
+                foreignField: 'type',
+                as: 'category',
+              },
+            },
+            {
+              $unwind: '$category',
+            },
+            {
+              $match: {
+                'group.name': req.params.name,
+                'category.type': req.params.category,
+              },
+            },
+            {
+              $project: {
+                'user.username': 1,
+                'user.email': 1,
+                'group.name': 1,
+                'category.type': 1,
+                'amount': 1,
+                'date': 1,
+                'category.color': 1,
+              },
+            },
+          ]);
+          
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith(response);
+    });
+
+    test('getTransactionsByGroupByCategory with group not found in the database, should return 400', async () => {
+        const req = {
+            params: {
+                name: 'Gruppo1',
+                category: 'Food',
+            },
+            url: '/transactions/groups/Gruppo1',
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: {},
+        };
+        
+        const response = { error: "Group not Found." };
+        jest.spyOn(Group, "findOne").mockImplementation(() => null)
+    
+        await getTransactionsByGroupByCategory(req, res);
+    
+        expect(Group.findOne).toHaveBeenCalledWith({ name: req.params.name });        
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith(response);
+    });
+
+    test('getTransactionsByGroupByCategory with category not found in the database, should return 400', async () => {
+        const req = {
+            params: {
+                name: 'Gruppo1',
+                category: 'Food',
+            },
+            url: '/transactions/groups/Gruppo1',
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: {},
+        };
+        
+        const group = {
+            name: req.params.name,
+            members: [
+                { email: 'member1@example.com' },
+                { email: 'member2@example.com' },
+            ],
+        };
+
+        const response = { error: "Category not Found." };
+        jest.spyOn(Group, "findOne").mockImplementation(() => group)
+        jest.spyOn(categories, "findOne").mockImplementation(() => null)
+
+        await getTransactionsByGroupByCategory(req, res);
+    
+        expect(Group.findOne).toHaveBeenCalledWith({ name: req.params.name });  
+        expect(categories.findOne).toHaveBeenCalledWith({ type: req.params.category });        
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith(response);
+    });
+
+    test('getTransactionsByGroupByCategory with user not in the group, should return 401', async () => {
+        const req = {
+            params: {
+                name: 'Gruppo1',
+                category: 'Food',
+            },
+            url: '/api/groups/Gruppo1/transactions/category/Food',
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: {},
+        };
+        
+        const group = {
+            name: req.params.name,
+            members: [
+                { email: 'member1@example.com' },
+                { email: 'member2@example.com' },
+            ],
+        };
+        const category = req.params.category;
+
+        const resAuth = { authorized: false, cause: "Group: user not in group" };
+        const response = { error: "Group: user not in group" };
+        jest.spyOn(Group, "findOne").mockImplementation(() => group)
+        jest.spyOn(categories, "findOne").mockImplementation(() => category)
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
+
+        await getTransactionsByGroupByCategory(req, res);
+    
+        expect(Group.findOne).toHaveBeenCalledWith({ name: req.params.name });  
+        expect(categories.findOne).toHaveBeenCalledWith({ type: req.params.category });        
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith(response);
+    });
+
+    test('getTransactionsByGroupByCategory with user not an admin, should return 401', async () => {
+        const req = {
+            params: {
+                name: 'Gruppo1',
+                category: 'Food',
+            },
+            url: '/api/transactions/groups/Gruppo1/category/Food',
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: {},
+        };
+        
+        const group = {
+            name: req.params.name,
+            members: [
+                { email: 'member1@example.com' },
+                { email: 'member2@example.com' },
+            ],
+        };
+        const category = req.params.category;
+
+        const resAuth = { authorized: false, cause: "Admin: Mismatched role" };
+        const response = { error: "Admin: Mismatched role" };
+        jest.spyOn(Group, "findOne").mockImplementation(() => group)
+        jest.spyOn(categories, "findOne").mockImplementation(() => category)
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
+
+        await getTransactionsByGroupByCategory(req, res);
+    
+        expect(Group.findOne).toHaveBeenCalledWith({ name: req.params.name });  
+        expect(categories.findOne).toHaveBeenCalledWith({ type: req.params.category });        
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith(response);
     });
 })
 
@@ -396,10 +550,9 @@ describe("deleteTransaction", () => {
         const Transaction = { _id: "6hjkohgfc8nvu786"};
         const user = {username: "Mario"};
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         // NON SO SE VA BENE
-        const refreshedTokenMessage= undefined;
-        const response = {data: {message: "Transaction deleted"}, refreshedTokenMessage: refreshedTokenMessage};
+        const response = {data: {message: "Transaction deleted"}, refreshedTokenMessage: undefined};
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(User, "findOne").mockImplementation(() => user);
         jest.spyOn(transactions, "findOne").mockImplementation(() => Transaction);
@@ -532,7 +685,7 @@ describe("deleteTransaction", () => {
         const Transaction = { _id: "6hjkohgfc8nvu786"};
         const user = {username: "Mario"};
 
-        const resAuth =  { flag: false, cause: "User: Mismatched users" };
+        const resAuth =  { authorized: false, cause: "User: Mismatched users" };
         const response = { error: "User: Mismatched users"};
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(User, "findOne").mockImplementation(() => user);
@@ -572,10 +725,9 @@ describe("deleteTransactions", () => {
             { _id: "6hjkohgfc8nvu788"}
         ];
 
-        const resAuth = { flag: true, cause: "Authorized" };
+        const resAuth = { authorized: true, cause: "Authorized" };
         // NON SO SE VA BENE
-        const refreshedTokenMessage= undefined;
-        const response = {data: {message: "Transactions deleted"}, refreshedTokenMessage: refreshedTokenMessage };
+        const response = {data: {message: "Transactions deleted"}, refreshedTokenMessage: undefined };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         Transactions.forEach((transaction) => {
             jest.spyOn(transactions, "findOne").mockImplementation(() => transaction);
@@ -614,11 +766,6 @@ describe("deleteTransactions", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
-        const Transactions = [
-            { _id: "6hjkohgfc8nvu786"},
-            { _id: "6hjkohgfc8nvu788"}
-        ];
 
         const response = { error: "Some Parameter is Missing" };
 
@@ -646,16 +793,8 @@ describe("deleteTransactions", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
-        const Transactions = [
-            { _id: " "},
-            { _id: "6hjkohgfc8nvu788"}
-        ];
 
         const response = { error: "Some Parameter is an Empty String" };
-        Transactions.forEach((transaction) => {
-            jest.spyOn(transactions, "findOne").mockImplementation(() => transaction);
-        });
        
         await deleteTransactions(mockReq, mockRes)
 
@@ -688,15 +827,12 @@ describe("deleteTransactions", () => {
         ];
 
         const response = { error: "Transaction not found." };
-        Transactions.forEach((transaction) => {
-            jest.spyOn(transactions, "findOne").mockImplementation(() => null);
-        });
+
+        jest.spyOn(transactions, "findOne").mockImplementation(() => null);
 
         await deleteTransactions(mockReq, mockRes)
 
-        Transactions.forEach((transaction) => {
-            expect(transactions.findOne).toHaveBeenCalledWith({ _id: transaction._id })
-        });
+        expect(transactions.findOne).toHaveBeenCalledWith({ _id: Transactions[0]._id })
         expect(mockRes.status).toHaveBeenCalledWith(400)
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
@@ -725,7 +861,7 @@ describe("deleteTransactions", () => {
             { _id: "6hjkohgfc8nvu788"}
         ];
 
-        const resAuth = { flag: false, cause: "Admin: Mismatched role" };
+        const resAuth = { authorized: false, cause: "Admin: Mismatched role" };
         const response = { error: "Admin: Mismatched role" };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         Transactions.forEach((transaction) => {

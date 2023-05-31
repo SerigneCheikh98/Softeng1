@@ -50,7 +50,7 @@ describe("getUsers", () => {
       locals: jest.fn(),
     }
     
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: [], refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -76,7 +76,7 @@ describe("getUsers", () => {
       { username: 'test1', email: 'test1@example.com', role: 'Regular' }, 
       { username: 'test2', email: 'test2@example.com', role: 'Regular' }
     ]
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: retrievedUsers, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -97,7 +97,7 @@ describe("getUsers", () => {
       locals: jest.fn(),
     }
 
-    const res = { flag: false, cause: "Admin: Mismatched role" };
+    const res = { authorized: false, cause: "Admin: Mismatched role" };
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
 
     await getUsers(mockReq, mockRes)
@@ -131,7 +131,7 @@ describe("getUser", () => {
     }
    
     const retrieveUser = {username: 'maurizio', email: 'maurizio.mo@polito.it', role: 'Regular'};
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: retrieveUser, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -155,7 +155,7 @@ describe("getUser", () => {
     }
 
     const retrieveUser = {username: 'edith', email: 'edith.ra@polito.it', role: 'Regular'};
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: retrieveUser, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res) 
@@ -178,7 +178,7 @@ describe("getUser", () => {
       locals: jest.fn(),
     }
 
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = { message: "User not found" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res) 
@@ -202,7 +202,7 @@ describe("getUser", () => {
     }
 
     const retrieveUser = {username: 'mario', email: 'mario.red@email.com', role: 'Regular'};
-    const response = { flag: false, cause: "User: Mismatched users" };
+    const response = { authorized: false, cause: "User: Mismatched users" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => response) 
     jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
@@ -229,7 +229,7 @@ describe("createGroup", () => {
     }
 
     const returnedGroupObject = {name: "testgroup1", members: ["notingroup1@example.com", "notingroup2@example.com", "notingroup3@example.com" ]}
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: {group: returnedGroupObject, membersNotFound: [], alreadyInGroup: []}}
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -254,7 +254,7 @@ describe("createGroup", () => {
     }
 
     const returnedGroupObject = {name: "testgroup1", members: ["notingroup1@example.com"]}
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: {group: returnedGroupObject, membersNotFound: ["notfound@example.com"], alreadyInGroup: ["alreadyingroup@example.com"]}}
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -277,7 +277,7 @@ describe("createGroup", () => {
       locals: jest.fn()
     }
 
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: {error: "Group already exists"}}
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -299,7 +299,7 @@ describe("createGroup", () => {
       locals: jest.fn()
     }
 
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: { error: "All memberEmails does not exist or Already in Group" }}
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -322,7 +322,7 @@ describe("getGroups", () => {
       locals: jest.fn(),
     }
 
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: [], refreshedTokenMessage: undefined}; // refreshedTokenMessage is to be handled?
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -347,7 +347,7 @@ describe("getGroups", () => {
       { group: 'testgroup2', members: ["test3@example.com", "test4@example.com"]}
     ]
 
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: retrievedUsers, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
@@ -394,7 +394,7 @@ describe("deleteUser", () => {
     }
     const deletedTransactions = {deletedCount: 3};
     const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: false}, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -427,7 +427,7 @@ describe("deleteUser", () => {
     const deletedTransactions = {deletedCount: 3};
     const fromGroup = {name: "groupName", members: [{ email: "other.member@polito.it", user: 1 }]};
     const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
     
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -461,7 +461,7 @@ describe("deleteUser", () => {
     const deletedTransactions = {deletedCount: 3};
     const fromGroup = {name: "groupName", members: []};
     const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -544,7 +544,7 @@ describe("deleteUser", () => {
       json: jest.fn(),
     }
 
-    const res = { flag: true, cause: "Authorized" };
+    const res = { authorized: true, cause: "Authorized" };
     const response = { error: "User Does Not exist" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
@@ -568,7 +568,7 @@ describe("deleteUser", () => {
       json: jest.fn(),
     }
 
-    const res = { flag: false, cause: "Admin: Mismatched role" };
+    const res = { authorized: false, cause: "Admin: Mismatched role" };
     const response = { error: res.cause };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
