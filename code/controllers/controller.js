@@ -217,7 +217,7 @@ export const createTransaction = async (req, res) => {
             const new_transaction = new transactions({ username, amount, type, date: new Date() });//date is also taken as default in the costructor but we insert it anyway
             console.log(new_transaction.date);
             new_transaction.save()
-                .then(data => res.status(200).json({data: {username: username, amount: amount, type: type, date: new_transaction.date}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
+                .then(() => res.status(200).json({data: {username: username, amount: amount, type: type, date: new_transaction.date}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
                 .catch(err => { res.status(400).json({ error: err.message }) })
         } else {
             res.status(401).json({ error: userAuth.cause })
@@ -239,9 +239,6 @@ export const getAllTransactions = async (req, res) => {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.flag) {
             //Admin auth successful
-            /**
-             * MongoDB equivalent to the query "SELECT * FROM transactions, categories WHERE transactions.type = categories.type"
-             */
             transactions.aggregate([
                 {
                     $lookup: {
@@ -255,7 +252,7 @@ export const getAllTransactions = async (req, res) => {
             ]).then((result) => {
                 let data = result.map(v => Object.assign({}, { username: v.username, type: v.type, amount: v.amount, date: v.date, color: v.categories_info.color }))
                 res.status(200).json({data: data, refreshedTokenMessage: res.locals.refreshedTokenMessage});
-            }).catch(err => { res.status(400).json({ error: err.message }) })
+            })
         } else {
             return res.status(401).json({ error: adminAuth.cause})
         }

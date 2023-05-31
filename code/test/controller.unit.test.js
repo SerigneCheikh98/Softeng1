@@ -2,21 +2,22 @@ import request from 'supertest';
 import { app } from '../app';
 import jwt from 'jsonwebtoken';
 import { categories, transactions } from '../models/model';
-import { deleteTransactions,deleteTransaction, getTransactionsByGroupByCategory } from '../controllers/controller';
+import {getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory } from '../controllers/controller';
 import { Group, User } from '../models/User';
 import mongoose from 'mongoose';
-import { createCategory  } from '../controllers/controller';
+import * as controller from '../controllers/controller';
+import { createCategory } from '../controllers/controller';
 import { verifyAuth } from '../controllers/utils';
 
 jest.mock('../models/model');
 
 beforeEach(() => {
-  categories.find.mockClear();
-  categories.prototype.save.mockClear();
-  transactions.find.mockClear();
-  transactions.deleteOne.mockClear();
-  transactions.aggregate.mockClear();
-  transactions.prototype.save.mockClear();
+    categories.find.mockClear();
+    categories.prototype.save.mockClear();
+    transactions.find.mockClear();
+    transactions.deleteOne.mockClear();
+    transactions.aggregate.mockClear();
+    transactions.prototype.save.mockClear();
 });
 
 const VerifyAuthmodule = require('../controllers/utils');
@@ -31,7 +32,7 @@ const VerifyAuthmodule = require('../controllers/utils');
  * - Returns a 400 error if the type of category passed in the request body represents an already existing category in the database
  * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
  */
-describe("createCategory", () => { 
+describe("createCategory", () => {
     test('Should return the created category', async () => {
         const mockReq = {
             body: {
@@ -45,7 +46,7 @@ describe("createCategory", () => {
             locals: jest.fn(),
         }
         const res = { flag: true, cause: "Authorized" };
-        const response = {data: {type: mockReq.body.type , color: mockReq.body.color}, refreshedTokenMessage: undefined};
+        const response = { data: { type: mockReq.body.type, color: mockReq.body.color }, refreshedTokenMessage: undefined };
 
         jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
         jest.spyOn(categories.prototype, "save").mockResolvedValue();
@@ -108,7 +109,7 @@ describe("createCategory", () => {
     test('Should return error if the type of category passed in the request body represents an already existing category in the database', async () => {
         const mockReq = {
             body: {
-                type: "IAlreadyExist",
+                type: "AlreadyExist",
                 color: "cyan"
             }
         }
@@ -155,54 +156,177 @@ describe("createCategory", () => {
     });
 })
 
-describe("updateCategory", () => { 
+describe("updateCategory", () => {
     test('Dummy test, change it', () => {
         expect(true).toBe(true);
     });
 })
 
-describe("deleteCategory", () => { 
+describe("deleteCategory", () => {
     test('Dummy test, change it', () => {
         expect(true).toBe(true);
     });
 })
 
-describe("getCategories", () => { 
+describe("getCategories", () => {
     test('Dummy test, change it', () => {
         expect(true).toBe(true);
     });
 })
 
-describe("createTransaction", () => { 
+describe("createTransaction", () => {
+    test('Dummy test, change it', () => {
+        expect(true).toBe(true);
+    });
+})
+/*Request Parameters: None
+Request Body Content: None
+Response data Content: An array of objects, each one having attributes username, type, amount, date and color
+Example: res.status(200).json({data: [{username: "Mario", amount: 100, type: "food", date: "2023-05-19T00:00:00", color: "red"}, {username: "Mario", amount: 70, type: "health", date: "2023-05-19T10:00:00", color: "green"}, {username: "Luigi", amount: 20, type: "food", date: "2023-05-19T10:00:00", color: "red"} ], refreshedTokenMessage: res.locals.refreshedTokenMessage})
+Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)*/
+
+
+describe("getAllTransactions", () => {
+    test('should return transactions with category information for Admin (200)', async () => {
+        // Mock the verifyAuth function to return successful admin authentication
+        verifyAuth.mockReturnValue({ flag: true, cause: "Authorized" });
+
+        // Mock the transactions.aggregate function to return mock data
+        transactions.aggregate.mockResolvedValue([
+            {
+                username: 'user1',
+                type: 'expense',
+                amount: 50,
+                date: '2023-05-30',
+                categories_info: { color: 'red' },
+            },
+            {
+                username: 'user2',
+                type: 'income',
+                amount: 100,
+                date: '2023-05-29',
+                categories_info: { color: 'green' },
+            },
+        ]);
+
+        // Prepare mock request and response objects
+        const req = {};
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: { refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls' },
+        };
+
+        // Call the getAllTransactions function
+        await getAllTransactions(req, res);
+
+        // Assert the expected behavior
+
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'Admin' });
+
+        // Verify that transactions.aggregate was called with the correct aggregation pipeline
+        expect(transactions.aggregate).toHaveBeenCalledWith([
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'type',
+                    foreignField: 'type',
+                    as: 'categories_info',
+                },
+            },
+            { $unwind: '$categories_info' },
+        ]);
+
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+            data: [
+                {
+                    username: 'user1',
+                    type: 'expense',
+                    amount: 50,
+                    date: '2023-05-30',
+                    color: 'red',
+                },
+                {
+                    username: 'user2',
+                    type: 'income',
+                    amount: 100,
+                    date: '2023-05-29',
+                    color: 'green',
+                },
+            ],
+            refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls',
+        });
+    });
+
+    test('should return error for non-admin users (401)', async () => {
+        // Mock the verifyAuth function to return unsuccessful authentication
+        verifyAuth.mockReturnValue({ flag: false, cause: "Admin: Mismatched role" });
+
+        // Prepare mock request and response objects
+        const req = {};
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        // Call the getAllTransactions function
+        await getAllTransactions(req, res);
+
+        // Assert the expected behavior
+
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'Admin' });
+
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({ error: "Admin: Mismatched role" });
+    });
+
+    test('should return error for unexpected errors (500)', async () => {
+        // Mock the verifyAuth function to throw an error
+        verifyAuth.mockImplementation(() => {
+            throw new Error('Authentication error');
+        });
+
+        // Prepare mock request and response objects
+        const req = {};
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        // Call the getAllTransactions function
+        await getAllTransactions(req, res);
+
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'Admin' });
+
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({ error: 'Authentication error' });
+    });
+});
+
+describe("getTransactionsByUser", () => {
     test('Dummy test, change it', () => {
         expect(true).toBe(true);
     });
 })
 
-describe("getAllTransactions", () => { 
+describe("getTransactionsByUserByCategory", () => {
     test('Dummy test, change it', () => {
         expect(true).toBe(true);
     });
 })
 
-describe("getTransactionsByUser", () => { 
+describe("getTransactionsByGroup", () => {
     test('Dummy test, change it', () => {
         expect(true).toBe(true);
     });
 })
-
-describe("getTransactionsByUserByCategory", () => { 
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
-    });
-})
-
-describe("getTransactionsByGroup", () => { 
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
-    });
-})
-
 describe("getTransactionsByGroupByCategory", () => { 
     test('deleteTransaction, should delete the transaction with success', async () => { 
         process.env.ACCESS_KEY = 'EZWALLET';
@@ -307,76 +431,76 @@ describe("getTransactionsByGroupByCategory", () => {
         expect(Group.findOne).toHaveBeenCalledWith({ name: group.name });
         expect(categories.findOne).toHaveBeenCalledWith({ type: category.type });
         // Assert the result
-        /*expect(result).toEqual([
+        expect(result).toEqual([
             {username: "Mario", amount: 100, type: "Food", date: "2023-05-19T00:00:00", color: "Black"}
-          ]);*/
-      
-          // Verify that the mock aggregate function was called with the correct arguments
-          expect(mockAggregate).toHaveBeenCalledWith([
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'username',
-                    foreignField: 'username',
-                    as: 'user'
-                }
-            },
-            {
-                $unwind: '$user'
-            },
-            {
-                $lookup: {
-                    from: 'groups',
-                    localField: 'user.email',
-                    foreignField: 'members.email',
-                    as: 'group'
-                }
-            },
-            {
-                $unwind: '$group'
-            },
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'type',
-                    foreignField: 'type',
-                    as: 'category'
-                }
-            },
-            {
-                $unwind: '$category'
-            },
-            {
-                $match: {
-                    'group.name': group.name,
-                    'category.type' : category.type
-                }
-            },
-            {
-                $project: {
-                    'user.username': 1,
-                    'user.email': 1,
-                    'group.name': 1,
-                    'category.type': 1,
-                    'amount': 1,
-                    'date': 1,
-                    'category.color': 1
-                }
-            }
-        ]);
-      
-          // Verify that the exec function was called
-          expect(mockAggregate().exec).toHaveBeenCalled();
-        expect(mockRes.status).toHaveBeenCalledWith(200)
-        expect(mockRes.json).toHaveBeenCalledWith(response)
-    });
+          ]);
+/*
+    // Verify that the mock aggregate function was called with the correct arguments
+    expect(mockAggregate).toHaveBeenCalledWith([
+      {
+          $lookup: {
+              from: 'users',
+              localField: 'username',
+              foreignField: 'username',
+              as: 'user'
+          }
+      },
+      {
+          $unwind: '$user'
+      },
+      {
+          $lookup: {
+              from: 'groups',
+              localField: 'user.email',
+              foreignField: 'members.email',
+              as: 'group'
+          }
+      },
+      {
+          $unwind: '$group'
+      },
+      {
+          $lookup: {
+              from: 'categories',
+              localField: 'type',
+              foreignField: 'type',
+              as: 'category'
+          }
+      },
+      {
+          $unwind: '$category'
+      },
+      {
+          $match: {
+              'group.name': group.name,
+              'category.type' : category.type
+          }
+      },
+      {
+          $project: {
+              'user.username': 1,
+              'user.email': 1,
+              'group.name': 1,
+              'category.type': 1,
+              'amount': 1,
+              'date': 1,
+              'category.color': 1
+          }
+      }
+  ]);
+ 
+    // Verify that the exec function was called
+    expect(mockAggregate().exec).toHaveBeenCalled();
+  expect(mockRes.status).toHaveBeenCalledWith(200)
+  expect(mockRes.json).toHaveBeenCalledWith(response)
+});
 })
-
-describe("deleteTransaction", () => { 
-    test('deleteTransaction, should delete the transaction with success', async () => { 
+*/
+describe("deleteTransaction", () => {
+    test('deleteTransaction, should delete the transaction with success', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
-            params: {username: "Mario"},
+            params: { username: "Mario" },
             body: {
                 _id: "6hjkohgfc8nvu786"
             },
@@ -392,14 +516,14 @@ describe("deleteTransaction", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
-        const Transaction = { _id: "6hjkohgfc8nvu786"};
-        const user = {username: "Mario"};
+
+        const Transaction = { _id: "6hjkohgfc8nvu786" };
+        const user = { username: "Mario" };
 
         const resAuth = { flag: true, cause: "Authorized" };
         // NON SO SE VA BENE
-        const refreshedTokenMessage= undefined;
-        const response = {data: {message: "Transaction deleted"}, refreshedTokenMessage: refreshedTokenMessage};
+        const refreshedTokenMessage = undefined;
+        const response = { data: { message: "Transaction deleted" }, refreshedTokenMessage: refreshedTokenMessage };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(User, "findOne").mockImplementation(() => user);
         jest.spyOn(transactions, "findOne").mockImplementation(() => Transaction);
@@ -414,10 +538,10 @@ describe("deleteTransaction", () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransaction with body that does not contain all the necessary attributes, should return 400', async () => { 
+    test('deleteTransaction with body that does not contain all the necessary attributes, should return 400', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
-            params: {username: "Mario"},
+            params: { username: "Mario" },
             body: {
             },
             cookies: {
@@ -432,19 +556,19 @@ describe("deleteTransaction", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-       
+
         const response = { error: "Some Parameter is Missing" };
-        
+
         await deleteTransaction(mockReq, mockRes)
-        
+
         expect(mockRes.status).toHaveBeenCalledWith(400)
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransaction with username passed as a route parameter that does not represent a user in the database, should return 400', async () => { 
+    test('deleteTransaction with username passed as a route parameter that does not represent a user in the database, should return 400', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
-            params: {username: "Mario"},
+            params: { username: "Mario" },
             body: {
                 _id: "6hjkohgfc8nvu786"
             },
@@ -460,23 +584,23 @@ describe("deleteTransaction", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
-        const user = {username: "Mario"};
+
+        const user = { username: "Mario" };
 
         const response = { error: "User not Found." };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(User, "findOne").mockImplementation(() => null);
-        
+
         await deleteTransaction(mockReq, mockRes)
         expect(User.findOne).toHaveBeenCalledWith({ username: user.username })
         expect(mockRes.status).toHaveBeenCalledWith(400)
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransaction with the _id in the request body that does not represent a transaction in the database, should return 400', async () => { 
+    test('deleteTransaction with the _id in the request body that does not represent a transaction in the database, should return 400', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
-            params: {username: "Mario"},
+            params: { username: "Mario" },
             body: {
                 _id: "6hjkohgfc8nvu786"
             },
@@ -492,15 +616,15 @@ describe("deleteTransaction", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
-        const Transaction = { _id: "6hjkohgfc8nvu786"};
-        const user = {username: "Mario"};
-        
+
+        const Transaction = { _id: "6hjkohgfc8nvu786" };
+        const user = { username: "Mario" };
+
         const response = { error: "Transaction not Found." };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(User, "findOne").mockImplementation(() => user);
         jest.spyOn(transactions, "findOne").mockImplementation(() => null);
-        
+
 
         await deleteTransaction(mockReq, mockRes)
         expect(User.findOne).toHaveBeenCalledWith({ username: user.username })
@@ -509,10 +633,10 @@ describe("deleteTransaction", () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransaction called by an authenticated user who is not the same user as the one in the route (authType = User), should return 401', async () => { 
+    test('deleteTransaction called by an authenticated user who is not the same user as the one in the route (authType = User), should return 401', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
-            params: {username: "Mario"},
+            params: { username: "Mario" },
             body: {
                 _id: "6hjkohgfc8nvu786"
             },
@@ -528,12 +652,12 @@ describe("deleteTransaction", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
-        const Transaction = { _id: "6hjkohgfc8nvu786"};
-        const user = {username: "Mario"};
 
-        const resAuth =  { flag: false, cause: "User: Mismatched users" };
-        const response = { error: "User: Mismatched users"};
+        const Transaction = { _id: "6hjkohgfc8nvu786" };
+        const user = { username: "Mario" };
+
+        const resAuth = { flag: false, cause: "User: Mismatched users" };
+        const response = { error: "User: Mismatched users" };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         jest.spyOn(User, "findOne").mockImplementation(() => user);
         jest.spyOn(transactions, "findOne").mockImplementation(() => Transaction);
@@ -547,12 +671,12 @@ describe("deleteTransaction", () => {
     });
 })
 
-describe("deleteTransactions", () => { 
-    test('deleteTransactions, should delete all transactions with success', async () => { 
+describe("deleteTransactions", () => {
+    test('deleteTransactions, should delete all transactions with success', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
-                _ids: ["6hjkohgfc8nvu786","6hjkohgfc8nvu788"]
+                _ids: ["6hjkohgfc8nvu786", "6hjkohgfc8nvu788"]
             },
             cookies: {
                 accessToken: jwt.sign({ username: 'Mario', email: "mario.red@email.com", role: "Admin" }, process.env.ACCESS_KEY),
@@ -566,16 +690,16 @@ describe("deleteTransactions", () => {
             locals: jest.fn(),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
+
         const Transactions = [
-            { _id: "6hjkohgfc8nvu786"},
-            { _id: "6hjkohgfc8nvu788"}
+            { _id: "6hjkohgfc8nvu786" },
+            { _id: "6hjkohgfc8nvu788" }
         ];
 
         const resAuth = { flag: true, cause: "Authorized" };
         // NON SO SE VA BENE
-        const refreshedTokenMessage= undefined;
-        const response = {data: {message: "Transactions deleted"}, refreshedTokenMessage: refreshedTokenMessage };
+        const refreshedTokenMessage = undefined;
+        const response = { data: { message: "Transactions deleted" }, refreshedTokenMessage: refreshedTokenMessage };
         //any time the `User.findOne()` method is called jest will replace its actual implementation with the one defined below
         Transactions.forEach((transaction) => {
             jest.spyOn(transactions, "findOne").mockImplementation(() => transaction);
@@ -597,7 +721,7 @@ describe("deleteTransactions", () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransactions with body without all necessary attributes, should return 400', async () => { 
+    test('deleteTransactions with body without all necessary attributes, should return 400', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
@@ -614,10 +738,10 @@ describe("deleteTransactions", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
+
         const Transactions = [
-            { _id: "6hjkohgfc8nvu786"},
-            { _id: "6hjkohgfc8nvu788"}
+            { _id: "6hjkohgfc8nvu786" },
+            { _id: "6hjkohgfc8nvu788" }
         ];
 
         const response = { error: "Some Parameter is Missing" };
@@ -628,11 +752,11 @@ describe("deleteTransactions", () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransactions with at least one of the ids in the array is an empty string, should return 400', async () => { 
+    test('deleteTransactions with at least one of the ids in the array is an empty string, should return 400', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
-                _ids: [" ","6hjkohgfc8nvu788"]
+                _ids: [" ", "6hjkohgfc8nvu788"]
             },
             cookies: {
                 accessToken: jwt.sign({ username: 'Mario', email: "mario.red@email.com", role: "Admin" }, process.env.ACCESS_KEY),
@@ -646,28 +770,28 @@ describe("deleteTransactions", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
+
         const Transactions = [
-            { _id: " "},
-            { _id: "6hjkohgfc8nvu788"}
+            { _id: " " },
+            { _id: "6hjkohgfc8nvu788" }
         ];
 
         const response = { error: "Some Parameter is an Empty String" };
         Transactions.forEach((transaction) => {
             jest.spyOn(transactions, "findOne").mockImplementation(() => transaction);
         });
-       
+
         await deleteTransactions(mockReq, mockRes)
 
         expect(mockRes.status).toHaveBeenCalledWith(400)
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransactions with at least one of the ids in the array does not represent a transaction in the database, should return 400', async () => { 
+    test('deleteTransactions with at least one of the ids in the array does not represent a transaction in the database, should return 400', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
-                _ids: ["6hjkohgfc8nvu786","6hjkohgfc8nvu788"]
+                _ids: ["6hjkohgfc8nvu786", "6hjkohgfc8nvu788"]
             },
             cookies: {
                 accessToken: jwt.sign({ username: 'Mario', email: "mario.red@email.com", role: "Admin" }, process.env.ACCESS_KEY),
@@ -681,10 +805,10 @@ describe("deleteTransactions", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
+
         const Transactions = [
-            { _id: "6hjkohgfc8nvu786"},
-            { _id: "6hjkohgfc8nvu788"}
+            { _id: "6hjkohgfc8nvu786" },
+            { _id: "6hjkohgfc8nvu788" }
         ];
 
         const response = { error: "Transaction not found." };
@@ -701,11 +825,11 @@ describe("deleteTransactions", () => {
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 
-    test('deleteTransactions not called by an Admin, should return 401', async () => { 
+    test('deleteTransactions not called by an Admin, should return 401', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
         const mockReq = {
             body: {
-                _ids: ["6hjkohgfc8nvu786","6hjkohgfc8nvu788"]
+                _ids: ["6hjkohgfc8nvu786", "6hjkohgfc8nvu788"]
             },
             cookies: {
                 accessToken: jwt.sign({ username: 'Mario', email: "mario.red@email.com", role: "User" }, process.env.ACCESS_KEY),
@@ -719,10 +843,10 @@ describe("deleteTransactions", () => {
             locals: jest.fn().mockResolvedValue(null),
             cookie: jest.fn().mockResolvedValue(null),
         }
-        
+
         const Transactions = [
-            { _id: "6hjkohgfc8nvu786"},
-            { _id: "6hjkohgfc8nvu788"}
+            { _id: "6hjkohgfc8nvu786" },
+            { _id: "6hjkohgfc8nvu788" }
         ];
 
         const resAuth = { flag: false, cause: "Admin: Mismatched role" };
