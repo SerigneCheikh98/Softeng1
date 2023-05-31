@@ -52,11 +52,6 @@ describe("handleDateFilterParams", () => {
         const req = {
             from: '2023-05-29',
         }
-        /* const mockRes = {
-             //status: jest.fn().mockReturnThis(),
-             json: jest.fn(),
-             locals: jest.fn(),
-         }*/
         const response = {
             date: {
                 $gte: new Date('2023-05-29T00:00:00.000Z'),
@@ -154,7 +149,16 @@ describe("handleDateFilterParams", () => {
             handleDateFilterParams(req);
         }).toThrow("From or upTo not valid");
     });
+    test('should throw an error when from or upTo are not valid but both defined', () => {
+        const req = {
+            from: 'InvalidDate',
+            upTo: '2023-06-08',
+        };
 
+        expect(() => {
+            handleDateFilterParams(req);
+        }).toThrow("From or upTo not valid");
+    });
 
 })
 
@@ -183,7 +187,6 @@ describe("handleDateFilterParams", () => {
  */
 
 
-// ANCHE EMAIL MISMATCHED USER?
 // per esempio  "" the accessToken is expired and the refreshToken has a `role` which is not Admin" => devo fare 3 test? uno per user, uno per group e uno per simple?
 process.env.ACCESS_KEY = 'EZWALLET';
 
@@ -212,6 +215,77 @@ describe('verifyAuth', () => {
         const result = verifyAuth(req, res, info);
         expect(result).toEqual(response);
     });
+    test('Should return non authorized when accessToken or  refreshToken are not both defined', () => {
+        const req = {
+            cookies: {
+                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin'}, process.env.ACCESS_KEY),
+           
+            },
+        };
+        const res = {
+            cookie: jest.fn(),
+            locals: {},
+        };
+        const info = {
+            authType: 'Admin',
+        };
+
+        const response = {
+            flag: false,
+            cause: "Unauthorized",
+        };
+
+        const result = verifyAuth(req, res, info);
+        expect(result).toEqual(response);
+    });
+    test('Should return non authorized when accessToken has missing information', () => {
+        const req = {
+            cookies: {
+                accessToken: jwt.sign({ username: 'admin', role: 'Admin'}, process.env.ACCESS_KEY),
+                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY),
+
+            },
+        };
+        const res = {
+            cookie: jest.fn(),
+            locals: {},
+        };
+        const info = {
+            authType: 'Admin',
+        };
+
+        const response = {
+            flag: false,
+            cause: "Token is missing information",
+        };
+
+        const result = verifyAuth(req, res, info);
+        expect(result).toEqual(response);
+    });
+    test('Should return non authorized when refreshToken has missing information', () => {
+        const req = {
+            cookies: {
+                accessToken: jwt.sign({ username: 'admin', email: 'test@example.com', role: 'Admin'}, process.env.ACCESS_KEY),
+                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com' }, process.env.ACCESS_KEY),
+
+            },
+        };
+        const res = {
+            cookie: jest.fn(),
+            locals: {},
+        };
+        const info = {
+            authType: 'Admin',
+        };
+
+        const response = {
+            flag: false,
+            cause: "Token is missing information",
+        };
+
+        const result = verifyAuth(req, res, info);
+        expect(result).toEqual(response);
+    });
     // USER
     //both the accessToken and the refreshToken have a `username` equal to the requested one => success
     test('should return the correct result when authentication is successful using User authType and matching username', () => {
@@ -233,6 +307,30 @@ describe('verifyAuth', () => {
         const response = {
             flag: true,
             cause: 'Authorized',
+        };
+
+        const result = verifyAuth(req, res, info);
+        expect(result).toEqual(response);
+    });
+    test('should return "Mismatched users" when accessToken have a `username` different from the requested one using User authType', () => {
+        const req = {
+            cookies: {
+                accessToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY),
+                refreshToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY),
+            },
+        };
+        const res = {
+            cookie: jest.fn(),
+            locals: {},
+        };
+        const info = {
+            authType: 'User',
+            username: 'testuser',
+        };
+
+        const response = {
+            flag: false,
+            cause: "User: Mismatched users",
         };
 
         const result = verifyAuth(req, res, info);
@@ -583,6 +681,53 @@ describe('verifyAuth', () => {
         const result = verifyAuth(req, res, info);
         expect(result).toEqual(response);
     });
+    test('should return not Authorized when access and refresh token are both expired', () => {
+        const req = {
+          cookies: {
+            accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
+            refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30  }, process.env.ACCESS_KEY),
+          },
+        };
+        const res = {
+          cookie: jest.fn(),
+          locals: {},
+        };
+        const info = {
+          authType: 'Simple',
+        };
+       
+        const response = {
+            flag: false,
+            cause: "Perform login again",
+        };
+
+        const result = verifyAuth(req, res, info);
+        expect(result).toEqual(response);
+      });
+      test('should return not Authorized when access and refresh token are both expired', () => {
+        const req = {
+          cookies: {
+            accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
+            refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30  }, process.env.ACCESS_KEY),
+          },
+        };
+        const res = {
+          cookie: jest.fn(),
+          locals: {},
+        };
+        const info = {
+            authType: 'Group',
+            emails: [],
+        };
+       
+        const response = {
+            flag: false,
+            cause: "Perform login again",
+        };
+
+        const result = verifyAuth(req, res, info);
+        expect(result).toEqual(response);
+      });
     /*
 test('should throw an error when access token is missing', () => {
   const req = {
@@ -602,49 +747,7 @@ test('should throw an error when access token is missing', () => {
       verifyAuth(req, res, info);
   }).toThrow('Unauthorized');
 });
- 
-test('should throw an error when access token is expired and user not in group for Group authType', () => {
-  const req = {
-    cookies: {
-      accessToken: 'expiredAccessToken',
-      refreshToken: 'validRefreshToken',
-    },
-  };
-  const res = {
-    cookie: jest.fn(),
-    locals: {},
-  };
-  const info = {
-    authType: 'Group',
-    emails: ['john.doe@example.com', 'jane.doe@example.com'],
-  };
- 
-  expect(() => {
-    verifyAuth(req, res, info);
-  }).toThrow('Group: Access Token Expired and user not in group');
-});
- 
-test('should throw an error when refresh token is expired', () => {
-  const req = {
-    cookies: {
-      accessToken: 'validAccessToken',
-      refreshToken: 'expiredRefreshToken',
-    },
-  };
-  const res = {
-    cookie: jest.fn(),
-    locals: {},
-  };
-  const info = {
-    authType: 'Simple',
-  };
- 
-  expect(() => {
-    verifyAuth(req, res, info);
-  }).toThrow('Perform login again');
-});
 */
-    // Add more test cases as needed to cover all possible scenarios
 });
 /*Returns an object with an amount attribute used for filtering mongoDB's aggregate queries
 The value of amount is an object that depends on the query parameters:
@@ -721,5 +824,23 @@ describe("handleAmountFilterParams", () => {
             handleAmountFilterParams(req);
         }).toThrow('Min or Max values are not valid');
     });
+    test('should throw an error when max or min are not valid but are both defined', () => {
+        const req = {
+            max: 'InvalidMax',
+            min: '100',
+        };
+
+        expect(() => {
+            handleAmountFilterParams(req);
+        }).toThrow('Min or Max values are not valid');
+    });
+    test('should return an empty object when max and min are not defined ', () => {
+        const req = {};
+
+        const expectedFilter = {};
+
+        const result = handleAmountFilterParams(req);
+        expect(result).toEqual(expectedFilter);
+    }); 
 });
 

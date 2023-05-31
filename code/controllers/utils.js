@@ -86,10 +86,9 @@ export const verifyAuth = (req, res, info) => {
         }
         const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
         const decodedRefreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
-        if (info.authType === "Simple" && (decodedAccessToken.accessToken || decodedRefreshToken.refreshToken) ) {
+        if (info.authType === "Simple" && (!decodedAccessToken.accessToken || !decodedRefreshToken.refreshToken) ) {
             return { flag: true, cause: "Authorized" }
         }
-
         /*
         const currentTime2 = Date.now();
         const remainingTime2 = decodedAccessToken.exp*1000 - currentTime2;

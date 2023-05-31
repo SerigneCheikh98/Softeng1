@@ -68,6 +68,10 @@ export const getUser = async (req, res) => {
     - error 400 is returned if there is already an existing group with the same name
     - error 400 is returned if all the `memberEmails` either do not exist or are already in a group
  */
+/* se è in un gruppo caller => 400
+   una email non valida, se caller non in un group ma tutto array di email si => 400
+
+*/
 export const createGroup = async (req, res) => {
   try {
     const userAuth = verifyAuth(req, res, { authType: "Simple" })
@@ -289,6 +293,8 @@ export const addToGroup = async (req, res) => {
     - error 400 is returned if the group does not exist
     - error 400 is returned if all the `memberEmails` either do not exist or are not in the group
  */
+
+  //a user has to remain int the group
 export const removeFromGroup = async (req, res) => {
     try {
       // users = user to remove from group, name = name of the group to delete
