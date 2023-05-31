@@ -500,14 +500,14 @@ export const getTransactionsByGroupByCategory = async (req, res) => {
         }
         if (auth.flag) {
             let allTransactions = [];
-            let group = await Group.findOne({name: req.params.name});
+            /*let group = await Group.findOne({name: req.params.name});
             if (group === null) {
                 return res.status(400).json({ error: "Group does not exist." });
             }
             let category = await categories.findOne({type: req.params.category});
             if (category === null) {
                 return res.status(400).json({ error: "Category does not exist." });               
-            }
+            }*/
             transactions.aggregate([
                 {
                     $lookup: {
