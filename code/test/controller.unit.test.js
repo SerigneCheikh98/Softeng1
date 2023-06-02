@@ -1,12 +1,11 @@
 import request from 'supertest';
 import { app } from '../app';
 import jwt from 'jsonwebtoken';
-import { categories, transactions } from '../models/model';
-import {getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory } from '../controllers/controller';
-import { Group, User } from '../models/User';
 import mongoose from 'mongoose';
 import * as controller from '../controllers/controller';
-import { createCategory } from '../controllers/controller';
+import { categories, transactions } from '../models/model';
+import { createCategory, updateCategory, getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory } from '../controllers/controller';
+import { Group, User } from '../models/User';
 import { verifyAuth } from '../controllers/utils';
 import { response } from 'express';
 
@@ -15,14 +14,16 @@ jest.mock('../models/User');
 
 beforeEach(() => {
   categories.find.mockClear();
+  categories.findOne.mockClear();
+  categories.findOneAndUpdate.mockClear();
   categories.prototype.save.mockClear();
   transactions.find.mockClear();
   transactions.findOne.mockClear();
   transactions.deleteOne.mockClear();
   transactions.aggregate.mockClear();
+  transactions.updateMany.mockClear();
   transactions.prototype.save.mockClear();
   Group.findOne.mockClear();
-  categories.findOne.mockClear();
 });
 
 const VerifyAuthmodule = require('../controllers/utils');
@@ -161,9 +162,189 @@ describe("createCategory", () => {
     });
 })
 
-describe("updateCategory", () => {
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
+/**
+ * - Request Parameters: A string equal to the `type` of the category that must be edited
+ *   - Example: `api/categories/food`
+ * - Request Body Content: An object having attributes `type` and `color` equal to the new values to assign to the category
+ *   - Example: `{type: "Food", color: "yellow"}`
+ * - Response `data` Content: An object with parameter `message` that confirms successful editing and a parameter `count` that is equal to the count of transactions whose category was changed with the new type
+ *   - Example: `res.status(200).json({data: {message: "Category edited successfully", count: 2}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - In case any of the following errors apply then the category is not updated, and transactions are not changed
+ * - Returns a 400 error if the request body does not contain all the necessary attributes
+ * - Returns a 400 error if at least one of the parameters in the request body is an empty string
+ * - Returns a 400 error if the type of category passed as a route parameter does not represent a category in the database
+ * - Returns a 400 error if the type of category passed in the request body as the new type represents an already existing category in the database and that category is not the same as the requested one
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
+describe("updateCategory", () => { 
+    test('Should update category successfully and return also the number of transactions whose type changed', async () => {
+        const mockReq = {
+            params: {type: "food"},
+            body: {
+                type: "grocery",
+                color: "blue"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+        const res = { authorized: true, cause: "Authorized" };
+        const updated_transactions = {modifiedCount: 5}
+        const response = { data: { message: "Category edited successfully", count: updated_transactions.modifiedCount }, refreshedTokenMessage: undefined };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+        jest.spyOn(categories, "findOne").mockImplementation(({ type: catType }) => {
+            if(catType === mockReq.params.type){
+                return { type: "food", color: "red" }
+            }
+            else if(catType === mockReq.body.type){
+                return null
+            }
+        })
+        jest.spyOn(categories, "findOneAndUpdate").mockImplementation(() => { mockReq.body})
+        jest.spyOn(transactions, "updateMany").mockImplementation(() => updated_transactions )
+
+        await updateCategory(mockReq, mockRes)
+
+        expect(verifyAuth).toHaveBeenCalled()
+        expect(categories.findOne).toHaveBeenCalled()
+        expect(categories.findOneAndUpdate).toHaveBeenCalled()
+        expect(transactions.updateMany).toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(200)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Should return error if the request body does not contain all the necessary attributes', async () => {
+        const mockReq = {
+            params: {type: "food"},
+            body: {
+                type: "grocery",
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        }
+        const res = { authorized: true, cause: "Authorized" };
+        const response = { error: "Some Parameter is Missing" };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+        
+        await updateCategory(mockReq, mockRes)
+
+        expect(verifyAuth).toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Should return error if at least one of the parameters in the request body is an empty string', async () => {
+        const mockReq = {
+            params: {type: "food"},
+            body: {
+                type: " ",
+                color: "blue"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        }
+        const res = { authorized: true, cause: "Authorized" };
+        const response = { error: "Some Parameter is an Empty String" };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+        
+        await updateCategory(mockReq, mockRes)
+
+        expect(verifyAuth).toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Should return error if the type of category passed as a route parameter does not represent a category in the database', async () => {
+        const mockReq = {
+            params: {type: "ghost"},
+            body: {
+                type: "grocery",
+                color: "blue"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        }
+        const res = { authorized: true, cause: "Authorized" };
+        const response = { error: 'This category does not exist.' };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+        jest.spyOn(categories, "findOne").mockImplementation(() => { return null })
+        
+        await updateCategory(mockReq, mockRes)
+
+        expect(verifyAuth).toHaveBeenCalled()
+        expect(categories.findOne).toHaveBeenCalled()
+        //expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Should return error if the type of category passed in the request body as the new type represents an already existing category in the database and that category is not the same as the requested one', async () => {
+        const mockReq = {
+            params: {type: "food"},
+            body: {
+                type: "grocery",
+                color: "blue"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            locals: jest.fn(),
+        }
+        const res = { authorized: true, cause: "Authorized" };
+        const response = { error: 'New Category Type already exists.' };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+        jest.spyOn(categories, "findOne").mockImplementation(({ type: catType }) => {
+            if(catType === mockReq.params.type){
+                return { type: "food", color: "red" }
+            }
+            else if(catType === mockReq.body.type){
+                return { type: "grocery", color: "red" }
+            }
+        })
+        
+        await updateCategory(mockReq, mockRes)
+
+        expect(verifyAuth).toHaveBeenCalled()
+        expect(categories.findOne).toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
+    });
+
+    test('Should return error if called by an authenticated user who is not an admin (authType = Admin)', async () => {
+        const mockReq = {
+            params: {type: "food"},
+            body: {
+                type: "grocery",
+                color: "blue"
+            }
+        }
+        const mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        }
+        const res = { authorized: false, cause: "Admin: Mismatched role" };
+        const response = { error: res.cause };
+
+        jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+        
+        await updateCategory(mockReq, mockRes)
+
+        expect(verifyAuth).toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(401)
+        expect(mockRes.json).toHaveBeenCalledWith(response)
     });
 })
 
@@ -649,7 +830,7 @@ describe("getTransactionsByGroupByCategory", () => {
         expect(res.json).toHaveBeenCalledWith(response);
     });
 })
-*/
+
 describe("deleteTransaction", () => {
     test('deleteTransaction, should delete the transaction with success', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
