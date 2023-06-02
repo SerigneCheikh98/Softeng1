@@ -570,11 +570,11 @@ export const getTransactionsByGroupByCategory = async (req, res) => {
  */
 export const deleteTransaction = async (req, res) => {
     try {
+        let username = req.params.username;
         const userAuth = verifyAuth(req, res, { authType: "User", username: username });
         if (userAuth.authorized) {
             //User/Admin auth successful
             let id = req.body._id;
-            let username = req.params.username;
             if (!id) {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
             }
