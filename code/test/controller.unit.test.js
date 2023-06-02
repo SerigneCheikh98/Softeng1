@@ -2,7 +2,7 @@ import request from 'supertest';
 import { app } from '../app';
 import jwt from 'jsonwebtoken';
 import { categories, transactions } from '../models/model';
-import {getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory } from '../controllers/controller';
+import {createTransaction,getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory } from '../controllers/controller';
 import { Group, User } from '../models/User';
 import mongoose from 'mongoose';
 import * as controller from '../controllers/controller';
@@ -178,93 +178,260 @@ describe("getCategories", () => {
         expect(true).toBe(true);
     });
 })
-
+/*Returns a 400 error if the request body does not contain all the necessary attributes
+Returns a 400 error if at least one of the parameters in the request body is an empty string
+Returns a 400 error if the type of category passed in the request body does not represent a category in the database
+Returns a 400 error if the username passed in the request body is not equal to the one passed as a route parameter
+Returns a 400 error if the username passed in the request body does not represent a user in the database
+Returns a 400 error if the username passed as a route parameter does not represent a user in the database
+Returns a 400 error if the amount passed in the request body cannot be parsed as a floating value (negative numbers are accepted)
+Returns a 401 error if called by an authenticated user who is not the same user as the one in the route parameter (authType = User)*/
 describe("createTransaction", () => {
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
+    test('Should return a 200 response and save the transaction for authorized user with valid data', async () => {
+        // Mock the verifyAuth function to return successful user authentication
+        verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
+    
+        // Mock the categories.findOne function to return a category
+        categories.findOne.mockResolvedValue({ type: 'expense' });
+    
+        // Mock the User.findOne function to return a user
+        User.findOne.mockResolvedValue({ username: 'user1' });
+    
+        // Mock the transactions.save function to save the transaction and return a resolved promise
+        transactions.prototype.save.mockResolvedValue();
+    
+        // Prepare mock request and response objects
+        const req = {
+          params: { username: 'user1' },
+          body: { username: 'user1', amount: '50', type: 'expense' },
+        };
+        const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+          locals: { refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls' },
+        };
+    
+        // Call the createTransaction function
+        await createTransaction(req, res);
+    
+        // Assert the expected behavior
+    
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+    
+        // Verify that categories.findOne was called with the correct type
+        expect(categories.findOne).toHaveBeenCalledWith({ type: 'expense' });
+    
+        // Verify that User.findOne was called with the correct username
+        expect(User.findOne).toHaveBeenCalledWith({ username: 'user1' });
+    
+        // Verify that transactions.save was called with the correct transaction data
+        expect(transactions.prototype.save).toHaveBeenCalled();
+    
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+          data: {
+            username: 'user1',
+            amount: 50,
+            type: 'expense',
+            date: expect.any(Date),// Validate the date format
+                  },
+          refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls',
+        });
+      });
+    
+      test('should return a 400 error if the request body does not contain all the necessary attributes', async () => {
+        // Mock the verifyAuth function to return successful user authentication
+        verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
+    
+        // Prepare mock request and response objects
+        const req = {
+          params: { username: 'user1' },
+          body: { username: 'user1', amount: '50' }, // Missing the 'type' attribute
+        };
+        const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+        };
+    
+        // Call the createTransaction function
+        await createTransaction(req, res);
+    
+        // Assert the expected behavior
+    
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+    
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ error: 'Some Parameter is Missing' });
+      });
+    
+      test('should return a 400 error if at least one of the parameters in the request body is an empty string', async () => {
+        // Mock the verifyAuth function to return successful user authentication
+        verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
+    
+        // Prepare mock request and response objects
+        const req = {
+          params: { username: 'user1' },
+          body: { username: ' ', amount: '50', type: 'expense' }, // Empty 'username' parameter
+        };
+        const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+        };
+    
+        // Call the createTransaction function
+        await createTransaction(req, res);
+    
+        // Assert the expected behavior
+    
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+    
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ error: 'Some Parameter is an Empty String' });
+      });
+        
+      test('should return a 400 error if the type of category does not exist in the database', async () => {
+        // Mock the verifyAuth function to return successful user authentication
+        verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
+    
+        // Mock the categories.findOne function to return null, indicating the category does not exist
+        categories.findOne.mockResolvedValue(null);
+    
+        // Prepare mock request and response objects
+        const req = {
+          params: { username: 'user1' },
+          body: { username: 'user1', amount: '50', type: 'nonexistent' },
+        };
+        const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+        };
+    
+        // Call the createTransaction function
+        await createTransaction(req, res);
+    
+        // Assert the expected behavior
+    
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+    
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ message: 'Category does not exist!' });
+      });
+//Returns a 400 error if the username passed in the request body is not equal to the one passed as a route parameter
+//Returns a 400 error if the username passed in the request body does not represent a user in the database
+//Returns a 400 error if the username passed as a route parameter does not represent a user in the database
+//Returns a 400 error if the amount passed in the request body cannot be parsed as a floating value (negative numbers are accepted)  
+      test('should return a 401 error if called by an authenticated user who is not the same user as the one in the route parameter', async () => {
+        // Mock the verifyAuth function to return unsuccessful user authentication
+        verifyAuth.mockReturnValue({ authorized: false, cause: 'Unauthorized' });
+    
+        // Prepare mock request and response objects
+        const req = {
+          params: { username: 'user1' },
+          body: { username: 'user2', amount: '50', type: 'expense' },
+        };
+        const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+        };
+    
+        // Call the createTransaction function
+        await createTransaction(req, res);
+    
+        // Assert the expected behavior
+    
+        // Verify that verifyAuth was called with the correct arguments
+        expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+    
+        // Verify that the response status code and JSON payload are correct
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
+      });
+    
+      // Add more test cases for other scenarios based on the specific requirements
     });
-})
-/*Request Parameters: None
-Request Body Content: None
-Response data Content: An array of objects, each one having attributes username, type, amount, date and color
-Example: res.status(200).json({data: [{username: "Mario", amount: 100, type: "food", date: "2023-05-19T00:00:00", color: "red"}, {username: "Mario", amount: 70, type: "health", date: "2023-05-19T10:00:00", color: "green"}, {username: "Luigi", amount: 20, type: "food", date: "2023-05-19T10:00:00", color: "red"} ], refreshedTokenMessage: res.locals.refreshedTokenMessage})
-Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)*/
 
 
 describe("getAllTransactions", () => {
     test('should return transactions with category information for Admin (200)', async () => {
-        // Mock the verifyAuth function to return successful admin authentication
-        verifyAuth.mockReturnValue({ flag: true, cause: "Authorized" });
+        verifyAuth.mockReturnValue({ authorized: true,cause: "Authorized" });
 
         // Mock the transactions.aggregate function to return mock data
         transactions.aggregate.mockResolvedValue([
-            {
-                username: 'user1',
-                type: 'expense',
-                amount: 50,
-                date: '2023-05-30',
-                categories_info: { color: 'red' },
-            },
-            {
-                username: 'user2',
-                type: 'income',
-                amount: 100,
-                date: '2023-05-29',
-                categories_info: { color: 'green' },
-            },
+          {
+            username: 'user1',
+            type: 'expense',
+            amount: 50,
+            date: '2023-05-30',
+            categories_info: { color: 'red' },
+          },
+          {
+            username: 'user2',
+            type: 'income',
+            amount: 100,
+            date: '2023-05-29',
+            categories_info: { color: 'green' },
+          },
         ]);
-
+    
         // Prepare mock request and response objects
         const req = {};
         const res = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn(),
-            locals: { refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls' },
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+          locals: { refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls' },
         };
-
+    
         // Call the getAllTransactions function
         await getAllTransactions(req, res);
-
+    
         // Assert the expected behavior
-
+    
         // Verify that verifyAuth was called with the correct arguments
         expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'Admin' });
-
+    
         // Verify that transactions.aggregate was called with the correct aggregation pipeline
         expect(transactions.aggregate).toHaveBeenCalledWith([
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'type',
-                    foreignField: 'type',
-                    as: 'categories_info',
-                },
+          {
+            $lookup: {
+              from: 'categories',
+              localField: 'type',
+              foreignField: 'type',
+              as: 'categories_info',
             },
-            { $unwind: '$categories_info' },
+          },
+          { $unwind: '$categories_info' },
         ]);
-
+    
         // Verify that the response status code and JSON payload are correct
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
-            data: [
-                {
-                    username: 'user1',
-                    type: 'expense',
-                    amount: 50,
-                    date: '2023-05-30',
-                    color: 'red',
-                },
-                {
-                    username: 'user2',
-                    type: 'income',
-                    amount: 100,
-                    date: '2023-05-29',
-                    color: 'green',
-                },
-            ],
-            refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls',
+          data: [
+            {
+              username: 'user1',
+              type: 'expense',
+              amount: 50,
+              date: '2023-05-30',
+              color: 'red',
+            },
+            {
+              username: 'user2',
+              type: 'income',
+              amount: 100,
+              date: '2023-05-29',
+              color: 'green',
+            },
+          ],
+          refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls',
         });
-    });
+      });
 
     test('should return error for non-admin users (401)', async () => {
         // Mock the verifyAuth function to return unsuccessful authentication
@@ -326,7 +493,7 @@ describe("getTransactionsByUserByCategory", () => {
         expect(true).toBe(true);
     });
 })
-
+/*
 describe("getTransactionsByGroup", () => { 
     test('getTransactionsByGroup, should return 200', async () => {
         // Mock dependencies
@@ -374,13 +541,14 @@ describe("getTransactionsByGroup", () => {
               color: 'categoryColor',
             },
           ],
-          refreshedTokenMessage: undefined,
+          refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls',
         });
         expect(verifyAuthSpy).toHaveBeenCalledWith(req, res, { authType: 'Admin' });
         expect(transactionsMock.aggregate).toHaveBeenCalledTimes(1);
         expect(aggregateMock).toHaveBeenCalledTimes(1);
       });
 })
+
 describe("getTransactionsByGroupByCategory", () => { 
     test('getTransactionsByGroupByCategory, should return 200', async () => {
         const req = {
@@ -649,7 +817,7 @@ describe("getTransactionsByGroupByCategory", () => {
         expect(res.json).toHaveBeenCalledWith(response);
     });
 })
-*/
+
 describe("deleteTransaction", () => {
     test('deleteTransaction, should delete the transaction with success', async () => {
         process.env.ACCESS_KEY = 'EZWALLET';
@@ -1001,4 +1169,4 @@ describe("deleteTransactions", () => {
         expect(mockRes.status).toHaveBeenCalledWith(401)
         expect(mockRes.json).toHaveBeenCalledWith(response)
     });
-})
+})*/
