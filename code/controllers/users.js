@@ -75,26 +75,49 @@ export const getUser = async (req, res) => {
 */
 export const createGroup = async (req, res) => {
   try {
+    const group = await Group.findOne({ name: req.body.name });
+    console.log(group)
+    if (group !== null)
+      return res.status(400).json({ error: "Group already exists" });
     const userAuth = verifyAuth(req, res, { authType: "Simple" })
-
     if (userAuth.authorized) {
       //User | Admin auth successful
-      const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
-      if (user === null) {
-        return res.status(400).json({ message: "User not found" })
-      }
       let name = req.body.name;
       let memberEmails = req.body.memberEmails;
       let members = [];
       let callerInGroup = false;
       let membersNotFound = [];
       let alreadyInGroup = [];
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      //check errors
+      if (!name || !memberEmails) {
+        return res.status(400).json({ error: "Some Parameter is Missing" });
+      }
+      if (name.trim().length === 0) {
+        return res.status(400).json({ error: "Group name is an Empty String" });
+      }
+
+      const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
+      if (user === null) {
+        return res.status(400).json({ message: "User not found" })
+      }
+      let in_group = await Group.findOne({ "members.email": user.email });
+      if (in_group !== null)
+        return res.status(400).json({ message: "Caller already in a group" });
+      //members.push({ email: user.email, user: user._id });
 
       for (let email of memberEmails) {
+        if (email.trim().length === 0) {
+          return res.status(400).json({ error: "Email is an Empty String" });
+        }
+        if (regex.test(email) === false) {
+          return res.status(400).json({ error: "Invalid email format" });
+        }
+
         console.log(user)
         //check if body contains  email of the user that calls the function
         if (email === user.email) {
-
           callerInGroup = true;
         }
         console.log(callerInGroup)
@@ -116,31 +139,24 @@ export const createGroup = async (req, res) => {
         }
       }
 
-      if (!callerInGroup) {
-        // if user is not in a group, add it to members
-        members.push({ email: user.email, user: user._id });
-        console.log("Utente invocante non in gruppo,aggiungo")
-      }
-
-      try {
-        // if All memberEmails does not exist or Already in Group error handling
-        if (members.length === 0) {
-          res.status(400).json({ error: "All memberEmails does not exist or Already in Group" });
-        } else {
-          // create a group
-          const new_group = await Group.create({
-            name,
-            members,
-          });
-          // all ok, return the group created
-          res.status(200).json({ data: { group: new_group, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
+      // if All memberEmails does not exist or Already in Group error handling
+      if (members.length === 0) {
+        res.status(400).json({ error: "All memberEmails does not exist or Already in Group" });
+      } else {
+        if (!callerInGroup) {
+          //if user is not in a group, add it to members
+          members.push({ email: user.email, user: user._id });
+          console.log("Utente invocante non in gruppo,aggiungo")
         }
-      } catch (error) {
-        // already an existing group with the same name error
-        res.status(400).json({ error: "Group already exists" });
+        // create a group
+        const new_group = await Group.create({
+          name,
+          members,
+        });
+        // all ok, return the group created
+        res.status(200).json({ data: { group: new_group, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
       }
-    }
-    else {
+    } else {
       res.status(401).json({ error: userAuth.cause })
     }
   } catch (err) {
@@ -293,30 +309,45 @@ export const removeFromGroup = async (req, res) => {
   try {
     // users = user to remove from group, name = name of the group to delete
     let name = req.params.name;
+    let auth;
     const url_group = await Group.findOne({ name: name });
     if (url_group === null) {
       return res.status(400).json({ error: "Group not Found." });
     }
-
     const emailsInGroup = url_group.members.map((member) => member.email);
-    if (req.url.indexOf("/add") >= 0) {
+    if (req.url.indexOf("/pull") >= 0) {
       auth = verifyAuth(req, res, { authType: "Admin" });
     } else {
       auth = verifyAuth(req, res, { authType: "Group", emails: emailsInGroup });
     }
     if (auth.authorized) {
       let users = req.body.emails;
+      console.log(users)
+
       let notInGroup = [];
       let membersNotFound = [];
       let membersToDelete = [];
       let updated_group;
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
       if (!users) {
         return res.status(400).json({ error: "Some Parameter is Missing" });
       }
-      let firstUser = await Group.findOne({ name: name });
-      firstUser = firstUser.members[0];
+      if (url_group.members.length === 1) {
+        return res.status(400).json({ error: "Can't remove all members" });
+      }
 
+      //let firstUser = await Group.findOne({ name: name });
+      //firstUser = firstUser.members[0];
       for (let email of users) {
+        if (email.trim().length === 0) {
+          return res.status(400).json({ error: "Email is an Empty String" });
+        }
+        console.log(email)
+        if (regex.test(email) === false) {
+          return res.status(400).json({ error: "Invalid email format" });
+        }
+
         // verify that the user exists
         let user = await User.findOne({ email: email });
         //console.log(user)
@@ -335,22 +366,24 @@ export const removeFromGroup = async (req, res) => {
             membersToDelete.push({ email: email, user: user._id });
 
           }
-          if (firstUser.email != email) {
-            updated_group = await Group.findOneAndUpdate({ name: name }, { $pull: { members: { email: email, user: user } } }, { new: true });
-
-          }
+          //if (firstUser.email != email) {
+          //}
         }
       }
-      let err;
       // Group Does Not exist or All memberEmails does not exist or Already in Group error handling
       if (membersToDelete.length === 0) {
-        err = { error: "All memberEmails does not exist" };
-      }
-      if (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ error: "All memberEmails does not exist or Already in Group" });
       } else {
+        for (let member of membersToDelete) {
+          let user = await User.findOne({ email: member.email });
+          updated_group = await Group.findOneAndUpdate({ name: name }, { $pull: { members: { email: member.email, user: user } } }, { new: true });
+          if (updated_group.members.length === 1)
+            break;
+        }
         res.status(200).json({ data: { group: updated_group, membersNotFound: membersNotFound, notInGroup: notInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
       }
+    } else {
+      res.status(401).json({ error: auth.cause })
     }
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -386,6 +419,8 @@ export const deleteUser = async (req, res) => {
       const user = await User.findOne({ email: email });
       if (user === null) {
         return res.status(400).json({ error: "User Does Not exist" });
+      } else if (user.role === "Admin") {
+        return res.status(400).json({ error: "User is an Admin,can't delete" });
       } else {
         //remove from group
         const updated_group = await Group.findOneAndUpdate({ "members.email": email }, { $pull: { members: { email: email, user: user._id } } }, { new: true });
@@ -397,7 +432,7 @@ export const deleteUser = async (req, res) => {
         //return the number of deleted user (in our case possible values are only 1 or 0, since email is unique)
         let trans = await transactions.deleteMany({ username: user.username })
         await User.deleteOne({ email: email });
-        res.status(200).json({ data: { deletedTransaction: trans.deletedCount, deletedFromGroup: updated_group !== null }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
+        res.status(200).json({ data: { deletedTransactions: trans.deletedCount, deletedFromGroup: updated_group !== null }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
       }
     } else {
       res.status(401).json({ error: adminAuth.cause })

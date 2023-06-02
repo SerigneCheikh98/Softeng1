@@ -89,6 +89,8 @@ export const deleteCategory = async (req, res) => {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.authorized) {
             //Admin auth successful
+            if(req.body.length === 0)
+            return res.status(400).json({ error: "Array empty" });
             if (!req.body.types) {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
             }
@@ -214,10 +216,11 @@ export const createTransaction = async (req, res) => {
                 return res.status(400).json({ message: "Amount not valid" })
             }
             // create transaction
-            const new_transaction = new transactions({ username, amount, type, date: new Date() });//date is also taken as default in the costructor but we insert it anyway
+            const date = new Date();
+            const new_transaction = new transactions({ username, amount, type, date: date });//date is also taken as default in the costructor but we insert it anyway
             console.log(new_transaction.date);
             new_transaction.save()
-                .then(() => res.status(200).json({data: {username: username, amount: amount, type: type, date: new_transaction.date}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
+                .then(() => res.status(200).json({data: {username: username, amount: amount, type: type, date: date}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
                 .catch(err => { res.status(400).json({ error: err.message }) })
         } else {
             res.status(401).json({ error: userAuth.cause })
@@ -577,6 +580,9 @@ export const deleteTransaction = async (req, res) => {
             let id = req.body._id;
             if (!id) {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
+            }
+            if (id.trim().length === 0) {
+                return res.status(400).json({ error: "Some Parameter is an Empty String" });
             }
             const url_user = await User.findOne({ username: username });
             if (url_user === null) {
