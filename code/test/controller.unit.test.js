@@ -2,13 +2,10 @@ import request from 'supertest';
 import { app } from '../app';
 import jwt from 'jsonwebtoken';
 import { categories, transactions } from '../models/model';
-import {createTransaction,getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory, getTransactionsByGroup, getTransactionsByUserByCategory } from '../controllers/controller';
+import {createCategory, updateCategory, createTransaction,getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory, getTransactionsByGroup, getTransactionsByUserByCategory } from '../controllers/controller';
 import { Group, User } from '../models/User';
 import mongoose from 'mongoose';
 import * as controller from '../controllers/controller';
-import { categories, transactions } from '../models/model';
-import { createCategory, updateCategory, getAllTransactions, deleteTransactions, deleteTransaction, getTransactionsByGroupByCategory } from '../controllers/controller';
-import { Group, User } from '../models/User';
 import { verifyAuth } from '../controllers/utils';
 import { response } from 'express';
 
