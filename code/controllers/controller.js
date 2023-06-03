@@ -89,10 +89,11 @@ export const deleteCategory = async (req, res) => {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.authorized) {
             //Admin auth successful
-            if(req.body.length === 0)
-            return res.status(400).json({ error: "Array empty" });
             if (!req.body.types) {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
+            }
+            if(req.body.types.length === 0){
+                return res.status(400).json({ error: "Array is empty" });
             }
             for (let type of req.body.types) {
                 //find category 
@@ -101,23 +102,22 @@ export const deleteCategory = async (req, res) => {
                 }
                 const el_finded = await categories.findOne({ type: type });
                 if (el_finded === null) {
-                    return res.status(400).json({ message: "One or more Categories do not exists" });
+                    return res.status(400).json({ error: "One or more Categories do not exists" });
                 }
             }
             // MOTO, AUTO, VESPA       MOTO  => AUTO,VESPA   3>1  [ && type !== firstCat.type]
             // MOTO,AUTO,VESPA  MOTO,AUTO, => VESPA
             // MOTO,AUTO,VESPA  MOTO,AUTO,VESPA => MOTO
             //MOTO,AUTO,VESPA  MOTO,AUTO,VESPA,gigi => MOTO 
-
+            let numbCat = await categories.count();
             let count = 0;
             for (let type of req.body.types) {
 
                 let numbCateg = await categories.count();
-                if (numbCateg === 1) {
+                if (numbCateg === 1 && numbCat === 1) {
                     return res.status(400).json({ error: "You can't delete all categories! Now you have just one category saved" })
                 }
                 let firstCat = await categories.findOne({}, null, { sort: { _id: 1 } })//assigning of default
-
 
                 if (numbCateg > req.body.types.length) {
                     //case:  MOTO,AUTO,VESPA  MOTO,AUTO => rimane VESPA
@@ -126,21 +126,16 @@ export const deleteCategory = async (req, res) => {
                     //console.log("Categorie non in body "+prova+"vaffanculo")
 
                     firstCat = await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
-                    console.log("firstCat1" + firstCat);
-                    const n_el_deleted = await categories.deleteOne({ type: type });
+                    await categories.deleteOne({ type: type });
                     const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
                     count += updated_transactions.modifiedCount;
                 } else if (numbCateg <= req.body.types.length && type !== firstCat.type) {
 
                     // case: MOTO,AUTO,VESPA   MOTO,AUTO,VESPA => rimane MOTO
-                    console.log("firstCat2" + firstCat);
-                    const n_el_deleted = await categories.deleteOne({ type: type });
+                    await categories.deleteOne({ type: type });
                     const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
                     count += updated_transactions.modifiedCount;
                 }
-
-
-
             }
             res.status(200).json({ data: { message: "Categories deleted", count: count }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
 
