@@ -91,10 +91,7 @@ export const verifyAuth = (req, res, info) => {
         if (info.authType === "Simple" && decodedAccessToken  && decodedRefreshToken ) {
             return { authorized: true, cause: "Authorized" }
         }
-/*
-        if(info.authType === "Simple" && (!decodedAccessToken || !decodedRefreshToken)) {
-            return { authorized: false, cause: "Unauthorized" };
-        }*/
+
         /*
         const currentTime2 = Date.now();
         const remainingTime2 = decodedAccessToken.exp*1000 - currentTime2;
