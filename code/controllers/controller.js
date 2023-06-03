@@ -89,10 +89,11 @@ export const deleteCategory = async (req, res) => {
         const adminAuth = verifyAuth(req, res, { authType: "Admin" })
         if (adminAuth.authorized) {
             //Admin auth successful
-            if(req.body.length === 0)
-            return res.status(400).json({ error: "Array empty" });
             if (!req.body.types) {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
+            }
+            if(req.body.types.length === 0){
+                return res.status(400).json({ error: "Array empty" });
             }
             for (let type of req.body.types) {
                 //find category 
