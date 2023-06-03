@@ -583,7 +583,7 @@ describe('verifyAuth', () => {
     test('should return Authorized when accessToken and  refreshToken have a `email` which is in group for Group authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
+                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular'}, process.env.ACCESS_KEY),
                 refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
             },
         };
