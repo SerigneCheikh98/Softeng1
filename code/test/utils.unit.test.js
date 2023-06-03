@@ -215,6 +215,29 @@ describe('verifyAuth', () => {
         const result = verifyAuth(req, res, info);
         expect(result).toEqual(response);
     });
+    test('Should not return the correct result when authentication is not successful using Simple authType', () => {
+        const req = {
+            cookies: {
+                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY),
+                refreshToken: "undefined",
+            },
+        };
+        const res = {
+            cookie: jest.fn(),
+            locals: {},
+        };
+        const info = {
+            authType: 'Simple',
+        };
+
+        const response = {
+            authorized: false,
+            cause: "JsonWebTokenError",
+        };
+
+        const result = verifyAuth(req, res, info);
+        expect(result).toEqual(response);
+    });
     test('Should return non authorized when accessToken or  refreshToken are not both defined', () => {
         const req = {
             cookies: {

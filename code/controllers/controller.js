@@ -200,7 +200,7 @@ export const createTransaction = async (req, res) => {
             //check category type
             const category = await categories.findOne({ type: type })
             if (!category) {
-                return res.status(400).json({ message: "Category does not exist!" })
+                return res.status(400).json({ error: "Category does not exist!" })
             }
             // check mismatched usernames
             if (req.params.username !== username) {
@@ -208,20 +208,20 @@ export const createTransaction = async (req, res) => {
             }
             const user = await User.findOne({ username: username });
             if (user === null) {
-                return res.status(400).json({ message: "User does not exist!" })
+                return res.status(400).json({ error: "User does not exist!" })
             }
-            try {
-                amount = parseFloat(amount);
-            } catch (error) {
-                return res.status(400).json({ message: "Amount not valid" })
-            }
+            
+            
+            if(isNaN(parseFloat(amount)))
+                return res.status(400).json({ error: "Amount not valid" })
+            else
+                amount = parseFloat(amount)
             // create transaction
             const date = new Date();
             const new_transaction = new transactions({ username, amount, type, date: date });//date is also taken as default in the costructor but we insert it anyway
             console.log(new_transaction.date);
             new_transaction.save()
                 .then(() => res.status(200).json({data: {username: username, amount: amount, type: type, date: date}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
-                .catch(err => { res.status(400).json({ error: err.message }) })
         } else {
             res.status(401).json({ error: userAuth.cause })
         }
