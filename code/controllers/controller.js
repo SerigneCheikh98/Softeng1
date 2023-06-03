@@ -126,15 +126,13 @@ export const deleteCategory = async (req, res) => {
                     //console.log("Categorie non in body "+prova+"vaffanculo")
 
                     firstCat = await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
-                    console.log("firstCat1" + firstCat);
-                    const n_el_deleted = await categories.deleteOne({ type: type });
+                    await categories.deleteOne({ type: type });
                     const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
                     count += updated_transactions.modifiedCount;
                 } else if (numbCateg <= req.body.types.length && type !== firstCat.type) {
 
                     // case: MOTO,AUTO,VESPA   MOTO,AUTO,VESPA => rimane MOTO
-                    console.log("firstCat2" + firstCat);
-                    const n_el_deleted = await categories.deleteOne({ type: type });
+                    await categories.deleteOne({ type: type });
                     const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
                     count += updated_transactions.modifiedCount;
                 }

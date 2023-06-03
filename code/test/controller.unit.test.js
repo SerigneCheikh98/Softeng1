@@ -370,44 +370,215 @@ describe("updateCategory", () => {
  * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
  */
 describe("deleteCategory", () => {
-  test('Should delete successfully the given categories', async () => {
-      /*
-      N > T
-      N < T
-      N = T
-      N = 1 AND T = 1
-      */
-  });
+  test('Should delete successfully the given categories N > T', async () => {
+    const mockReq = {
+      body: { types: ["health", "food"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+    const res = { authorized: true, cause: "Authorized" };
+    let countCat = 5
+    const updated_transactions = {modifiedCount: 3}
+    const response = { data: { message: "Categories deleted", count: 6 }, refreshedTokenMessage: undefined };
 
-  test('Should return error if the request body does not contain all the necessary attributes', async () => {
-      const mockReq = {
-          body: { types: ["health"] }
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(categories, "findOne").mockImplementation(({ type: catType }) => {
+      if(catType === mockReq.body.types[0]){
+        return { type: "health", color: "green" }
       }
-      const mockRes = {
-          status: jest.fn().mockReturnThis(),
-          json: jest.fn(),
-          locals: jest.fn(),
+      else if(catType === mockReq.body.types[1]){
+        return { type: "food", color: "red" }
       }
+      else{
+        return { type: "investment", color: "blue" }
+      }
+    })
+    jest.spyOn(categories, "count").mockImplementation(() => {return --countCat} )
+    jest.spyOn(categories, "deleteOne").mockImplementation(() => {})
+    jest.spyOn(transactions, "updateMany").mockImplementation(() => updated_transactions )
+
+    await deleteCategory(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(categories.findOne).toHaveBeenCalled()
+    expect(categories.count).toHaveBeenCalled()
+    expect(categories.deleteOne).toHaveBeenCalled()
+    expect(transactions.updateMany).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
   });
 
-  test('Should return error if called when there is only one category in the database', async () => {
+  test('Should delete successfully the given categories N == T', async () => {
+    const mockReq = {
+      body: { types: ["food", "investment"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+    const res = { authorized: true, cause: "Authorized" };
+    let countCat = 4
+    const updated_transactions = {modifiedCount: 3}
+    const response = { data: { message: "Categories deleted", count: 3 }, refreshedTokenMessage: undefined };
 
-  });
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(categories, "findOne").mockImplementation(({ type: catType }) => {
+      if(catType === mockReq.body.types[0]){
+        return { type: "food", color: "red" }
+      }
+      else if(catType === mockReq.body.types[1]){
+        return { type: "investment", color: "blue" }
+      }
+      else{
+        return { type: "investment", color: "blue" }
+      }
+    })
+    jest.spyOn(categories, "count").mockImplementation(() => {return --countCat} )
+    jest.spyOn(categories, "deleteOne").mockImplementation(() => {})
+    jest.spyOn(transactions, "updateMany").mockImplementation(() => updated_transactions )
 
-  test('Should return error if at least one of the types in the array is an empty string', async () => {
+    await deleteCategory(mockReq, mockRes)
 
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(categories.findOne).toHaveBeenCalled()
+    expect(categories.count).toHaveBeenCalled()
+    expect(categories.deleteOne).toHaveBeenCalled()
+    expect(transactions.updateMany).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
   });
 
   test('Should return error if the array passed in the request body is empty', async () => {
+    const mockReq = {
+      body: { types: [] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "Array is empty" };
 
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await deleteCategory(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  });
+
+  test('Should return error if the request body does not contain all the necessary attributes', async () => {
+    const mockReq = {
+      body: {}
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "Some Parameter is Missing" };
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await deleteCategory(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  });
+
+  test('Should return error if called when there is only one category in the database', async () => {
+    const mockReq = {
+      body: { types: ["investment"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "You can't delete all categories! Now you have just one category saved" };
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(categories, "findOne").mockImplementation( () => { 
+        return {type: "investment", color: "green"}
+      }
+    )
+    jest.spyOn(categories, "count").mockResolvedValue( 1 )
+
+    await deleteCategory(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(categories.findOne).toHaveBeenCalled()
+    expect(categories.count).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  });
+
+  test('Should return error if at least one of the types in the array is an empty string', async () => {
+    const mockReq = {
+      body: { types: [""] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "Some Parameter is an Empty String" };
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await deleteCategory(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
   });
   
   test('Should return error if at least one of the types in the array does not represent a category in the database', async () => {
+    const mockReq = {
+      body: { types: ["Kurama", "Health"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "One or more Categories do not exists" };
 
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    jest.spyOn(categories, "findOne").mockResolvedValueOnce( null )
+
+    await deleteCategory(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(categories.findOne).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
   });
 
   test('Should return error if called by an authenticated user who is not an admin (authType = Admin)', async () => {
+    const mockReq = {
+      body: {types: ["health"]}
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+    const res = { authorized: false, cause: "Admin: Mismatched role" };
+    const response = { error: res.cause };
 
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await deleteCategory(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
   });
 })
 
@@ -717,7 +888,7 @@ describe("createTransaction", () => {
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
     });
-  });
+});
 
 
 describe("getAllTransactions", () => {
