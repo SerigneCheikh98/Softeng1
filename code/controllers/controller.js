@@ -218,7 +218,6 @@ export const createTransaction = async (req, res) => {
             // create transaction
             const date = new Date();
             const new_transaction = new transactions({ username, amount, type, date: date });//date is also taken as default in the costructor but we insert it anyway
-            console.log(new_transaction.date);
             new_transaction.save()
                 .then(() => res.status(200).json({data: {username: username, amount: amount, type: type, date: date}, refreshedTokenMessage: res.locals.refreshedTokenMessage}))
                 .catch(err => { res.status(400).json({ error: err.message }) })
@@ -318,13 +317,12 @@ export const getTransactionsByUser = async (req, res) => {
                 { $match: { $and: [filterByDate, filterByAmount] } },
                 { $unwind: "$categories_info" }
             ]).then((result) => {
-                console.log(result);
                 allTransactions = result.map(v => Object.assign({}, { username: v.username, type: v.type, amount: v.amount, date: v.date, color: v.categories_info.color }))
                     .filter(tr => tr.username === username);
                 //Distinction between route accessed by Admins or Regular users for functions that can be called by both
                 //and different behaviors and access rights
                 res.status(200).json({ data: allTransactions, refreshedTokenMessage: res.locals.refreshedTokenMessage })
-            }).catch(error => { res.status(400).json({ error: error.message }) })
+            });
         } else {
             return res.status(401).json({ error: auth.cause })
         }
@@ -376,7 +374,7 @@ export const getTransactionsByUserByCategory = async (req, res) => {
                     .filter(tr => (tr.username === req.params.username && tr.type === req.params.category))
                 // return the transactions
                 res.status(200).json({ data: allTransactions, refreshedTokenMessage: res.locals.refreshedTokenMessage })
-            }).catch(error => { res.status(400).json({ error: error }) })
+            });
         } else {
             return res.status(401).json({ error: auth.cause })
         }
