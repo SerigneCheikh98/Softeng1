@@ -372,12 +372,13 @@ describe("removeFromGroup", () => { })
  * - Request Body Content: A string equal to the `email` of the user to be deleted
  *    - Example: `{email: "luigi.red@email.com"}`
  * - Response `data` Content: An object having an attribute that lists the number of `deletedTransactions` and an attribute that specifies whether the user was also `deletedFromGroup` or not
- *    - Example: `res.status(200).json({data: {deletedTransaction: 1, deletedFromGroup: true}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ *    - Example: `res.status(200).json({data: {deletedTransactions: 1, deletedFromGroup: true}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
  * - If the user is the last user of a group then the group is deleted as well
  * - Returns a 400 error if the request body does not contain all the necessary attributes
  * - Returns a 400 error if the email passed in the request body is an empty string
  * - Returns a 400 error if the email passed in the request body is not in correct email format
  * - Returns a 400 error if the email passed in the request body does not represent a user in the database
+ * - Returns a 400 error if the email passed in the request body represents an admin
  * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
  */
 describe("deleteUser", () => { 
@@ -395,7 +396,7 @@ describe("deleteUser", () => {
     const deletedTransactions = {deletedCount: 3};
     const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
     const res = { authorized: true, cause: "Authorized" };
-    const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: false}, refreshedTokenMessage: undefined};
+    const response = {data: {deletedTransactions: deletedTransactions.deletedCount, deletedFromGroup: false}, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
     jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
@@ -428,7 +429,7 @@ describe("deleteUser", () => {
     const fromGroup = {name: "groupName", members: [{ email: "other.member@polito.it", user: 1 }]};
     const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
     const res = { authorized: true, cause: "Authorized" };
-    const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
+    const response = {data: {deletedTransactions: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
     
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
     jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
@@ -441,7 +442,6 @@ describe("deleteUser", () => {
     expect(User.findOne).toHaveBeenCalled()
     expect(Group.findOneAndUpdate).toHaveBeenCalled()
     expect(transactions.deleteMany).toHaveBeenCalled()
-    //expect(Group.deleteOne).not.toHaveBeenCalled() TODO
     expect(User.deleteOne).toHaveBeenCalled()
     expect(mockRes.status).toHaveBeenCalledWith(200)
     expect(mockRes.json).toHaveBeenCalledWith(response)
@@ -462,7 +462,7 @@ describe("deleteUser", () => {
     const fromGroup = {name: "groupName", members: []};
     const retrieveUser = {username: 'userToDelete', email: 'delete.me@polito.it', role: 'Regular'};
     const res = { authorized: true, cause: "Authorized" };
-    const response = {data: {deletedTransaction: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
+    const response = {data: {deletedTransactions: deletedTransactions.deletedCount, deletedFromGroup: true}, refreshedTokenMessage: undefined};
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
     jest.spyOn(User, "findOne").mockImplementation(() => retrieveUser)
@@ -552,6 +552,32 @@ describe("deleteUser", () => {
 
     await deleteUser(mockReq, mockRes)
     
+    expect(User.findOne).toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("Should return error if the email passed in the request body represents an admin", async () => {
+    const mockReq = {
+      body: {
+        email: "delete.admin@polito.it"
+      }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    }
+
+    const res = { authorized: true, cause: "Authorized" };
+    const retrieveAdmin = {username: 'IHavePowers', email: 'delete.admin@polito.it', role: 'Admin'};
+    const response = { error: "User is an Admin,can't delete" };
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)  
+    jest.spyOn(User, "findOne").mockImplementation(() => { return retrieveAdmin })
+
+    await deleteUser(mockReq, mockRes)
+    
+    expect(verifyAuth).toHaveBeenCalled()
     expect(User.findOne).toHaveBeenCalled()
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(response)
