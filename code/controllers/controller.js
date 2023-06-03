@@ -93,7 +93,7 @@ export const deleteCategory = async (req, res) => {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
             }
             if(req.body.types.length === 0){
-                return res.status(400).json({ error: "Array empty" });
+                return res.status(400).json({ error: "Array is empty" });
             }
             for (let type of req.body.types) {
                 //find category 
@@ -102,23 +102,22 @@ export const deleteCategory = async (req, res) => {
                 }
                 const el_finded = await categories.findOne({ type: type });
                 if (el_finded === null) {
-                    return res.status(400).json({ message: "One or more Categories do not exists" });
+                    return res.status(400).json({ error: "One or more Categories do not exists" });
                 }
             }
             // MOTO, AUTO, VESPA       MOTO  => AUTO,VESPA   3>1  [ && type !== firstCat.type]
             // MOTO,AUTO,VESPA  MOTO,AUTO, => VESPA
             // MOTO,AUTO,VESPA  MOTO,AUTO,VESPA => MOTO
             //MOTO,AUTO,VESPA  MOTO,AUTO,VESPA,gigi => MOTO 
-
+            let numbCat = await categories.count();
             let count = 0;
             for (let type of req.body.types) {
 
                 let numbCateg = await categories.count();
-                if (numbCateg === 1) {
+                if (numbCateg === 1 && numbCat === 1) {
                     return res.status(400).json({ error: "You can't delete all categories! Now you have just one category saved" })
                 }
                 let firstCat = await categories.findOne({}, null, { sort: { _id: 1 } })//assigning of default
-
 
                 if (numbCateg > req.body.types.length) {
                     //case:  MOTO,AUTO,VESPA  MOTO,AUTO => rimane VESPA
@@ -139,9 +138,6 @@ export const deleteCategory = async (req, res) => {
                     const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
                     count += updated_transactions.modifiedCount;
                 }
-
-
-
             }
             res.status(200).json({ data: { message: "Categories deleted", count: count }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
 
