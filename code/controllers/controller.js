@@ -312,7 +312,6 @@ export const getTransactionsByUser = async (req, res) => {
                 { $match: { $and: [filterByDate, filterByAmount] } },
                 { $unwind: "$categories_info" }
             ]).then((result) => {
-                console.log(result);
                 allTransactions = result.map(v => Object.assign({}, { username: v.username, type: v.type, amount: v.amount, date: v.date, color: v.categories_info.color }))
                     .filter(tr => tr.username === username);
                 //Distinction between route accessed by Admins or Regular users for functions that can be called by both

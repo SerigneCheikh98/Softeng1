@@ -50,12 +50,6 @@ const testerAccessTokenValid = jwt.sign({
   role: "Regular"
 }, process.env.ACCESS_KEY, { expiresIn: '1y' })
 
-const testerRefreshTokenValid = jwt.sign({
-  email: "tester@test.com",
-  username: "tester",
-  role: "Regular"
-}, process.env.ACCESS_KEY, { expiresIn: '1y' })
-
 //These tokens can be used in order to test the specific authentication error scenarios inside verifyAuth (no need to have multiple authentication error tests for the same route)
 const testerAccessTokenExpired = jwt.sign({
   email: "tester@test.com",
@@ -124,7 +118,7 @@ describe('register', () => {
       role: 'Regular',
       password: hashedPassword
     };
-    User.create({
+    await User.create({
       username: user.username,
       email: user.email,
       password: user.password
@@ -151,7 +145,7 @@ describe('register', () => {
       role: 'Regular',
       password: hashedPassword
     };
-    User.create({
+    await User.create({
       username: user.username,
       email: user.email,
       password: user.password
@@ -228,7 +222,7 @@ describe('registerAdmin', () => {
       password: hashedPassword,
       role: "Admin"
     };
-    User.create({
+    await User.create({
       username: user.username,
       email: user.email,
       password: user.password,
@@ -255,7 +249,7 @@ describe('registerAdmin', () => {
       password: hashedPassword,
       role: "Admin"
     };
-    User.create({
+    await User.create({
       username: user.username,
       email: user.email,
       password: user.password,
@@ -284,7 +278,7 @@ describe('login', () => {
       username: 'user1',
       password: hashedPassword
     };
-    User.create({
+    await User.create({
       username: user.username,
       email: user.email,
       password: user.password
@@ -348,7 +342,7 @@ describe('login', () => {
       username: 'user1',
       password: hashedPassword
     };
-    User.create({
+    await User.create({
       username: user.username,
       email: user.email,
       password: user.password
@@ -372,7 +366,7 @@ describe('login', () => {
       username: 'user1',
       password: hashedPassword
     };
-    User.create({
+    await User.create({
       username: user.username,
       email: user.email,
       password: user.password
@@ -399,7 +393,7 @@ describe('logout', () => {
         username: 'user1',
         password: hashedPassword
       };
-      User.create({
+      await User.create({
         username: user.username,
         email: user.email,
         password: user.password
@@ -435,7 +429,7 @@ describe('logout', () => {
     test('logout: 400 error if the refresh token in the request cookies does not represent a user in the database', async () => {
       const response = await request(app)
         .get("/api/logout") 
-        .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerRefreshTokenValid}`) 
+        .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`) 
   
       expect(response.status).toBe(400)
       expect(response.body).toHaveProperty("error")
