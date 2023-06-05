@@ -189,7 +189,7 @@ export const createTransaction = async (req, res) => {
             if (!username || !amount || !type) {
                 return res.status(400).json({ error: "Some Parameter is Missing" });
             }
-            if (username.trim().length === 0 || amount.trim().length === 0 || type.trim().length === 0) {
+            if (username.trim().length === 0 || amount.toString().trim().length === 0 || type.trim().length === 0) {
                 return res.status(400).json({ error: "Some Parameter is an Empty String" });
             }
             //check category type
