@@ -239,9 +239,51 @@ describe("deleteCategory", () => {
     });
 })
 
+/**
+ * - Request Parameters: None
+ * - Request Body Content: None
+ * - Response `data` Content: An array of objects, each one having attributes `type` and `color`
+ *   - Example: `res.status(200).json({data: [{type: "food", color: "red"}, {type: "health", color: "green"}], refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 401 error if called by a user who is not authenticated (authType = Simple)
+ */
 describe("getCategories", () => {
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
+    test("Returns all the categories on database", async () => {
+        await categories.insertMany([
+            { type: "food", color: "red" },
+            { type: "health", color: "green"},
+            { type: "car", color: "black"},
+        ])
+        await User.create({
+            username: "tester",
+            email: "tester@test.com",
+            password: "tester",
+            refreshToken: testerAccessTokenValid
+        })
+        
+        const response = await request(app)
+            .get("/api/categories/")
+            .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+
+        expect(response.status).toBe(200)
+        expect(Array.isArray(response.body.data)).toBe(true)
+        expect(response.body.data).toHaveLength(3);
+        expect(response.body.data.every(grp => grp.hasOwnProperty('type') && grp.hasOwnProperty('color'))).toBe(true)
+    });
+
+    test("Returns error if called by a user who is not authenticated (authType = Simple)", async () => {
+        await User.create({
+            username: "tester",
+            email: "tester@test.com",
+            password: "tester",
+            refreshToken: testerAccessTokenValid
+        })
+        
+        const response = await request(app)
+            .get("/api/categories/")
+            .set("Cookie", `accessToken=""; refreshToken=""`)
+
+        expect(response.status).toBe(401)
+        expect(response.body).toHaveProperty('error');
     });
 })
 
