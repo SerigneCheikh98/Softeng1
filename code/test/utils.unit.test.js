@@ -195,8 +195,8 @@ describe('verifyAuth', () => {
     test('Should return the correct result when authentication is successful using Simple authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -218,7 +218,7 @@ describe('verifyAuth', () => {
     test('Should not return the correct result when authentication is not successful using Simple authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
                 refreshToken: "undefined",
             },
         };
@@ -241,8 +241,8 @@ describe('verifyAuth', () => {
     test('Should return non authorized when accessToken or  refreshToken are not both defined', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin'}, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-           
+                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+
             },
         };
         const res = {
@@ -264,8 +264,8 @@ describe('verifyAuth', () => {
     test('Should return non authorized when accessToken has missing information', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'admin', role: 'Admin'}, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'admin', role: 'Admin' }, process.env.ACCESS_KEY),
+                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
 
             },
         };
@@ -288,7 +288,7 @@ describe('verifyAuth', () => {
     test('Should return non authorized when refreshToken has missing information', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'admin', email: 'test@example.com', role: 'Admin'}, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'admin', email: 'test@example.com', role: 'Admin' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
                 refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com' }, process.env.ACCESS_KEY),
 
             },
@@ -314,8 +314,8 @@ describe('verifyAuth', () => {
     test('should return the correct result when authentication is successful using User authType and matching username', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -338,8 +338,8 @@ describe('verifyAuth', () => {
     test('should return "Mismatched users" when accessToken have a `username` different from the requested one using User authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -363,8 +363,8 @@ describe('verifyAuth', () => {
     test('should return "Mismatched users" when accessToken have a `username` different from the requested one using User authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -388,8 +388,8 @@ describe('verifyAuth', () => {
     test('should return "Mismatched users" when refreshToken have a `username` different from the requested one using User authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -414,7 +414,7 @@ describe('verifyAuth', () => {
         const req = {
             cookies: {
                 accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'testuserNotTheSame', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -438,7 +438,7 @@ describe('verifyAuth', () => {
         const req = {
             cookies: {
                 accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -462,8 +462,8 @@ describe('verifyAuth', () => {
     test('Should return the correct result when authentication is successful using Admin authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -486,8 +486,8 @@ describe('verifyAuth', () => {
     test('Should return "Admin: Mismatched role" when the accessToken have a `role` which is not Admin using Admin authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -510,8 +510,8 @@ describe('verifyAuth', () => {
     test('Should return "Admin: Mismatched role" when the refreshToken have a `role` which is not Admin using Admin authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -535,7 +535,7 @@ describe('verifyAuth', () => {
         const req = {
             cookies: {
                 accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Simple' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Simple' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -559,7 +559,7 @@ describe('verifyAuth', () => {
         const req = {
             cookies: {
                 accessToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'admin', email: 'admin@example.com', role: 'Admin' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -583,8 +583,8 @@ describe('verifyAuth', () => {
     test('should return Authorized when accessToken and  refreshToken have a `email` which is in group for Group authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular'}, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY),
+                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -608,8 +608,8 @@ describe('verifyAuth', () => {
     test('should return not Authorized when accessToken has a `email` which is not in group for Group authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUserNotInGroup@example.com', role: 'Regular'}, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUserNotInGroup@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -633,8 +633,8 @@ describe('verifyAuth', () => {
     test('should return not Authorized when refreshToken has a `email` which is not in group for Group authType', () => {
         const req = {
             cookies: {
-                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular'}, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
-                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUserNotInGroup@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUserNotInGroup@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -659,7 +659,7 @@ describe('verifyAuth', () => {
         const req = {
             cookies: {
                 accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUserNotInGroup@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUserNotInGroup@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -684,7 +684,7 @@ describe('verifyAuth', () => {
         const req = {
             cookies: {
                 accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY,{ expiresIn: '1y' }),
+                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
             },
         };
         const res = {
@@ -704,21 +704,21 @@ describe('verifyAuth', () => {
         const result = verifyAuth(req, res, info);
         expect(result).toEqual(response);
     });
-    test('should return not Authorized when access and refresh token are both expired', () => {
+    test('should return not Authorized when access and refresh token are both expired (Simple)', () => {
         const req = {
-          cookies: {
-            accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-            refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30  }, process.env.ACCESS_KEY),
-          },
+            cookies: {
+                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
+                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
+            },
         };
         const res = {
-          cookie: jest.fn(),
-          locals: {},
+            cookie: jest.fn(),
+            locals: {},
         };
         const info = {
-          authType: 'Simple',
+            authType: 'Simple',
         };
-       
+
         const response = {
             authorized: false,
             cause: "Perform login again",
@@ -726,23 +726,23 @@ describe('verifyAuth', () => {
 
         const result = verifyAuth(req, res, info);
         expect(result).toEqual(response);
-      });
-      test('should return not Authorized when access and refresh token are both expired', () => {
+    });
+    test('should return not Authorized when access and refresh token are both expired (Group)', () => {
         const req = {
-          cookies: {
-            accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
-            refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30  }, process.env.ACCESS_KEY),
-          },
+            cookies: {
+                accessToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
+                refreshToken: jwt.sign({ username: 'groupUser', email: 'groupUser@example.com', role: 'Regular', exp: Math.floor(Date.now() / 1000) - 30 }, process.env.ACCESS_KEY),
+            },
         };
         const res = {
-          cookie: jest.fn(),
-          locals: {},
+            cookie: jest.fn(),
+            locals: {},
         };
         const info = {
             authType: 'Group',
             emails: [],
         };
-       
+
         const response = {
             authorized: false,
             cause: "Perform login again",
@@ -750,7 +750,7 @@ describe('verifyAuth', () => {
 
         const result = verifyAuth(req, res, info);
         expect(result).toEqual(response);
-      });
+    });
   
 });
 /*Returns an object with an amount attribute used for filtering mongoDB's aggregate queries

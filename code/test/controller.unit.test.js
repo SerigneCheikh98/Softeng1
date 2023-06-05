@@ -643,251 +643,251 @@ Returns a 400 error if the amount passed in the request body cannot be parsed as
 Returns a 401 error if called by an authenticated user who is not the same user as the one in the route parameter (authType = User)*/
 describe("createTransaction", () => {
   test('Should return a 200 response and save the transaction for authorized user with valid data', async () => {
-      // Mock the verifyAuth function to return successful user authentication
-      verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
-  
-      // Mock the categories.findOne function to return a category
-      categories.findOne.mockResolvedValue({ type: 'expense' });
-  
-      // Mock the User.findOne function to return a user
-      User.findOne.mockResolvedValue({ username: 'user1' });
-  
-      // Mock the transactions.save function to save the transaction and return a resolved promise
-      transactions.prototype.save.mockResolvedValue();
-  
-      // Prepare mock request and response objects
-      const req = {
-        params: { username: 'user1' },
-        body: { username: 'user1', amount: '50', type: 'expense' },
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-        locals: { refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls' },
-      };
-  
-      // Call the createTransaction function
-      await createTransaction(req, res);
-  
-      // Assert the expected behavior
-  
-      // Verify that verifyAuth was called with the correct arguments
-      expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
-  
-      // Verify that categories.findOne was called with the correct type
-      expect(categories.findOne).toHaveBeenCalledWith({ type: 'expense' });
-  
-      // Verify that User.findOne was called with the correct username
-      expect(User.findOne).toHaveBeenCalledWith({ username: 'user1' });
-  
-      // Verify that transactions.save was called with the correct transaction data
-      expect(transactions.prototype.save).toHaveBeenCalled();
-  
-      // Verify that the response status code and JSON payload are correct
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        data: {
-          username: 'user1',
-          amount: 50,
-          type: 'expense',
-          date: expect.any(Date),// Validate the date format
-                },
-        refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls',
-      });
+    // Mock the verifyAuth function to return successful user authentication
+    verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
+
+    // Mock the categories.findOne function to return a category
+    categories.findOne.mockResolvedValue({ type: 'expense' });
+
+    // Mock the User.findOne function to return a user
+    User.findOne.mockResolvedValue({ username: 'user1' });
+
+    // Mock the transactions.save function to save the transaction and return a resolved promise
+    transactions.prototype.save.mockResolvedValue();
+
+    // Prepare mock request and response objects
+    const req = {
+      params: { username: 'user1' },
+      body: { username: 'user1', amount: '50', type: 'expense' },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: { refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls' },
+    };
+
+    // Call the createTransaction function
+    await createTransaction(req, res);
+
+    // Assert the expected behavior
+
+    // Verify that verifyAuth was called with the correct arguments
+    expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+
+    // Verify that categories.findOne was called with the correct type
+    expect(categories.findOne).toHaveBeenCalledWith({ type: 'expense' });
+
+    // Verify that User.findOne was called with the correct username
+    expect(User.findOne).toHaveBeenCalledWith({ username: 'user1' });
+
+    // Verify that transactions.save was called with the correct transaction data
+    expect(transactions.prototype.save).toHaveBeenCalled();
+
+    // Verify that the response status code and JSON payload are correct
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      data: {
+        username: 'user1',
+        amount: 50,
+        type: 'expense',
+        date: expect.any(Date),// Validate the date format
+      },
+      refreshedTokenMessage: 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls',
     });
-  
-    test('should return a 400 error if the request body does not contain all the necessary attributes', async () => {
-      // Mock the verifyAuth function to return successful user authentication
-      verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
-  
-      // Prepare mock request and response objects
-      const req = {
-        params: { username: 'user1' },
-        body: { username: 'user1', amount: '50' }, // Missing the 'type' attribute
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-  
-      // Call the createTransaction function
-      await createTransaction(req, res);
-  
-      // Assert the expected behavior
-  
-      // Verify that verifyAuth was called with the correct arguments
-      expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
-  
-      // Verify that the response status code and JSON payload are correct
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Some Parameter is Missing' });
-    });
-  
-    test('should return a 400 error if at least one of the parameters in the request body is an empty string', async () => {
-      // Mock the verifyAuth function to return successful user authentication
-      verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
-  
-      // Prepare mock request and response objects
-      const req = {
-        params: { username: 'user1' },
-        body: { username: ' ', amount: '50', type: 'expense' }, // Empty 'username' parameter
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-  
-      // Call the createTransaction function
-      await createTransaction(req, res);
-  
-      // Assert the expected behavior
-  
-      // Verify that verifyAuth was called with the correct arguments
-      expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
-  
-      // Verify that the response status code and JSON payload are correct
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Some Parameter is an Empty String' });
-    });
-      //Returns a 400 error if the username passed in the request body is not equal to the one passed as a route parameter
-    test('should return a 400 error if the username passed in the request body is not equal to the one passed as a route parameter', async () => {
-      const req = {
-        params: {
-          username: 'user1',
-        },
-        body: {
-          username: 'different_user',
-          amount: '50',
-          type: 'expense',
-        },
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-  
-      await createTransaction(req, res);
-  
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Wrong Usernames' });
-    });
+  });
+
+  test('should return a 400 error if the request body does not contain all the necessary attributes', async () => {
+    // Mock the verifyAuth function to return successful user authentication
+    verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
+
+    // Prepare mock request and response objects
+    const req = {
+      params: { username: 'user1' },
+      body: { username: 'user1', amount: '50' }, // Missing the 'type' attribute
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    // Call the createTransaction function
+    await createTransaction(req, res);
+
+    // Assert the expected behavior
+
+    // Verify that verifyAuth was called with the correct arguments
+    expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+
+    // Verify that the response status code and JSON payload are correct
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Some Parameter is Missing' });
+  });
+
+  test('should return a 400 error if at least one of the parameters in the request body is an empty string', async () => {
+    // Mock the verifyAuth function to return successful user authentication
+    verifyAuth.mockReturnValue({ authorized: true, cause: "Authorized" });
+
+    // Prepare mock request and response objects
+    const req = {
+      params: { username: 'user1' },
+      body: { username: ' ', amount: '50', type: 'expense' }, // Empty 'username' parameter
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    // Call the createTransaction function
+    await createTransaction(req, res);
+
+    // Assert the expected behavior
+
+    // Verify that verifyAuth was called with the correct arguments
+    expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+
+    // Verify that the response status code and JSON payload are correct
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Some Parameter is an Empty String' });
+  });
+  //Returns a 400 error if the username passed in the request body is not equal to the one passed as a route parameter
+  test('should return a 400 error if the username passed in the request body is not equal to the one passed as a route parameter', async () => {
+    const req = {
+      params: {
+        username: 'user1',
+      },
+      body: {
+        username: 'different_user',
+        amount: '50',
+        type: 'expense',
+      },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    await createTransaction(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Wrong Usernames' });
+  });
   //Returns a 400 error if the username passed in the request body does not represent a user in the database
-    test('should return a 400 error if the username passed in the request body does not represent a user in the database', async () => {
-     jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
-       authorized: true,
+  test('should return a 400 error if the username passed in the request body does not represent a user in the database', async () => {
+    jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
+      authorized: true,
       cause: 'Authorized',
-     }));
+    }));
 
-      const req = {
-        params: {
-          username: 'non_existing_user',
-        },
-        body: {
-          username: 'non_existing_user',
-          amount: '50',
-          type: 'expense',
-        },
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-      categories.findOne.mockResolvedValue({ type: 'expense' });
+    const req = {
+      params: {
+        username: 'non_existing_user',
+      },
+      body: {
+        username: 'non_existing_user',
+        amount: '50',
+        type: 'expense',
+      },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    categories.findOne.mockResolvedValue({ type: 'expense' });
 
-      jest.spyOn(User, 'findOne').mockResolvedValue(null);
+    jest.spyOn(User, 'findOne').mockResolvedValue(null);
 
-      await createTransaction(req, res);
-    
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: 'User does not exist!' });
-    
+    await createTransaction(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'User does not exist!' });
+
   });
 
   //Returns a 400 error if the amount passed in the request body cannot be parsed as a floating value (negative numbers are accepted)  
-    test('should return a 400 error if the amount passed in the request body cannot be parsed as a floating value', async () => {
-      
-      const req = {
-        body: {
-          username: 'user1',
-          amount: 'invalid',
-          type: 'expense',
-        },
-        params: {
-          username: 'user1',
-        },
-      };
-    
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-      jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
-        authorized: true,
-       cause: 'Authorized',
-      }));
-      User.findOne.mockResolvedValue({ username: 'user1' });
-      categories.findOne.mockResolvedValue({type: "expense"});
-    
-      await createTransaction(req, res);
-    
-      expect(User.findOne).toHaveBeenCalledWith({ username: 'user1' });
-      expect(categories.findOne).toHaveBeenCalledWith({ type: 'expense' });
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Amount not valid' });
-    });
-      //Returns a 400 error if the username passed in the request body is not equal to the one passed as a route parameter
-      test('should return a 400 error if the category passed in the request body does not exists', async () => {
-      
-        const req = {
-          params: {
-            username: 'user1',
-          },
-          body: {
-            username: 'different_user',
-            amount: '50',
-            type: 'notExists',
-          },
-        };
-        const res = {
-          status: jest.fn().mockReturnThis(),
-          json: jest.fn(),
-        };
-        jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
-          authorized: true,
-         cause: 'Authorized',
-        }));
-        categories.findOne.mockResolvedValue(null);
-        await createTransaction(req, res);
-    
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith({ error:"Category does not exist!" });
-      });
-    test('should return a 401 error if called by an authenticated user who is not the same user as the one in the route parameter', async () => {
-      // Mock the verifyAuth function to return unsuccessful user authentication
-      verifyAuth.mockReturnValue({ authorized: false, cause: 'Unauthorized' });
-  
-      // Prepare mock request and response objects
-      const req = {
-        params: { username: 'user1' },
-        body: { username: 'user2', amount: '50', type: 'expense' },
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-  
-      // Call the createTransaction function
-      await createTransaction(req, res);
-  
-      // Assert the expected behavior
-  
-      // Verify that verifyAuth was called with the correct arguments
-      expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
-  
-      // Verify that the response status code and JSON payload are correct
-      expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
-    });
+  test('should return a 400 error if the amount passed in the request body cannot be parsed as a floating value', async () => {
+
+    const req = {
+      body: {
+        username: 'user1',
+        amount: 'invalid',
+        type: 'expense',
+      },
+      params: {
+        username: 'user1',
+      },
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
+      authorized: true,
+      cause: 'Authorized',
+    }));
+    User.findOne.mockResolvedValue({ username: 'user1' });
+    categories.findOne.mockResolvedValue({ type: "expense" });
+
+    await createTransaction(req, res);
+
+    expect(User.findOne).toHaveBeenCalledWith({ username: 'user1' });
+    expect(categories.findOne).toHaveBeenCalledWith({ type: 'expense' });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Amount not valid' });
+  });
+  //Returns a 400 error if the username passed in the request body is not equal to the one passed as a route parameter
+  test('should return a 400 error if the category passed in the request body does not exists', async () => {
+
+    const req = {
+      params: {
+        username: 'user1',
+      },
+      body: {
+        username: 'different_user',
+        amount: '50',
+        type: 'notExists',
+      },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
+      authorized: true,
+      cause: 'Authorized',
+    }));
+    categories.findOne.mockResolvedValue(null);
+    await createTransaction(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: "Category does not exist!" });
+  });
+  test('should return a 401 error if called by an authenticated user who is not the same user as the one in the route parameter', async () => {
+    // Mock the verifyAuth function to return unsuccessful user authentication
+    verifyAuth.mockReturnValue({ authorized: false, cause: 'Unauthorized' });
+
+    // Prepare mock request and response objects
+    const req = {
+      params: { username: 'user1' },
+      body: { username: 'user2', amount: '50', type: 'expense' },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    // Call the createTransaction function
+    await createTransaction(req, res);
+
+    // Assert the expected behavior
+
+    // Verify that verifyAuth was called with the correct arguments
+    expect(verifyAuth).toHaveBeenCalledWith(req, res, { authType: 'User', username: 'user1' });
+
+    // Verify that the response status code and JSON payload are correct
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
+  });
 });
 
 
