@@ -57,9 +57,105 @@ const testerAccessTokenExpired = jwt.sign({
 }, process.env.ACCESS_KEY, { expiresIn: '0s' })
 const testerAccessTokenEmpty = jwt.sign({}, process.env.ACCESS_KEY, { expiresIn: "1y" })
 
+/**
+ * - Request Parameters: None
+ * - Request Body Content: An object having attributes `type` and `color`
+ *    - Example: `{type: "food", color: "red"}`
+ * - Response `data` Content: An object having attributes `type` and `color`
+ *    - Example: `res.status(200).json({data: {type: "food", color: "red"}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 400 error if the request body does not contain all the necessary attributes
+ * - Returns a 400 error if at least one of the parameters in the request body is an empty string
+ * - Returns a 400 error if the type of category passed in the request body represents an already existing category in the database
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
 describe("createCategory", () => {
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
+    test("Returns the created category", async () => {
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+        
+        const response = await request(app)
+            .post("/api/categories")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({type: "food", color: "red"})
+
+        expect(response.status).toBe(200)
+        expect(response.body.data).toEqual({type: "food", color: "red"})
+    });
+
+    test("Returns a 400 error if the request body does not contain all the necessary attributes", async () => {
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+        
+        const response = await request(app)
+            .post("/api/categories")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty('error');
+    });
+
+    test("Returns a 400 error if at least one of the parameters in the request body is an empty string", async () => {
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+        
+        const response = await request(app)
+            .post("/api/categories")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({type:"ColorIsEmpty", color: " "})
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty('error');
+    });
+
+    test("Returns a 400 error if the type of category passed in the request body represents an already existing category in the database", async () => {
+        await categories.create({ type: "food", color: "red" })
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+        
+        const response = await request(app)
+            .post("/api/categories")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({type:"food", color: "yellow"})
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty('error');
+    });
+
+    test("Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)", async () => {
+        await User.create({
+            username: "tester",
+            email: "tester@test.com",
+            password: "tester",
+            refreshToken: testerAccessTokenValid
+        })
+        
+        const response = await request(app)
+            .post("/api/categories")
+            .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+            .send({type:"car", color: "black"})
+
+        expect(response.status).toBe(401)
+        expect(response.body).toHaveProperty('error');
     });
 })
 
