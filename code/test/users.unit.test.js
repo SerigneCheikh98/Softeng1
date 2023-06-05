@@ -601,7 +601,7 @@ describe("getGroup", () => {
 
  */
 describe("addToGroup", () => { // not working
-  test.skip("should insert requested members into group indicated by request parameter", async () => {
+  test("should insert requested members into group indicated by request parameter", async () => {
     const mockReq = {
       url: "/groups/" + "testgroup1" + "/insert",
       params: { name: "testgroup1" },
@@ -752,15 +752,12 @@ Returns a 400 error if the group contains only one member before deleting any us
 Returns a 401 error if called by an authenticated user who is not part of the group (authType = Group) if the route is api/groups/:name/remove
 Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is api/groups/:name/pull*/
 describe("removeFromGroup", () => {
+  
+  test('Should return a 200 response and delete the specified user from the group', async () => {
+    const req = { params: { name: 'existinggroup' }, body: { emails: ['user1@example.com'] },url: '/pull'};
 
-  test.only('Should return a 200 response and delete the specified user from the group', async () => {
-    jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
-      authorized: true,
-      cause: 'Authorized',
-    }));
-    const req = { params: { name: 'existinggroup' }, body: { emails: ['user1@example.com'] } };
     const res = {
-      
+
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
       locals: jest.fn()
@@ -773,37 +770,88 @@ describe("removeFromGroup", () => {
       ],
     };
     const user1 = { _id: 'user1' };
-    console.log(Group.findOne.mockResolvedValueOnce(group));
-    console.log(User.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce(user1));
-  
-   console.log(Group.findOne.mockResolvedValue(group));
-   console.log(User.findOne.mockResolvedValue(user1));
-   Group.findOneAndUpdate.mockResolvedValueOnce({ members: [{ email: 'user2@example.com', user: 'user2' }] });
+    Group.findOne.mockResolvedValueOnce(group);
+
+    jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => ({
+      authorized: true,
+      cause: 'Authorized',
+    }));
+
+    User.findOne.mockResolvedValueOnce(user1);
+    
+    Group.findOne.mockResolvedValue(group);
+    User.findOne.mockResolvedValue(user1);
+    Group.findOneAndUpdate.mockResolvedValueOnce({ name: 'existinggroup', members: [{ email: 'user2@example.com', user: 'user2' }] });
 
     await removeFromGroup(req, res);
-    /*
+
     expect(Group.findOne).toHaveBeenCalledWith({ name: 'existinggroup' });
-    expect(Group.findOne).toHaveBeenCalledWith({ "members.email": 'user1@example.com' },{ name: 'existinggroup' });
+    expect(User.findOne).toHaveBeenCalledWith({ email: 'user1@example.com' });
+    expect(Group.findOne).toHaveBeenCalledWith({ "members.email": 'user1@example.com' , name: 'existinggroup' });
     expect(User.findOne).toHaveBeenCalledWith({ email: 'user1@example.com' });
     expect(Group.findOneAndUpdate).toHaveBeenCalledWith(
       { name: 'existinggroup' },
       { $pull: { members: { email: 'user1@example.com', user: user1 } } },
       { new: true }
-    );*/
-   // console.log("qui")
+    );
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       data: {
-        group: { members: [{ email: 'user2@example.com', user: 'user2' }] },
+        group:  {name: 'existinggroup', members: [{ email: 'user2@example.com', user: 'user2' }] },
         membersNotFound: [],
         notInGroup: [],
-      },
-      refreshedTokenMessage: 'Access token has been refreshed.',
-    });
+      }
+        });
+
+  });
+  test('should return a 400 error if the group is not found', async () => {
+    const req = { params: { name: 'nonexistentgroup' } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    Group.findOne.mockResolvedValueOnce(null);
+
+    await removeFromGroup(req, res);
+
+    expect(Group.findOne).toHaveBeenCalledWith({ name: 'nonexistentgroup' });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Group not Found.' });
+  });
+
+  test('should return a 400 error if all memberEmails do not exist or are already in the group', async () => {
+    const req = {
+      params: { name: 'existinggroup' },
+      body: { emails: ['user1@example.com', 'user2@example.com'] }
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    Group.findOne
+      .mockResolvedValueOnce({ name: 'existinggroup', members: [] })
+      .mockResolvedValueOnce({ name: 'existinggroup', members: [] });
+    User.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+
+    await removeFromGroup(req, res);
+
+    //expect(Group.findOne).toHaveBeenCalledTimes(2);
+    expect(Group.findOne).toHaveBeenNthCalledWith(1, { name: 'existinggroup' });
+    expect(Group.findOne).toHaveBeenNthCalledWith(1, { 'members.email': 'user1@example.com', name: 'existinggroup' });
+    //expect(Group.findOne).toHaveBeenNthCalledWith(1, { 'members.email': 'user2@example.com', name: 'existinggroup' });
+
+    //expect(User.findOne).toHaveBeenCalledTimes(2);
+    expect(User.findOne).toHaveBeenNthCalledWith(1, { email: 'user1@example.com' });
+    expect(User.findOne).toHaveBeenNthCalledWith(2, { email: 'user2@example.com' });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'All memberEmails does not exist or Already in Group' });
   });
 
 })
+
 
 /**
  * - Request Parameters: None

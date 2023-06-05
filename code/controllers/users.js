@@ -311,7 +311,7 @@ export const removeFromGroup = async (req, res) => {
     let name = req.params.name;
     let auth;
     const url_group = await Group.findOne({ name: name });
-    console.log(url_group)
+    //console.log(url_group)
     if (url_group === null) {
       return res.status(400).json({ error: "Group not Found." });
     }
@@ -323,7 +323,7 @@ export const removeFromGroup = async (req, res) => {
     }
     if (auth.authorized) {
       let users = req.body.emails;
-      console.log(users)
+      //console.log(users)
 
       let notInGroup = [];
       let membersNotFound = [];
@@ -351,7 +351,7 @@ export const removeFromGroup = async (req, res) => {
 
         // verify that the user exists
         let user = await User.findOne({ email: email });
-        console.log(user)
+        //console.log(user)
         if (user === null) {
           // if not existent, push into membersNotFound
           membersNotFound.push(email);
