@@ -301,17 +301,47 @@ describe("utils.js", () => {
                     refreshToken: testerAccessTokenValid,
                 },
             };
-
+            const cookieMock = (name, value, options) => {
+                res.cookieArgs = { name, value, options };
+            }
+            //In this case the response object must have a "cookie" function that sets the needed values, as well as a "locals" object where the message must be set 
+            const res = {
+                cookie: cookieMock,
+                locals: {},
+            }
             const info = {
                 authType: 'Group',
                 emails: ['tester@test.com', 'email@example.com'],
             };
 
-
-
-            const response = verifyAuth(req, {}, info);
+            const response = verifyAuth(req,res, info);
+            console.log(response)
 
             expect(Object.values(response).includes(true)).toBe(true)
+
+        });
+        
+        test('Generic Error (TypeError)', () => {
+            const req = {
+                cookies: {
+                    accessToken: testerAccessTokenExpired,
+                    refreshToken: testerAccessTokenValid,
+                },
+            };
+
+            //In this case the response object must have a "cookie" function that sets the needed values, as well as a "locals" object where the message must be set 
+            const res = {
+
+            }
+            const info = {
+                authType: 'Group',
+                emails: ['tester@test.com', 'email@example.com'],
+            };
+
+            const response = verifyAuth(req,res, info);
+            console.log(response)
+
+            expect(Object.values(response).includes(true)).toBe(false)
 
         });
         test("Both Token Expired", () => {
