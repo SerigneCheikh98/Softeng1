@@ -30,7 +30,7 @@ const VerifyAuthmodule = require('../controllers/utils');
  * - Request Parameters: None
  * - Request Body Content: None
  * - Response `data` Content: An array of objects, each one having attributes `username`, `email` and `role`
- *    - Example: `res.status(200).json({data: [{username: "Mario", email: "mario.red@email.com"}, {username: "Luigi", email: "luigi.red@email.com"}, {username: "admin", email: "admin@email.com"} ], refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ *    - Example: `res.status(200).json({data: [{username: "Mario", email: "mario.red@email.com", role: "Regular"}, {username: "Luigi", email: "luigi.red@email.com", role: "Regular"}, {username: "admin", email: "admin@email.com", role: "Regular"} ], refreshedTokenMessage: res.locals.refreshedTokenMessage})`
  * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
  */
 describe("getUsers", () => {
