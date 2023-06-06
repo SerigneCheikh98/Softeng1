@@ -496,4 +496,119 @@ describe("deleteUser", () => {
   });
 })
 
-describe("deleteGroup", () => { })
+/**
+ * - Request Parameters: None
+ * - Request Body Content: A string equal to the `name` of the group to be deleted
+ *   - Example: `{name: "Family"}`
+ * - Response `data` Content: A message confirming successful deletion
+ *   - Example: `res.status(200).json({data: {message: "Group deleted successfully"} , refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 400 error if the request body does not contain all the necessary attributes
+ * - Returns a 400 error if the name passed in the request body is an empty string
+ * - Returns a 400 error if the name passed in the request body does not represent a group in the database
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
+describe("deleteGroup", () => { 
+  test("Returns confirmation message", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    },
+    {
+      username: "mario",
+      email: "mario@test.com",
+      password: "securepassword",
+    }])
+
+    const userTester = await User.findOne({ email: "tester@test.com" })
+    const userMario = await User.findOne({ email: "mario@test.com" })
+    await Group.create({name: "holiday", members: [{email: "tester@test.com", user: userTester._id}, {email: "mario@test.com", user: userMario._id}]})
+    
+    const response = await request(app)
+      .delete("/api/groups")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({ name: "holiday" })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toHaveProperty("message")
+    const groups = await Group.count();
+    expect(groups).toBe(0)
+  });
+
+  test("Returns a 400 error if the request body does not contain all the necessary attributes", async () => {
+    await User.create({
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    })
+    
+    const response = await request(app)
+      .delete("/api/groups")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send()
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Some Parameter is Missing")
+  });
+
+  test("Returns a 400 error if the name passed in the request body is an empty string", async () => {
+    await User.create({
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    })
+    
+    const response = await request(app)
+      .delete("/api/groups")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({name: " "})
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Some Parameter is an Empty String")
+  });
+
+  test("Returns a 400 error if the name passed in the request body does not represent a group in the database", async () => {
+    await User.create({
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    })
+    
+    const response = await request(app)
+      .delete("/api/groups")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({name: "school"})
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Group Does Not exist")
+  });
+
+  test("Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)", async () => {
+    await User.create({
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    })
+    
+    const response = await request(app)
+      .delete("/api/groups")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+      .send({name: "school"})
+
+    expect(response.status).toBe(401)
+  });
+})
