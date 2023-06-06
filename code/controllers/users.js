@@ -45,7 +45,7 @@ export const getUser = async (req, res) => {
     if (userAuth.authorized || adminAuth.authorized) {
       const user = await User.findOne({ username: req.params.username })
       if (!user)
-        return res.status(400).json({ message: "User not found" })
+        return res.status(400).json({ error: "User not found" })
       //User|Admin auth successful
       res.status(200).json({ data: { username: user.username, email: user.email, role: user.role }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
     }
