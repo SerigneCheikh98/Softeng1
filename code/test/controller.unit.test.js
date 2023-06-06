@@ -12,20 +12,7 @@ import { response } from 'express';
 jest.mock('../models/model');
 jest.mock('../models/User');
 
-/*beforeEach(() => {
-  categories.find.mockClear();
-  categories.findOne.mockClear();
-  categories.findOneAndUpdate.mockClear();
-  categories.prototype.save.mockClear();
-  transactions.find.mockClear();
-  transactions.findOne.mockClear();
-  transactions.deleteOne.mockClear();
-  transactions.aggregate.mockClear();
-  transactions.updateMany.mockClear();
-  transactions.prototype.save.mockClear();
-  Group.findOne.mockClear();
-  categories.findOne.mockClear();
-});*/
+
 beforeEach(() => {
     jest.clearAllMocks()
 });

@@ -1,6 +1,10 @@
 import { handleDateFilterParams, verifyAuth, handleAmountFilterParams } from '../controllers/utils';
 import jwt from 'jsonwebtoken'
 
+beforeEach(() => {
+    jest.clearAllMocks()
+});
+
 /*/*handleDateFilterParams
 Returns an object with a date attribute used for filtering mongoDB's aggregate queries
 The value of date is an object that depends on the query parameters:

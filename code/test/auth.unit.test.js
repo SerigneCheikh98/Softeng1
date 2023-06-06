@@ -9,8 +9,7 @@ jest.mock("bcryptjs")
 jest.mock('../models/User.js');
 
 beforeEach(() => {
-    User.findOne.mockClear()
-    User.create.mockClear()
+    jest.clearAllMocks()
 });
 
 const VerifyAuthmodule = require('../controllers/utils');

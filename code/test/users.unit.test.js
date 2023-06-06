@@ -222,7 +222,7 @@ describe("getUser", () => {
 - Returns a 400 error if at least one of the member emails is not in a valid email format
 - Returns a 400 error if at least one of the member emails is an empty string
 - Returns a 401 error if called by a user who is not authenticated (authType = Simple)
-*//*
+*/
 describe("createGroup", () => { // not working
   // expected behaviour for simplest case
   test("should return a group object, with empty array for members already in group and for members not found", async () => {
@@ -1090,7 +1090,7 @@ describe("removeFromGroup", () => {
  * - Returns a 400 error if the email passed in the request body represents an admin
  * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
  */
-/*
+
 describe("deleteUser", () => {
   test("Should successfully delete the given user who does not belongs to a group", async () => {
     const mockReq = {
@@ -1317,4 +1317,4 @@ describe("deleteUser", () => {
   })
 })
 
-describe("deleteGroup", () => { })*/
+describe("deleteGroup", () => { })

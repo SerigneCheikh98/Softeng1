@@ -338,9 +338,38 @@
 
 | Functional Requirements covered |   Test(s) | 
 | ------------------------------- | ----------- | 
-| FRx                             |             |             
-| FRy                             |             | 
-| ... ||
+|  FR1    | Manage users |
+| FR11                             |     UNIT(register),INTEGRATION(register)        |             
+| FR12                             |     UNIT(login),INTEGRATION(login)        |             
+| FR13                             |     UNIT(logout),INTEGRATION(logout)        |             
+| FR14                             |     UNIT(registerAdmin),INTEGRATION(registerAdmin)        |             
+| FR15                             |     UNIT(getUsers),INTEGRATION(getUsers)        |             
+| FR16                             |     UNIT(getUser),INTEGRATION(getUser)        |             
+| FR17                             |     UNIT(deleteUser),INTEGRATION(deleteUser)        |
+|  FR2    | Manage Groups |
+| FR21                             |     UNIT(createGroup),INTEGRATION(createGroup)        |             
+| FR22                             |     UNIT(getGroups),INTEGRATION(getGroups)        |             
+| FR23                             |     UNIT(getGroup),INTEGRATION(getGroup)        |             
+| FR24                             |     UNIT(addToGroup),INTEGRATION(addToGroup)        |             
+| FR26                             |     UNIT(removeFromGroup),INTEGRATION(removeFromGroup)        |             
+| FR28                             |     UNIT(deleteGroup),INTEGRATION(deleteGroup)        |    
+|  FR3   |  Manage  transactions|
+| FR31                             |     UNIT(createTransaction),INTEGRATION(createTransaction)        |             
+| FR32                             |     UNIT(getAllTransactions),INTEGRATION(getAllTransactions)        |             
+| FR33                             |     UNIT(getTransactionsByUser),INTEGRATION(getTransactionsByUser)        |             
+| FR34                             |     UNIT(getTransactionsByUserByCategory),INTEGRATION(getTransactionsByUserByCategory)        |             
+| FR35                             |     UNIT(getTransactionsByGroup),INTEGRATION(getTransactionsByGroup)        |             
+| FR36                             |     UNIT(getTransactionsByGroupByCategory),INTEGRATION(getTransactionsByGroupByCategory)        |             
+| FR37                             |     UNIT(deleteTransaction),INTEGRATION(deleteTransaction)        |             
+| FR38                             |     UNIT(deleteTransactions),INTEGRATION(deleteTransactions)        |        
+|  FR4  |  Manage categories |
+| FR41                             |     UNIT(createCategory),INTEGRATION(createCategory)        |             
+| FR42                             |     UNIT(updateCategory),INTEGRATION(updateCategory)        |             
+| FR43                             |     UNIT(deleteCategory),INTEGRATION(deleteCategory)        |             
+| FR44                             |     UNIT(getCategories),INTEGRATION(getCategories)        |                   
+
+
+
 
 
 
