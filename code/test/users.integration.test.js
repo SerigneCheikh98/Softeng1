@@ -124,7 +124,117 @@ describe("getUsers", () => {
   });
 })
 
-describe("getUser", () => { })
+/**
+ * - Request Parameters: A string equal to the `username` of the involved user
+ *    - Example: `/api/users/Mario`
+ * - Request Body Content: None
+ * - Response `data` Content: An object having attributes `username`, `email` and `role`.
+ *    - Example: `res.status(200).json({data: {username: "mario", email: "mario.red@email.com", role: "Regular"}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 400 error if the username passed as the route parameter does not represent a user in the database
+ * - Returns a 401 error if called by an authenticated user who is neither the same user as the one in the route parameter (authType = User) nor an admin (authType = Admin)
+*/
+describe("getUser", () => { 
+  test("Returns the requested username by User", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+    }, 
+    {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+
+    const response = await request(app)
+      .get("/api/users/tester")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual({
+      username: "tester",
+      email: "tester@test.com",
+      role: "Regular",
+    })
+  });
+
+  test("Returns the requested username by Admin", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+    }, 
+    {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    },
+    {
+      username: "mario",
+      email: "mario@test.com",
+      password: "securepassword",
+    }])
+
+    const response = await request(app)
+      .get("/api/users/mario")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual({
+      username: "mario",
+      email: "mario@test.com",
+      role: "Regular",
+    })
+  });
+
+  test("Returns a 400 error if the username passed as the route parameter does not represent a user in the database", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+    }, 
+    {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+
+    const response = await request(app)
+      .get("/api/users/itachi")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error")
+  });
+
+  test("Returns a 401 error if called by an authenticated user who is neither the same user as the parameter (authType = User) nor an admin (authType = Admin)", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+    }, 
+    {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+
+    const response = await request(app)
+      .get("/api/users/mario")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+
+    expect(response.status).toBe(401)
+    expect(response.body).toHaveProperty("error")
+  });
+})
 
 describe("createGroup", () => { })
 
