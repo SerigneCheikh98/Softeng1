@@ -329,9 +329,224 @@ describe("updateCategory", () => {
     })
 })
 
+/**
+ * - Request Parameters: None
+ * - Request Body Content: An array of strings that lists the `types` of the categories to be deleted
+ *   - Example: `{types: ["health"]}`
+ * - Response `data` Content: An object with an attribute `message` that confirms successful deletion and an attribute `count` that specifies the number of transactions that have had their category type changed
+ *   - Example: `res.status(200).json({data: {message: "Categories deleted", count: 1}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Given N = categories in the database and T = categories to delete:
+ *   - If N > T then all transactions with a category to delete must have their category set to the oldest category that is not in T
+ *   - If N = T then the oldest created category cannot be deleted and all transactions must have their category set to that category
+ * - In case any of the following errors apply then no category is deleted
+ * - Returns a 400 error if the request body does not contain all the necessary attributes
+ * - Returns a 400 error if called when there is only one category in the database
+ * - Returns a 400 error if at least one of the types in the array is an empty string
+ * - Returns a 400 error if the array passed in the request body is empty
+ * - Returns a 400 error if at least one of the types in the array does not represent a category in the database
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
 describe("deleteCategory", () => {
-    test('Dummy test, change it', () => {
-        expect(true).toBe(true);
+    test("Returns a message for confirmation and the number of updated transactions (N > T)", async () => {
+        await categories.insertMany([
+            { type: "food", color: "red" },
+            { type: "health", color: "green" },
+            { type: "car", color: "black" },
+        ])
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+        await transactions.insertMany([{
+            username: "tester",
+            type: "car",
+            amount: 400
+        }, {
+            username: "tester",
+            type: "food",
+            amount: 100
+        }])
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({types: ["car"]})
+
+        expect(response.status).toBe(200)
+        expect(response.body.data).toHaveProperty("message")
+        expect(response.body.data).toHaveProperty("count", 1)
+
+        const tr = await transactions.find();
+        let allTransactions = tr.map(t => Object.assign({}, { username: t.username, type: t.type, amount: t.amount }))
+        
+        expect(allTransactions).toEqual([{
+            username: "tester",
+            type: "food",
+            amount: 400
+        }, {
+            username: "tester",
+            type: "food",
+            amount: 100
+        }])
+    });
+
+    test("Returns a message for confirmation and the number of updated transactions (N == T)", async () => {
+        await categories.insertMany([
+            { type: "food", color: "red" },
+            { type: "health", color: "green" },
+            { type: "car", color: "black" },
+        ])
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+        await transactions.insertMany([{
+            username: "tester",
+            type: "car",
+            amount: 400
+        }, {
+            username: "tester",
+            type: "health",
+            amount: 100
+        }])
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({types: ["car", "food", "health"]})
+
+        expect(response.status).toBe(200)
+        expect(response.body.data).toHaveProperty("message")
+        expect(response.body.data).toHaveProperty("count", 2)
+
+        const tr = await transactions.find();
+        let allTransactions = tr.map(t => Object.assign({}, { username: t.username, type: t.type, amount: t.amount }))
+        
+        expect(allTransactions).toEqual([{
+            username: "tester",
+            type: "food",
+            amount: 400
+        }, {
+            username: "tester",
+            type: "food",
+            amount: 100
+        }])
+    });
+
+    test("Returns a 400 error if the array passed in the request body is empty", async () => {
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({types: []})
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty("error")
+    });
+
+    test("Returns a 400 error if the request body does not contain all the necessary attributes", async () => {
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send()
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty("error")
+    });
+
+    test("Returns a 400 error if called when there is only one category in the database", async () => {
+        await categories.create({ type: "food", color: "red" })
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({types: ["food"]})
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty("error")
+    });
+
+    test("Returns a 400 error if at least one of the types in the array is an empty string", async () => {
+        await categories.create({ type: "food", color: "red" })
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({types: ["food", " "]})
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty("error", "Some Parameter is an Empty String")
+    });
+
+    test("Returns a 400 error if at least one of the types in the array does not represent a category in the database", async () => {
+        await categories.create({ type: "food", color: "red" })
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({types: ["food", "susanoo"]})
+
+        expect(response.status).toBe(400)
+        expect(response.body).toHaveProperty("error", "One or more Categories do not exists")
+    });
+
+    test("Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)", async () => {
+        await User.create({
+            username: "tester",
+            email: "tester@test.com",
+            password: "tester",
+            refreshToken: testerAccessTokenValid
+        })
+
+        const response = await request(app)
+            .delete("/api/categories/")
+            .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+            .send({types: []})
+
+        expect(response.status).toBe(401)
+        expect(response.body).toHaveProperty("error")
     });
 })
 
