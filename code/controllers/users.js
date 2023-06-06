@@ -348,7 +348,7 @@ export const removeFromGroup = async (req, res) => {
         if (regex.test(email) === false) {
           return res.status(400).json({ error: "Invalid email format" });
         }
-
+        console.log("qui")
         // verify that the user exists
         let user = await User.findOne({ email: email });
         //console.log(user)
