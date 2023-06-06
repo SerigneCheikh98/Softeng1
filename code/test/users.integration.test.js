@@ -36,6 +36,8 @@ afterAll(async () => {
 beforeEach(async () => {
   await User.deleteMany({})
   await Group.deleteMany({})
+  await categories.deleteMany({})
+  await transactions.deleteMany({})
 });
 
 /**
@@ -246,6 +248,252 @@ describe("addToGroup", () => { })
 
 describe("removeFromGroup", () => { })
 
-describe("deleteUser", () => { })
+/**
+ * - Request Parameters: None
+ * - Request Body Content: A string equal to the `email` of the user to be deleted
+ *    - Example: `{email: "luigi.red@email.com"}`
+ * - Response `data` Content: An object having an attribute that lists the number of `deletedTransactions` and an attribute that specifies whether the user was also `deletedFromGroup` or not
+ *    - Example: `res.status(200).json({data: {deletedTransactions: 1, deletedFromGroup: true}, refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - If the user is the last user of a group then the group is deleted as well
+ * - Returns a 400 error if the request body does not contain all the necessary attributes
+ * - Returns a 400 error if the email passed in the request body is an empty string
+ * - Returns a 400 error if the email passed in the request body is not in correct email format
+ * - Returns a 400 error if the email passed in the request body does not represent a user in the database
+ * - Returns a 400 error if the email passed in the request body represents an admin
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
+describe("deleteUser", () => { 
+  test("Should successfully delete the given user who does not belongs to a group", async () => {
+    await categories.create({ type: "food", color: "red" })
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+    await transactions.insertMany([{
+      username: "tester",
+      type: "food",
+      amount: 20
+    }, {
+      username: "tester",
+      type: "food",
+      amount: 100
+    }])
+
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({ email: "tester@test.com" })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toHaveProperty("deletedTransactions", 2)
+    expect(response.body.data).toHaveProperty("deletedFromGroup", false)
+  });
+
+  test("Should successfully delete the given user who was with other member in a group", async () => {
+    await categories.create({ type: "food", color: "red" })
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    },
+    {
+      username: "mario",
+      email: "mario@test.com",
+      password: "securepassword",
+    }])
+
+    await transactions.insertMany([{
+      username: "tester",
+      type: "food",
+      amount: 20
+    }, {
+      username: "mario",
+      type: "food",
+      amount: 100
+    }])
+
+    const userTester = await User.findOne({ email: "tester@test.com" })
+    const userMario = await User.findOne({ email: "mario@test.com" })
+    await Group.create({name: "holiday", members: [{email: "tester@test.com", user: userTester._id}, {email: "mario@test.com", user: userMario._id}]})
+    
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({ email: "tester@test.com" })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toHaveProperty("deletedTransactions", 1)
+    expect(response.body.data).toHaveProperty("deletedFromGroup", true)
+    const groups = await Group.count();
+    expect(groups).toBe(1)
+  });
+
+  test("Should successfully delete the given user who was alone in a group", async () => {
+    await categories.create({ type: "food", color: "red" })
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+    await transactions.insertMany([{
+      username: "tester",
+      type: "food",
+      amount: 20
+    }, {
+      username: "tester",
+      type: "food",
+      amount: 100
+    }])
+
+    const userTester = await User.findOne({ email: "tester@test.com" })
+    await Group.create({name: "holiday", members: [{email: "tester@test.com", user: userTester._id}]})
+    
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({ email: "tester@test.com" })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toHaveProperty("deletedTransactions", 2)
+    expect(response.body.data).toHaveProperty("deletedFromGroup", true)
+    const groups = await Group.count();
+    expect(groups).toBe(0)
+  });
+
+  test("Should return error if the request body does not contain all the necessary attributes", async () => {
+    await User.create({
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    })
+
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send()
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Some Parameter is Missing")
+  });
+
+  test("Should return error if the email passed in the request body is an empty string", async () => {
+    await User.create({
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    })
+
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({email: " "})
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Some Parameter is an Empty String")
+  });
+
+  test("Should return error if the email passed in the request body is not in correct email format", async () => {
+    await User.create({
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    })
+
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({email: "invalidEmail.polito"})
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Invalid email format")
+  });
+
+  test("Should return error if the email passed in the request body does not represent a user in the database", async () => {
+    await User.create({
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    })
+
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({email: "tryToDelete.me@polito.it"})
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "User Does Not exist")
+  });
+
+  test("Should return error if the email passed in the request body represents an admin", async () => {
+    await User.insertMany([{
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    },
+    {
+      username: "admin2",
+      email: "admin2@email.com",
+      password: "theOtherAdminHatesMe",
+      role: "Admin"
+    }])
+
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({email: "admin2@email.com"})
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "User is an Admin,can't delete")
+  });
+
+  test("Should return error if called by an authenticated user who is not an admin", async () => {
+    await User.create({
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    })
+
+    const response = await request(app)
+      .delete("/api/users")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+      .send({ email: "tester@test.com" })
+
+    expect(response.status).toBe(401)
+    expect(response.body).toHaveProperty("error")
+  });
+})
 
 describe("deleteGroup", () => { })
