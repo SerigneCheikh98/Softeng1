@@ -178,7 +178,12 @@ export const getGroups = async (req, res) => {
     if (adminAuth.authorized) {
       //Admin auth successful
       const groups = await Group.find();
-      return res.status(200).json({ data: groups, refreshedTokenMessage: res.locals.refreshedTokenMessage })
+      const groupsData = groups.map(({ name, members }) => ({ 
+          name, 
+          members: members.map( ({email}) => ({ email }) )
+        }
+      ));
+      return res.status(200).json({ data: groupsData, refreshedTokenMessage: res.locals.refreshedTokenMessage })
     }
     else {
       return res.status(401).json({ error: adminAuth.cause })
