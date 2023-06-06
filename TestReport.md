@@ -18,7 +18,8 @@
 
 # Dependency graph 
 ## Main Dependency Graph
-![image info](./testreport/main.png)
+![image info](./testreport/dependencies.jpg)
+## Function Dependencies
 ### Auth.js
 ![image info](./testreport/auth/register.png)
 ![image info](./testreport/auth/registerAdmin.png)
@@ -154,7 +155,7 @@
 |deleteTransactions with at least one of the ids in the array is an empty string, should return 400|deleteTransactions|unit|WB/Statement Coverage|
 |deleteTransactions with at least one of the ids in the array does not represent a transaction in the database, should return 400|deleteTransactions|unit|WB/Statement Coverage|
 |deleteTransactions not called by an Admin, should return 401|deleteTransactions|unit|WB/Statement Coverage|
-## controller.unit.test
+## users.unit.test
 | Test case name | Object(s) tested | Test level | Technique used |
 |--|--|--|--|
 |Should return the created category|createCategory|unit|WB/Statement Coverage|
@@ -203,6 +204,129 @@
 |should throw an error when max value is not valid|handleAmountFilterParams|unit|WB/Statement Coverage|
 |should throw an error when max or min are not valid but are both defined|handleAmountFilterParams|unit|WB/Statement Coverage|
 |should return an empty object when max and min are not defined|handleAmountFilterParams|unit|WB/Statement Coverage|
+## auth.integration.test
+| Test case name | Object(s) tested | Test level | Technique used |
+|--|--|--|--|
+|register: register a user with success|register|integration|WB/Statement Coverage|
+|register: 400 error if the request body does not contain all the necessary attributes|register|integration|WB/Statement Coverage|
+|register: 400 error if at least one of the parameters in the request body is an empty string|register|integration|WB/Statement Coverage|
+|register: 400 error if the email in the request body is not in a valid email format|register|integration|WB/Statement Coverage|
+|register: 400 error if the username in the request body identifies an already existing user|register|integration|WB/Statement Coverage|
+|register: 400 error if the email in the request body identifies an already existing user|register|integration|WB/Statement Coverage|
+|registerAdmin: register a user with success|registerAdmin|integration|WB/Statement Coverage|
+|registerAdmin: 400 error if the request body does not contain all the necessary attributes|registerAdmin|integration|WB/Statement Coverage|
+|registerAdmin: 400 error if at least one of the parameters in the request body is an empty string|registerAdmin|integration|WB/Statement Coverage|
+|registerAdmin: 400 error if the email in the request body is not in a valid email format|registerAdmin|integration|WB/Statement Coverage|
+|registerAdmin: 400 error if the username in the request body identifies an already existing user|registerAdmin|integration|WB/Statement Coverage|
+|registerAdmin: 400 error if the email in the request body identifies an already existing user|registerAdmin|integration|WB/Statement Coverage|
+|login: login with success|login|integration|WB/Statement Coverage|
+|login: 400 error if the request body does not contain all the necessary attributes|login|integration|WB/Statement Coverage|
+|login: 400 error if at least one of the parameters in the request body is an empty string|login|integration|WB/Statement Coverage|
+|login: 400 error if the email in the request body is not in a valid email format|login|integration|WB/Statement Coverage|
+|login: 400 error if the email in the request body does not identify a user in the database|login|integration|WB/Statement Coverage|
+|login: 400 error if the supplied password does not match with the one in the database|login|integration|WB/Statement Coverage|
+|logout: logout with success|logout|integration|WB/Statement Coverage|
+|logout: 400 error if the request does not have a refresh token in the cookies|logout|integration|WB/Statement Coverage|
+|logout: 400 error if the refresh token in the request cookies does not represent a user in the database|logout|integration|WB/Statement Coverage|
+## controller.integration.test
+| Test case name | Object(s) tested | Test level | Technique used |
+|--|--|--|--|
+|Returns the created category|createCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if the request body does not contain all the necessary attributes|createCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if at least one of the parameters in the request body is an empty string|createCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if the type of category passed in the request body represents an already existing category in the database|createCategory|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)|createCategory|integration|WB/Statement Coverage|
+|Returns a message for confirmation and the number of updated transactions|updateCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if the type of the new category is the same as one that exists already and that category is not the requested one|updateCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if the request body does not contain all the necessary parameters|updateCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if at least one of the parameters in the request body is an empty string|updateCategory|integration|WB/Statement Coverage|
+|Returns a 401 error if called by a user who is not an Admin|updateCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if the type of category passed as a route parameter does not represent a category in the database|updateCategory|integration|WB/Statement Coverage|
+|TODO|deleteCategory|integration|WB/Statement Coverage|
+|Returns all the categories on database|getCategories|integration|WB/Statement Coverage|
+|Returns error if called by a user who is not authenticated (authType = Simple)|getCategories|integration|WB/Statement Coverage|
+|Create transaction successfully|createTransaction|integration|WB/Statement Coverage|
+|Missing parameters|createTransaction|integration|WB/Statement Coverage|
+|Empty string parameters|createTransaction|integration|WB/Statement Coverage|
+|Category does not exist|createTransaction|integration|WB/Statement Coverage|
+|Mismatched usernames|createTransaction|integration|WB/Statement Coverage|
+|User does not exist|createTransaction|integration|WB/Statement Coverage|
+|Invalid amount|createTransaction|integration|WB/Statement Coverage|
+| Returns 401 error when unauthorized|createTransaction|integration|WB/Statement Coverage|
+|Returns all transactions when you are admin|getAllTransactions|integration|WB/Statement Coverage|
+|Returns unauthorized error for non-admin|getAllTransactions|integration|WB/Statement Coverage|
+|should return transactions for a specific user|getTransactionsByUser|integration|WB/Statement Coverage|
+|should return transactions for a specific user without filtering (Admin)|getTransactionsByUser|integration|WB/Statement Coverage|
+|400 error if the username passed as a route parameter does not represent a user in the database|getTransactionsByUser|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not the same user as the one in the route (authType = User) if the route is /api/users/:username/transactions|getTransactionsByUser|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is /api/transactions/users/:username|getTransactionsByUser|integration|WB/Statement Coverage|
+|should return transactions for a specific user and category|getTransactionsByUserByCategory|integration|WB/Statement Coverage|
+|400 error if the username passed as a route parameter does not represent a user in the database|getTransactionsByUserByCategory|integration|WB/Statement Coverage|
+|400 error if the category passed as a route parameter does not represent a category in the database|getTransactionsByUserByCategory|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not the same user as the one in the route (authType = User) if the route is /api/users/:username/transactions/category/:category|getTransactionsByUserByCategory|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is /api/transactions/users/:username/category/:category|getTransactionsByUserByCategory|integration|WB/Statement Coverage|
+|should return transactions for a specific group|getTransactionsByGroup|integration|WB/Statement Coverage|
+|400 error if the group name passed as a route parameter does not represent a group in the database|getTransactionsByGroup|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not part of the group (authType = Group) if the route is /api/groups/:name/transactions|getTransactionsByGroup|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is /api/transactions/groups/:name|getTransactionsByGroup|integration|WB/Statement Coverage|
+|should get all transactions of a certain group and a certain category|getTransactionsByGroupByCategory|integration|WB/Statement Coverage|
+|400 error if the group name passed as a route parameter does not represent a group in the database|getTransactionsByGroupByCategory|integration|WB/Statement Coverage|
+|400 error if the category passed as a route parameter does not represent a category in the database|getTransactionsByGroupByCategory|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not part of the group (authType = Group) if the route is /api/groups/:name/transactions/category/:category|getTransactionsByGroupByCategory|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is /api/transactions/groups/:name/category/:category|getTransactionsByGroupByCategory|integration|WB/Statement Coverage|
+|should delete transaction when user authentication is successful and valid ID is provided|deleteTransaction|integration|WB/Statement Coverage|
+|400 error if the request body does not contain all the necessary attributes|deleteTransaction|integration|WB/Statement Coverage|
+|400 error if the _id in the request body is an empty string|deleteTransaction|integration|WB/Statement Coverage|
+|400 error if the username passed as a route parameter does not represent a user in the database|deleteTransaction|integration|WB/Statement Coverage|
+|400 error if the _id in the request body does not represent a transaction in the database|deleteTransaction|integration|WB/Statement Coverage|
+|400 error if the _id in the request body represents a transaction made by a different user than the one in the route|deleteTransaction|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not the same user as the one in the route (authType = User)|deleteTransaction|integration|WB/Statement Coverage|
+|should delete transactions when admin authentication is successful and valid IDs are provided|deleteTransactions|integration|WB/Statement Coverage|
+|400 error if the request body does not contain all the necessary attributes|deleteTransactions|integration|WB/Statement Coverage|
+|400 error if at least one of the ids in the array is an empty string|deleteTransactions|integration|WB/Statement Coverage|
+|400 error if at least one of the ids in the array does not represent a transaction in the database|deleteTransactions|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not an admin (authType = Admin)|deleteTransactions|integration|WB/Statement Coverage|
+## users.integration.test
+| Test case name | Object(s) tested | Test level | Technique used |
+|--|--|--|--|
+## utils.integration.test
+| Test case name | Object(s) tested | Test level | Technique used |
+|--|--|--|--|
+|Returns an object with a date attribute used for filtering mongoose aggregate queries - from parameter|handleDateFilterParams|integration|WB/Statement Coverage|
+|Returns an object with a date attribute used for filtering mongoose aggregate queries - upTo parameter|handleDateFilterParams|integration|WB/Statement Coverage|
+|Returns an object with a date attribute used for filtering mongoose aggregate queries - from and upTo parameters|handleDateFilterParams|integration|WB/Statement Coverage|
+|Returns an object with a date attribute used for filtering mongoose aggregate queries - date parameter|handleDateFilterParams|integration|WB/Statement Coverage|
+|Returns an empty object if there are no query parameters|handleDateFilterParams|integration|WB/Statement Coverage|
+|Throws an error if date is present with from parameter|handleDateFilterParams|integration|WB/Statement Coverage|
+|Throws an error if date is present with upTo parameter|handleDateFilterParams|integration|WB/Statement Coverage|
+|Throws an error if the value of any query parameter is not a valid date (from only)|handleDateFilterParams|integration|WB/Statement Coverage|
+|Throws an error if the value of any query parameter is not a valid date (date only)|handleDateFilterParams|integration|WB/Statement Coverage|
+|Throws an error if the value of any query parameter is not a valid date (upTo only)|handleDateFilterParams|integration|WB/Statement Coverage|
+|Throws an error if the value of any query parameter is not a valid date (from and upTo only)|handleDateFilterParams|integration|WB/Statement Coverage|
+|Tokens are both valid and belong to the requested user|verifyAuth|integration|WB/Statement Coverage|
+|Tokens are both valid and belong to the requested user with authTipe:Simple|verifyAuth|integration|WB/Statement Coverage|
+|Undefined tokens|verifyAuth|integration|WB/Statement Coverage|
+|Access token has missing fields|verifyAuth|integration|WB/Statement Coverage|
+|Refresh token has missing fields|verifyAuth|integration|WB/Statement Coverage|
+|Mismatching usernames in tokens|verifyAuth|integration|WB/Statement Coverage|
+|Mismatching usernames tokens and info.username|verifyAuth|integration|WB/Statement Coverage|
+|Mismatching roles in Authtype: admin|verifyAuth|integration|WB/Statement Coverage|
+|Returns an object indicating unauthorized when authType is Group and user is not in the group|verifyAuth|integration|WB/Statement Coverage|
+|Returns authorized when authType is Group and user is  in the group|verifyAuth|integration|WB/Statement Coverage|
+|Token Expired: Mismatched users|verifyAuth|integration|WB/Statement Coverage|
+|Token Expired: Mismatched roles|verifyAuth|integration|WB/Statement Coverage|
+|Token Expired:Returns an object indicating unauthorized when authType is Group and user is not in the group|verifyAuth|integration|WB/Statement Coverage|
+|Token Expired:Returns authorized when authType is Group and user is  in the group|verifyAuth|integration|WB/Statement Coverage|
+|Generic Error (TypeError)|verifyAuth|integration|WB/Statement Coverage|
+|Both Token Expired|verifyAuth|integration|WB/Statement Coverage|
+|Access token expired and refresh token belonging to the requested user|verifyAuth|integration|WB/Statement Coverage|
+|Returns an object with an amount attribute used for filtering mongoDBs aggregate queries - min parameter|handleAmountFilterParams|integration|WB/Statement Coverage|
+|Returns an object with an amount attribute used for filtering mongoose aggregate queries - max parameter|handleAmountFilterParams|integration|WB/Statement Coverage|
+|Returns an object with an amount attribute used for filtering mongoose aggregate queries - min and max parameters|handleAmountFilterParams|integration|WB/Statement Coverage|
+|Throws an error if the value of any query parameter is not a numerical value - min parameter|handleAmountFilterParams|integration|WB/Statement Coverage|
+|Throws an error if the value of any query parameter is not a numerical value - max parameter|handleAmountFilterParams|integration|WB/Statement Coverage|
+|Throws an error if the value of any query parameter is not a numerical value but are both defined - max parameter|handleAmountFilterParams|integration|WB/Statement Coverage|
+|Returns an empty object if there are no query parameters|handleAmountFilterParams|integration|WB/Statement Coverage|
 
 # Coverage
 

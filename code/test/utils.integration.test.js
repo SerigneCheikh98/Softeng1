@@ -86,28 +86,28 @@ describe("handleDateFilterParams", () => {
         expect(() => handleDateFilterParams(req)).toThrow('Unauthorized query parameters');
     });
 
-    test('Throws an error if the value of any query parameter is not a valid date', () => {
+    test('Throws an error if the value of any query parameter is not a valid date (from only)', () => {
         const req = {
             from: 'invalid-date',
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('From or upTo not valid');
     });
-    test('Throws an error if the value of any query parameter is not a valid date', () => {
+    test('Throws an error if the value of any query parameter is not a valid date (date only)', () => {
         const req = {
             date: 'invalid-date',
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('Date not valid');
     });
-    test('Throws an error if the value of any query parameter is not a valid date', () => {
+    test('Throws an error if the value of any query parameter is not a valid date (upTo only)', () => {
         const req = {
             upTo: 'invalid-date',
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('From or upTo not valid');
     });
-    test('Throws an error if the value of any query parameter is not a valid date', () => {
+    test('Throws an error if the value of any query parameter is not a valid date (from and upTo only)', () => {
         const req = {
             from: 'invalid-date',
             upTo: 'invalid-date',
