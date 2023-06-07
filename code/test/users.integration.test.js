@@ -240,9 +240,153 @@ describe("getUser", () => {
 
 describe("createGroup", () => { })
 
-describe("getGroups", () => { })
+/**
+ * - Request Parameters: None
+ * - Request Body Content: None
+ * - Response `data` Content: An array of objects, each one having a string attribute for the `name` of the group and an array for the `members` of the group
+ *   - Example: `res.status(200).json({data: [{name: "Family", members: [{email: "mario.red@email.com"}, {email: "luigi.red@email.com"}]}] refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
+describe("getGroups", () => { 
+  test("Returns all groups on database", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    },
+    {
+      username: "mario",
+      email: "mario@test.com",
+      password: "securepassword",
+    }])
 
-describe("getGroup", () => { })
+    const userTester = await User.findOne({ email: "tester@test.com" })
+    const userMario = await User.findOne({ email: "mario@test.com" })
+    await Group.create({name: "holiday", members: [{email: "tester@test.com", user: userTester._id}, {email: "mario@test.com", user: userMario._id}]})
+    const admin = await User.findOne({ email: "admin@email.com" })
+    await Group.create({name: "onlyAdmins", members: [{email: "admin@email.com", user: admin._id}]})
+    
+    const response = await request(app)
+      .get("/api/groups")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual([
+      {name: "holiday", members: [{email: "tester@test.com"}, {email: "mario@test.com"}]},
+      {name: "onlyAdmins", members: [{email: "admin@email.com"}]},
+    ])
+  });
+
+  test("Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)", async () => {
+    await User.create({
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    })
+
+    const response = await request(app)
+      .get("/api/groups")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+
+    expect(response.status).toBe(401)
+    expect(response.body).toHaveProperty("error")
+  });
+})
+
+/**
+ * - Request Parameters: A string equal to the `name` of the requested group
+ *   - Example: `/api/groups/Family`
+ * - Request Body Content: None
+ * - Response `data` Content: An object having a string attribute for the `name` of the group and an array for the `members` of the group
+ *   - Example: `res.status(200).json({data: {group: {name: "Family", members: [{email: "mario.red@email.com"}, {email: "luigi.red@email.com"}]}} refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+ * - Returns a 400 error if the group name passed as a route parameter does not represent a group in the database
+ * - Returns a 401 error if called by an authenticated user who is neither part of the group (authType = Group) nor an admin (authType = Admin)
+ */
+describe("getGroup", () => { 
+  test("Returns the requested group", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@email.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    },
+    {
+      username: "mario",
+      email: "mario@test.com",
+      password: "securepassword",
+    }])
+
+    const userTester = await User.findOne({ email: "tester@test.com" })
+    const userMario = await User.findOne({ email: "mario@test.com" })
+    await Group.create({name: "holiday", members: [{email: "tester@test.com", user: userTester._id}, {email: "mario@test.com", user: userMario._id}]})
+    
+    const response = await request(app)
+      .get("/api/groups/holiday")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual(
+      {group: {name: "holiday", members: [{email: "tester@test.com"}, {email: "mario@test.com"}]}}
+    )
+  });
+
+  test("Returns a 400 error if the group name passed as a route parameter does not represent a group in the database", async () => {
+    await User.create({
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    })
+
+    const userTester = await User.findOne({ email: "tester@test.com" })
+    await Group.create({name: "holiday", members: [{email: "tester@test.com", user: userTester._id}]})
+    
+    const response = await request(app)
+      .get("/api/groups/sport")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Group Does Not exist")
+  });
+
+  test("Returns a 401 error if called by an authenticated user who is neither part of the group (authType = Group) nor an admin (authType = Admin)", async () => {
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: testerAccessTokenValid
+    },
+    {
+      username: "mario",
+      email: "mario@test.com",
+      password: "securepassword",
+    }])
+
+    const userMario = await User.findOne({ email: "mario@test.com" })
+    await Group.create({name: "holiday", members: [{email: "mario@test.com", user: userMario._id}]})
+    
+    const response = await request(app)
+      .get("/api/groups/holiday")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+
+    expect(response.status).toBe(401)
+    expect(response.body).toHaveProperty("error")
+  });
+})
 
 describe("addToGroup", () => { })
 

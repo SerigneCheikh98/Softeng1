@@ -214,7 +214,8 @@ export const getGroup = async (req, res) => {
 
     if (groupAuth.authorized || adminAuth.authorized) {
       //User auth successful
-      res.status(200).json({ data: group, refreshedTokenMessage: res.locals.refreshedTokenMessage })
+      const membersData = group.members.map( ({email}) => ({ email }) );
+      res.status(200).json({ data: {group: {name: group.name, members: membersData}}, refreshedTokenMessage: res.locals.refreshedTokenMessage })
     } else {
       res.status(401).json({ error: groupAuth.cause })
     }
