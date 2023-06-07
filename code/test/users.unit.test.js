@@ -171,7 +171,7 @@ describe("getUser", () => {
     }
 
     const res = { authorized: true, cause: "Authorized" };
-    const response = { message: "User not found" };
+    const response = { error: "User not found" };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
     jest.spyOn(User, "findOne").mockImplementation(() => { })

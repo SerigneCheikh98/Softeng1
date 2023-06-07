@@ -100,11 +100,11 @@ export const createGroup = async (req, res) => {
 
       const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
       if (user === null) {
-        return res.status(400).json({ message: "User not found" })
+        return res.status(400).json({ error: "User not found" })
       }
       let in_group = await Group.findOne({ "members.email": user.email });
       if (in_group !== null)
-        return res.status(400).json({ message: "Caller already in a group" });
+        return res.status(400).json({ error: "Caller already in a group" });
       //members.push({ email: user.email, user: user._id });
 
       for (let email of memberEmails) {
@@ -125,7 +125,7 @@ export const createGroup = async (req, res) => {
         let user1 = await User.findOne({ email: email });
         if (user1 === null) {
           // if not existent, push into membersNotFound
-          membersNotFound.push(email);
+          membersNotFound.push({email: email});
         } else {
           // check if user is already in a group
           let in_group = await Group.findOne({ "members.email": email });
@@ -134,7 +134,7 @@ export const createGroup = async (req, res) => {
             members.push({ email: email, user: user1._id });
           } else {
             // if user already in a group, add it to alreadyInGroup
-            alreadyInGroup.push({ email: email, user: user1._id });
+            alreadyInGroup.push({ email: email});
           }
         }
       }
@@ -153,8 +153,9 @@ export const createGroup = async (req, res) => {
           name,
           members,
         });
+        const membersData = new_group.members.map( ({email}) => ({ email }) );
         // all ok, return the group created
-        res.status(200).json({ data: { group: new_group, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
+        res.status(200).json({ data: { group: {name: new_group.name, members: membersData}, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
       }
     } else {
       res.status(401).json({ error: userAuth.cause })
