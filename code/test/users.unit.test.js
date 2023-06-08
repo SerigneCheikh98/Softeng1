@@ -240,7 +240,8 @@ describe("createGroup", () => {
 
     const returnedGroupObject = { name: "testgroup1", members: ["notingroup1@example.com", "notingroup2@example.com", "notingroup3@example.com"] }
     const res = { authorized: true, cause: "Authorized" };
-    const response = { data: { group: returnedGroupObject, membersNotFound: [], alreadyInGroup: [] }, refreshedTokenMessage: mockReq.cookies.refreshToken }
+    const response = { data: { group: { name: "testgroup1", members: [{email: "notingroup1@example.com"}, {email: "notingroup2@example.com"}, {email: "notingroup3@example.com"}] }
+      , membersNotFound: [], alreadyInGroup: [] }, refreshedTokenMessage: undefined }
     const callingUserObject = { username: "notingroup1", email: "notingroup1@example.com"}
     const secondUserObject = { username: "notingroup2", email: "notingroup2@example.com"}
     const thirdUserObject = { username: "notingroup3", email: "notingroup3@example.com"}
@@ -281,9 +282,9 @@ describe("createGroup", () => {
     
     
     expect(Group.create).toHaveBeenCalledWith({name: "testgroup1", members: [
-      { email: "notingroup1@example.com", user: undefined }, 
-      { email: "notingroup2@example.com", user: undefined }, 
-      { email: "notingroup3@example.com", user: undefined }] })
+      { email: "notingroup1@example.com"}, 
+      { email: "notingroup2@example.com"}, 
+      { email: "notingroup3@example.com"}] })
 
     expect(mockRes.status).toHaveBeenCalledWith(200)
     expect(mockRes.json).toHaveBeenCalledWith(response)
@@ -305,7 +306,11 @@ describe("createGroup", () => {
 
     const returnedGroupObject = { name: "testgroup1", members: ["notingroup@example.com"] }
     const res = { authorized: true, cause: "Authorized" };
-    const response = { data: { group: returnedGroupObject, membersNotFound: [{email: "notfound@example.com"}], alreadyInGroup: [{email: "alreadyingroup@example.com"}] } }
+    const response = { data: { group: 
+      { name: "testgroup1", members: [{email: "notingroup@example.com"}] },
+        membersNotFound: [{email: "notfound@example.com"}],
+        alreadyInGroup: [{email: "alreadyingroup@example.com"}], refreshedTokenMessage: undefined  
+      } }
     const callingUserObject = { username: "notingroup", email: "notingroup1@example.com"}
     const secondUserObject = { username: "alreadyingroup", email: "alreadyingroup@example.com"}
     const thirdUserObject = { username: "notfound", email: "notfound@example.com"}
@@ -572,8 +577,8 @@ describe("getGroups", () => {
     }
 
     const retrievedGroups = [
-      { group: 'testgroup1', members: ["test1@example.com", "test2@example.com"] },
-      { group: 'testgroup2', members: ["test3@example.com", "test4@example.com"] }
+      { name: 'testgroup1', members: [{email: "test1@example.com"}, {email: "test2@example.com"}]},
+      { name: 'testgroup2', members: [{email: "test3@example.com"}, {email: "test4@example.com"}]}
     ]
 
     const res = { authorized: true, cause: "Authorized" };
@@ -625,9 +630,9 @@ describe("getGroup", () => {
       locals: jest.fn(),
     }
 
-    const retrievedGroup = { group: 'testgroup1', members: ["test1@example.com", "test2@example.com"] }
+    const retrievedGroup = { name: 'testgroup1', members: [{email: "test1@example.com"}, {email: "test2@example.com"}]}
     const res = { authorized: true, cause: "Authorized" };
-    const response = { data: retrievedGroup, refreshedTokenMessage: undefined };
+    const response = { data: {group: retrievedGroup}, refreshedTokenMessage: undefined };
 
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
     jest.spyOn(Group, "findOne").mockImplementation(() => retrievedGroup)

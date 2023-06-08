@@ -153,7 +153,7 @@ export const createGroup = async (req, res) => {
           name,
           members,
         });
-        const membersData = new_group.members.map( ({email}) => ({ email }) );
+        const membersData = new_group.members.map( email => {return {email: email} } );
         // all ok, return the group created
         res.status(200).json({ data: { group: {name: new_group.name, members: membersData}, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
       }
