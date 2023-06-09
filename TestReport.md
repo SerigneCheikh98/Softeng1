@@ -1,7 +1,5 @@
 # Test Report
 
-<The goal of this document is to explain how the application was tested, detailing how the test cases were defined and what they cover>
-
 # Contents
 
 - [Dependency graph](#dependency-graph)
@@ -54,16 +52,9 @@
 ![image info](./testreport/utils/handleAmountFilterParams.png)
 # Integration approach
 
-    <Write here the integration sequence you adopted, in general terms (top down, bottom up, mixed) and as sequence
-    (ex: step1: unit A, step 2: unit A+B, step 3: unit A+B+C, etc)> 
-    <Some steps may  correspond to unit testing (ex step1 in ex above)>
-    <One step will  correspond to API testing, or testing unit route.js>
-    
     We first started from unit testing by testing progressively all the functions, then we moved towards integration testing. For integration testing, we followed more or less the same approach, so we wrote progressively all the integration tests for all the functions.
 
 # Tests
-
-   <in the table below list the test cases defined For each test report the object tested, the test level (API, integration, unit) and the technique used to define the test case  (BB/ eq partitioning, BB/ boundary, WB/ statement coverage, etc)>   <split the table if needed>
 
 ## auth.unit.test
 | Test case name | Object(s) tested | Test level | Technique used |
@@ -444,8 +435,6 @@
 
 
 ## Coverage of FR
-
-<Report in the following table the coverage of  functional requirements (from official requirements) >
 
 | Functional Requirements covered |   Test(s) | 
 | ------------------------------- | ----------- | 
