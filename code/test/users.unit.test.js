@@ -707,12 +707,14 @@ describe("getGroup", () => {
   - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is `api/groups/:name/insert`
 
  */
-describe("addToGroup", () => { // not working
-  test.skip("should insert requested members into group indicated by request parameter", async () => {
+describe.only("addToGroup", () => {
+  test("should insert requested members into group by admin", async () => {
     const mockReq = {
-      url: "/groups/" + "testgroup1" + "/insert",
+      url: "api/groups/testgroup1/insert",
       params: { name: "testgroup1" },
-      body: { emails: ["toAdd1@example.com", "alreadyInAnotherGroup@example.com", "notFound@example.com"] }
+      body: { emails: [ "toAdd1@example.com",
+                        "alreadyInAnotherGroup@example.com", 
+                        "notFound@example.com"] }
     }
     const mockRes = {
       status: jest.fn().mockReturnThis(),
@@ -721,50 +723,126 @@ describe("addToGroup", () => { // not working
     }
 
     const alreadyExistingGroup = {
-      group: 'testgroup1',
+      name: 'testgroup1',
       members: ["requestingUser@example.com", "someoneelse@example.com"]
     }
-    const returnedGroup = {
-      group: 'testgroup1',
+
+    const anotherExistingGroup = {
+      name: 'testgroup1',
+      members: ["requestingUser@example.com", "someoneelse@example.com"]
+    }
+
+    const newGroup = {
+      name: 'testgroup1',
       members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"],
       alreadyInGroup: ["alreadyInAnotherGroup@example.com"],
       membersNotFound: ["notFound@example.com"]
     };
 
+    const firstUser = { username: "toAdd1", email: "toAdd1@example.com"}
+    const secondUser = { username: "alreadyInAnotherGroup", email: "alreadyInAnotherGroup@example.com"}
+    const thirdUser = { username: "notFound", email: "notFound@example.com"}
+
     const res = { authorized: true, cause: "Authorized" };
-    const response = { data: returnedGroup, refreshedTokenMessage: undefined };
+    const response = { data: { name: "testgroup1", members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"] }
+    , membersNotFound: ["notFound@example.com"], alreadyInGroup: [{email: "alreadyInAnotherGroup@example.com", user: undefined}], refreshedTokenMessage: undefined }
 
-    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
-
-    //in the first Group.findOne call, the group is surely already existing
-    jest.spyOn(Group, "findOne").mockResolvedValueOnce(alreadyExistingGroup)
-      .mockResolvedValueOnce(null) // first email not present in any group
-      .mockResolvedValueOnce({ group: 'testgroup2' }) // second email already in a group
-      .mockResolvedValueOnce(null); // third email not existing at all, so it's not present in any group
-
-    const firstUser = { username: 'toAdd1', email: 'toAdd1@example.com', role: 'Regular' }
-    const secondUser = { username: 'alreadyInAnotherGroup', email: 'alreadyInAnotherGroup@example.com', role: 'Regular' }
-    const thirdUser = { username: 'notFound', email: 'notFound@example.com', role: 'Regular' }
-
-    jest.spyOn(User, "findOne").mockResolvedValueOnce(firstUser)
-      .mockResolvedValueOnce(secondUser)
-      .mockResolvedValueOnce(thirdUser);
-
-    jest.spyOn(Group, "findOneAndUpdate").mockResolvedValue(returnedGroup)
+    // call to check if group actually exists 
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup)
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res) // authenticated as admin
+    // checking if users in body exist
+    User.findOne.mockResolvedValueOnce(firstUser) // first one exists
+    Group.findOne.mockResolvedValueOnce(null) // and doesn't belong to any group
+    User.findOne.mockResolvedValueOnce(secondUser) // second one exists
+    Group.findOne.mockResolvedValueOnce(anotherExistingGroup) // but already belongs to a group
+    User.findOne.mockResolvedValueOnce(null) // third one does not exist so no call to Group.findOne
+    Group.findOneAndUpdate.mockResolvedValueOnce({name: newGroup.name, members: newGroup.members})
 
     await addToGroup(mockReq, mockRes)
 
-    response = null;
+    expect(Group.findOne).toHaveBeenCalledWith({name: "testgroup1"})
+    expect(verifyAuth).toHaveBeenCalled() 
+    expect(User.findOne).toHaveBeenCalledWith({email: "toAdd1@example.com"})
+    expect(Group.findOne).toHaveBeenCalledWith({ "members.email": "toAdd1@example.com" })
+    expect(User.findOne).toHaveBeenCalledWith({email: "alreadyInAnotherGroup@example.com"})
+    expect(Group.findOne).toHaveBeenCalledWith({ "members.email": "alreadyInAnotherGroup@example.com" })
+    expect(User.findOne).toHaveBeenCalledWith({email: "notFound@example.com"})
+    expect(Group.findOneAndUpdate).toHaveBeenCalledWith({ name: newGroup.name }, { $push: { members: [{email: firstUser.email}] } }, { new: true })
 
-    //expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.status).toHaveBeenCalledWith(200)
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  test.skip("should return error if the request body does not contain all the necessary attributes", async () => {
+  test("should insert requested members into group by user", async () => {
     const mockReq = {
-      url: "/groups/" + "testgroup1" + "/insert",
+      url: "api/groups/testgroup1/add",
       params: { name: "testgroup1" },
-      body: {} // body not containing all attributes
+      body: { emails: [ "toAdd1@example.com",
+                        "alreadyInAnotherGroup@example.com", 
+                        "notFound@example.com"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const alreadyExistingGroup = {
+      name: 'testgroup1',
+      members: ["requestingUser@example.com", "someoneelse@example.com"]
+    }
+
+    const anotherExistingGroup = {
+      name: 'testgroup2',
+      members: ["requestingUser@example.com", "someoneelse@example.com"]
+    }
+
+    const newGroup = {
+      name: 'testgroup1',
+      members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"],
+      alreadyInGroup: ["alreadyInAnotherGroup@example.com"],
+      membersNotFound: ["notFound@example.com"]
+    };
+
+    const firstUser = { username: "toAdd1", email: "toAdd1@example.com"}
+    const secondUser = { username: "alreadyInAnotherGroup", email: "alreadyInAnotherGroup@example.com"}
+    const thirdUser = { username: "notFound", email: "notFound@example.com"}
+
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { data: { name: "testgroup1", members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"] }
+    , membersNotFound: ["notFound@example.com"], alreadyInGroup: [{email: "alreadyInAnotherGroup@example.com", user: undefined}], refreshedTokenMessage: undefined }
+
+    // call to check if group actually exists 
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup)
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res) // authenticated as admin
+    // checking if users in body exist
+    User.findOne.mockResolvedValueOnce(firstUser) // first one exists
+    Group.findOne.mockResolvedValueOnce(null) // and doesn't belong to any group
+    User.findOne.mockResolvedValueOnce(secondUser) // second one exists
+    Group.findOne.mockResolvedValueOnce(anotherExistingGroup) // but already belongs to a group
+    User.findOne.mockResolvedValueOnce(null) // third one does not exist so no call to Group.findOne
+    Group.findOneAndUpdate.mockResolvedValueOnce({name: newGroup.name, members: newGroup.members})
+
+    await addToGroup(mockReq, mockRes)
+
+    expect(Group.findOne).toHaveBeenCalledWith({name: "testgroup1"})
+    expect(verifyAuth).toHaveBeenCalled() 
+    expect(User.findOne).toHaveBeenCalledWith({email: "toAdd1@example.com"})
+    expect(Group.findOne).toHaveBeenCalledWith({ "members.email": "toAdd1@example.com" })
+    expect(User.findOne).toHaveBeenCalledWith({email: "alreadyInAnotherGroup@example.com"})
+    expect(Group.findOne).toHaveBeenCalledWith({ "members.email": "alreadyInAnotherGroup@example.com" })
+    expect(User.findOne).toHaveBeenCalledWith({email: "notFound@example.com"})
+    expect(Group.findOneAndUpdate).toHaveBeenCalledWith({ name: newGroup.name }, { $push: { members: [{email: firstUser.email}] } }, { new: true })
+
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if the request body does not contain all the necessary attributes", async () => {
+    const mockReq = {
+      url: "api/groups/testgroup1/insert",
+      params: { name: "testgroup1" },
+      body: {} // body without attributes
     }
 
     const mockRes = {
@@ -779,11 +857,12 @@ describe("addToGroup", () => { // not working
       group: 'testgroup1',
       members: ["requestingUser@example.com", "someoneelse@example.com"]
     }
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup) // group exists
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
-    jest.spyOn(Group, "findOne").mockImplementation(() => alreadyExistingGroup)
 
     await addToGroup(mockReq, mockRes)
 
+    expect(verifyAuth).toHaveBeenCalled() 
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
@@ -803,8 +882,8 @@ describe("addToGroup", () => { // not working
     const res = { authorized: true, cause: "Authorized" };
     const response = { error: "Group not Found." };
 
+    Group.findOne.mockResolvedValueOnce(null) // group does not exists
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
-    jest.spyOn(Group, "findOne").mockImplementation(() => null)
 
     await addToGroup(mockReq, mockRes)
 
@@ -812,11 +891,49 @@ describe("addToGroup", () => { // not working
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  test.skip("should return error if all the provided emails represent users that are already in a group or do not exist in the database", async () => { })
-
-  test.skip("should return error if at least one of the member emails is not in a valid email format", async () => {
+  test("should return error if all the provided emails represent users that are already in a group or do not exist in the database", async () => { 
     const mockReq = {
-      body: { name: "testgroup1", memberEmails: ["wrongemailformat", "anotherwrongemail"] }
+      url: "api/groups/testgroup1/add",
+      params: { name: "testgroup1" },
+      body: { emails: [ "notExists@example.com",
+                        "alreadyInAnotherGroup@example.com", 
+                        "notFound@example.com"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const alreadyExistingGroup = {
+      name: 'testgroup1',
+      members: ["requestingUser@example.com", "someoneelse@example.com"]
+    }
+
+    const firstUser = { username: "alreadyInAnotherGroup", email: "alreadyInAnotherGroup@example.com"}
+
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "All memberEmails does not exist or Already in Group" };
+
+    // call to check if group actually exists 
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup)
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    User.findOne.mockResolvedValueOnce(null) // first one doesn't exists
+    User.findOne.mockResolvedValueOnce(firstUser) // second one exists
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup) // but already belongs to a group
+    User.findOne.mockResolvedValueOnce(null) // third one doesn't exist either
+
+    await addToGroup(mockReq, mockRes)
+
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if at least one of the member emails is not in a valid email format", async () => {
+    const mockReq = {
+      url: "api/groups/testgroup1/add",
+      params: { name: "testgroup1" },
+      body: { emails: ["wrongemailformat", "anotherwrongemail"] }
     }
 
     const mockRes = {
@@ -826,13 +943,13 @@ describe("addToGroup", () => { // not working
     }
 
     const res = { authorized: true, cause: "Authorized" };
-    const response = { data: { error: "Invalid email format" } }
+    const response = { error: "Invalid email format" }
     const alreadyExistingGroup = {
       group: 'testgroup1',
       members: ["requestingUser@example.com", "someoneelse@example.com"]
     }
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup)
     jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
-    jest.spyOn(Group, "findOne").mockImplementation(() => alreadyExistingGroup)
 
     await addToGroup(mockReq, mockRes)
 
@@ -840,10 +957,69 @@ describe("addToGroup", () => { // not working
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  test.skip("should return error if at least one of the member emails is an empty string", async () => {
+  test("should return error if at least one of the member emails is an empty string", async () => {
+    const mockReq = {
+      url: "api/groups/testgroup1/add",
+      params: { name: "testgroup1" },
+      body: { emails: [" ", "anotherwrongemail"] }
+    }
 
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "Some Parameter is an Empty String" }
+    const alreadyExistingGroup = {
+      group: 'testgroup1',
+      members: ["requestingUser@example.com", "someoneelse@example.com"]
+    }
+
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup)
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await addToGroup(mockReq, mockRes)
+
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
   })
-  test.skip("", async () => { })
+
+  test("should return error if called by an authenticated user who is not part of the group (authType = Group)", async () => { 
+    const mockReq = {
+      url: "api/groups/testgroup1/add",
+      params: { name: "testgroup1" },
+      body: {emails: ["user2@email.com", "user@email.com"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = {
+      authorized: false,
+      cause: "Group: user not in group",
+    };
+    const response = { error:"Group: user not in group"  }
+    const alreadyExistingGroup = {
+      group: 'testgroup1',
+      members: [
+        { email: 'user@example.com', user: 'user1' },
+      ]
+    }
+
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup);
+    jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => res);
+
+    await addToGroup(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalledWith(mockReq, mockRes, { authType: "Group", emails:[ 'user@example.com' ]})
+    expect(mockRes.status).toHaveBeenCalledWith(401);
+    expect(mockRes.json).toHaveBeenCalledWith(response);
+  })
+
   test.skip("", async () => { })
 })
 
