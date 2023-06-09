@@ -366,8 +366,6 @@ export const removeFromGroup = async (req, res) => {
             membersToDelete.push({ email: email, user: user._id });
 
           }
-          //if (firstUser.email != email) {
-          //}
         }
       }
       // Group Does Not exist or All memberEmails does not exist or Already in Group error handling
