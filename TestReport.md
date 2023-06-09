@@ -475,7 +475,7 @@
 
 ## Coverage white box
 
-Report here the screenshot of coverage values obtained with jest-- coverage 
+![image info](./testreport/testcases.png)
 
 
 
