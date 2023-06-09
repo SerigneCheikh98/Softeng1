@@ -660,7 +660,57 @@ describe("getGroup", () => {
 
 describe("addToGroup", () => { })
 
-describe("removeFromGroup", () => { })
+describe("removeFromGroup", () => { 
+  test('Removes members from a group successfully', async () => {
+    // Create a test group with name "test-group" and members
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: adminAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@test.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+
+
+    const user1 = await User.findOne({ email: "tester@test.com" })
+    const user2 = await User.findOne({ email: "admin@test.com" })
+    const testGroup = await Group.create({name: "testGroup", members: [{email: "tester@test.com", user: user1._id}, {email: "admin@test.com" , user: user2._id}]})
+
+
+    const response = await request(app)
+      .patch('/api/groups/testGroup/pull')
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({ emails: ["tester@test.com"] });
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('data');
+
+    expect(response.body).toEqual({
+      data: {
+        group: {
+          __v:0,
+          _id: expect.any(String),
+          name: 'testGroup',
+          members: [
+            { email: "admin@test.com" ,user:  expect.any(String),_id: expect.any(String),},
+          ],
+        },
+        membersNotFound: [],
+        notInGroup: [],
+      }    });
+
+  });
+  //Returns a 400 error if the request body does not contain all the necessary attributes
+//Returns a 400 error if the group name passed as a route parameter does not represent a group in the database
+//Returns a 400 error if all the provided emails represent users that do not belong to the group or do not exist in the database
+//Returns a 400 error if at least one of the emails is not in a valid email format
+
+})
 
 /**
  * - Request Parameters: None
