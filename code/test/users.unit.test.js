@@ -707,7 +707,7 @@ describe("getGroup", () => {
   - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is `api/groups/:name/insert`
 
  */
-describe.only("addToGroup", () => {
+describe("addToGroup", () => {
   test("should insert requested members into group by admin", async () => {
     const mockReq = {
       url: "api/groups/testgroup1/insert",
@@ -986,6 +986,7 @@ describe.only("addToGroup", () => {
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
+  // NOTE: this test should work but functionality is seemingly broken in users.js
   test("should return error if called by an authenticated user who is not part of the group (authType = Group)", async () => { 
     const mockReq = {
       url: "api/groups/testgroup1/add",
@@ -1020,7 +1021,39 @@ describe.only("addToGroup", () => {
     expect(mockRes.json).toHaveBeenCalledWith(response);
   })
 
-  test.skip("", async () => { })
+  test("should return error if called by an authenticated user who is not an admin (authType = Admin)", async () => { 
+    const mockReq = {
+      url: "api/groups/testgroup1/insert",
+      params: { name: "testgroup1" },
+      body: {emails: ["user2@email.com", "user@email.com"] }
+    }
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = {
+      authorized: false,
+      cause:  "Admin: Mismatched role",
+    };
+    const response = { error: "Admin: Mismatched role"}
+    const alreadyExistingGroup = {
+      group: 'testgroup1',
+      members: [
+        { email: 'user@example.com', user: 'user1' },
+      ]
+    }
+
+    Group.findOne.mockResolvedValueOnce(alreadyExistingGroup);
+    jest.spyOn(VerifyAuthmodule, 'verifyAuth').mockImplementation(() => res);
+
+    await addToGroup(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalledWith(mockReq, mockRes, { authType: "Admin" })
+    expect(mockRes.status).toHaveBeenCalledWith(401);
+    expect(mockRes.json).toHaveBeenCalledWith(response);
+  })
 })
 
 /*The group must have at least one user after deleting, so given M = members of the group and N = emails to delete:
@@ -1600,4 +1633,144 @@ describe("deleteUser", () => {
   })
 })
 
-describe("deleteGroup", () => { })
+
+/**
+ * - Request Parameters: None
+  - Request Body Content: A string equal to the `name` of the group to be deleted
+    - Example: `{name: "Family"}`
+  - Response `data` Content: A message confirming successful deletion
+    - Example: `res.status(200).json({data: {message: "Group deleted successfully"} , refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+  - Returns a 400 error if the request body does not contain all the necessary attributes
+  - Returns a 400 error if the name passed in the request body is an empty string
+  - Returns a 400 error if the name passed in the request body does not represent a group in the database
+  - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)
+ */
+describe("deleteGroup", () => { 
+  test("should successfully delete existing group", async () => {
+    const mockReq = {
+      url: "/groups",
+      body: { name: "testgroup1" }
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const alreadyExistingGroup = {
+      name: 'testgroup1',
+      members: ["requestingUser@example.com", "someoneelse@example.com"]
+    }
+
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { data: { message: "Group deleted successfully" }, refreshedTokenMessage: undefined }
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res) // authenticated as admin
+    Group.deleteOne.mockResolvedValueOnce(1) // 1 group mocked deletion
+
+    await deleteGroup(mockReq, mockRes)
+
+    expect(Group.deleteOne).toHaveBeenCalledWith({name: "testgroup1"})
+    expect(verifyAuth).toHaveBeenCalled() 
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if the request body does not contain all the necessary attributes", async () => {
+    const mockReq = {
+      url: "/groups",
+      body: {} // body attributes missing
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "Some Parameter is Missing" }
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await deleteGroup(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled() 
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if the name passed in the request body is an empty string", async () => {
+    const mockReq = {
+      url: "/groups",
+      body: {name: " "} // empty string
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "Some Parameter is an Empty String" }
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await deleteGroup(mockReq, mockRes)
+
+    expect(verifyAuth).toHaveBeenCalled() 
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if the name passed does not represent a group", async () => {
+    const mockReq = {
+          url: "/groups",
+          body: {name: "testgroup1"}
+        }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = { authorized: true, cause: "Authorized" };
+    const response = { error: "Group Does Not exist" }
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+    Group.deleteOne.mockResolvedValueOnce({deletedCount: 0})
+
+    await deleteGroup(mockReq, mockRes)
+
+    expect(Group.deleteOne).toHaveBeenCalledWith({name: "testgroup1"})
+    expect(verifyAuth).toHaveBeenCalled() 
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if called by an authenticated user who is not an admin (authType = Admin)", async () => {
+    const mockReq = {
+      url: "/groups",
+      body: {name: "testgroup1"}
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn(),
+    }
+
+    const res = { authorized: false, cause: "Admin: Mismatched role" };
+    const response = { error: res.cause };
+
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => res)
+
+    await deleteGroup(mockReq, mockRes)
+    expect(verifyAuth).toHaveBeenCalled() 
+    expect(mockRes.status).toHaveBeenCalledWith(401)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+})
