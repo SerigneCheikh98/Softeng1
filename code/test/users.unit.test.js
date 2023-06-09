@@ -591,7 +591,6 @@ describe("getGroups", () => {
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  // TODO authentication tests
   test("should return error if not authorized", async () => {
     const mockReq = {}
     const mockRes = {
@@ -1276,7 +1275,7 @@ describe("removeFromGroup", () => {
     expect(res.json).toHaveBeenCalledWith({ error: "Invalid email format" });
   });
   //Returns a 400 error if at least one of the emails is an empty string
-  test('should return a 400 error if at least one of the emails is not in a valid email format', async () => {
+  test('should return a 400 error if at least one of the emails is an empty string', async () => {
     const req = { params: { name: 'existinggroup' }, body: { emails: [' ', "user@email.com"] },      url: 'api/groups/existinggroup/pull' };
 
 
