@@ -942,7 +942,130 @@ describe("removeFromGroup", () => {
 //Returns a 400 error if the group name passed as a route parameter does not represent a group in the database
 //Returns a 400 error if all the provided emails represent users that do not belong to the group or do not exist in the database
 //Returns a 400 error if at least one of the emails is not in a valid email format
+  test('400 error if at least one of the emails is an empty string', async () => {
+    // Create a test group with name "test-group" and members
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: adminAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@test.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
 
+
+    const user1 = await User.findOne({ email: "tester@test.com" })
+    const user2 = await User.findOne({ email: "admin@test.com" })
+    await Group.create({ name: "testGroup", members: [{ email: "tester@test.com", user: user1._id }, { email: "admin@test.com", user: user2._id }] })
+
+    const response = await request(app)
+      .patch('/api/groups/testGroup/pull')
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({ emails: [" "] });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.error).toBe('Email is an Empty String');
+
+  });
+
+  test('400 error if the group contains only one member before deleting any user', async () => {
+    // Create a test group with name "test-group" and members
+    await User.insertMany([{
+      username: "tester",
+      email: "tester@test.com",
+      password: "tester",
+      refreshToken: adminAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@test.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+
+
+    const user1 = await User.findOne({ email: "tester@test.com" })
+    await Group.create({name: "testGroup", members: [{email: "tester@test.com", user: user1._id}]})
+
+    const response = await request(app)
+      .patch('/api/groups/testGroup/pull')
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({ emails: ["tester@test.com"] });
+  
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.error).toBe("Can't remove all members");
+
+  });
+
+  test('401 error if called by an authenticated user who is not part of the group (authType = Group) if the route is api/groups/:name/remove', async () => {
+    // Create a test group with name "test-group" and members
+    await User.insertMany([{
+      username: "user",
+      email: "user@test.com",
+      password: "user",
+      refreshToken: adminAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@test.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+
+
+    const user1 = await User.findOne({ email: "user@test.com" })
+    const user2 = await User.findOne({ email: "admin@test.com" })
+    const testGroup = await Group.create({name: "testGroup", members: [{email: "user@test.com", user: user1._id}, {email: "admin@test.com" , user: user2._id}]})
+
+
+    const response = await request(app)
+      .patch('/api/groups/testGroup/remove')
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+      .send({ emails: ["user@test.com"] });
+      
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.error).toBe('Group: user not in group');
+
+  });
+
+  test('401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is api/groups/:name/pull', async () => {
+    // Create a test group with name "test-group" and members
+    await User.insertMany([{
+      username: "user",
+      email: "user@test.com",
+      password: "user",
+      refreshToken: adminAccessTokenValid
+    }, {
+      username: "admin",
+      email: "admin@test.com",
+      password: "admin",
+      refreshToken: adminAccessTokenValid,
+      role: "Admin"
+    }])
+
+
+    const user1 = await User.findOne({ email: "user@test.com" })
+    const user2 = await User.findOne({ email: "admin@test.com" })
+    const testGroup = await Group.create({name: "testGroup", members: [{email: "user@test.com", user: user1._id}, {email: "admin@test.com" , user: user2._id}]})
+
+
+    const response = await request(app)
+      .patch('/api/groups/testGroup/pull')
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+      .send({ emails: ["user@test.com"] });
+      
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.error).toBe('Admin: Mismatched role');
+
+  });
 })
 
 /**
