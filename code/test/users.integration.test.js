@@ -668,7 +668,7 @@ describe("getGroup", () => {
  *   an array that lists the `alreadyInGroup` members (members whose email is already present in a group) and an array that lists the `membersNotFound` (members whose email does not appear in the system)
  *   - Example: `res.status(200).json({data: {group: {name: "Family", members: [{email: "mario.red@email.com"}, {email: "luigi.red@email.com"}, {email: "pietro.blue@email.com"}]}, membersNotFound: [], alreadyInGroup: []} refreshedTokenMessage: res.locals.refreshedTokenMessage})`
  * - In case any of the following errors apply then no user is added to the group
- *     - Returns a 400 error if the request body does not contain all the necessary attributes
+ * - Returns a 400 error if the request body does not contain all the necessary attributes
  * - Returns a 400 error if the group name passed as a route parameter does not represent a group in the database
  * - Returns a 400 error if all the provided emails represent users that are already in a group or do not exist in the database
  * - Returns a 400 error if at least one of the member emails is not in a valid email format
@@ -714,7 +714,7 @@ describe("addToGroup", () => {
     const response = await request(app)
       .patch("/api/groups/testgroup/insert")
       .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
-      .send({emails: ["tester2@test.com"]})
+      .send({emails: ["tester2@test.com", "notexisting@test.com"]})
     
     expect(response.status).toBe(200)
     expect(response.body.data).toEqual(
@@ -727,11 +727,103 @@ describe("addToGroup", () => {
             {email: "tester2@test.com"}
           ]
         }, 
-        membersNotFound: [], 
+        membersNotFound: ["notexisting@test.com"], 
         alreadyInGroup: []
       }
     )
   });
+
+  test("Inserts user into requested group as user", async () => {
+    await User.insertMany([
+      {
+        username: "tester",
+        email: "tester@test.com",
+        password: "tester",
+        refreshToken: testerAccessTokenValid
+      }, 
+      {
+        username: "admin",
+        email: "admin@email.com",
+        password: "admin",
+        refreshToken: adminAccessTokenValid,
+        role: "Admin"
+      }, 
+      {
+        username: "tester2",
+        email: "tester2@test.com",
+        password: "securepassword",
+      }
+    ])
+
+    const user1 = await User.findOne({ email: "tester@test.com" })
+    const user2 = await User.findOne({ email: "admin@email.com" })
+    const user3 = await User.findOne({ email: "tester2@test.com" })
+    await Group.create({name: "testgroup", members: [
+                  {email: "tester@test.com", user: user1._id},
+                  {email: "admin@email.com", user: user2._id}
+            ]
+    })
+
+    const response = await request(app)
+      .patch("/api/groups/testgroup/add")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+      .send({emails: ["tester2@test.com", "notexisting@test.com"]})
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual(
+      {
+        group: {
+          name: "testgroup", 
+          members: [
+            {email: "tester@test.com"}, 
+            {email: "admin@email.com"}, 
+            {email: "tester2@test.com"}
+          ]
+        }, 
+        membersNotFound: ["notexisting@test.com"], 
+        alreadyInGroup: []
+      }
+    )
+  })
+
+  test("Returns a 400 error if the request body does not contain all the necessary attributes", async () => {
+    await User.insertMany([
+      {
+        username: "tester",
+        email: "tester@test.com",
+        password: "tester",
+        refreshToken: testerAccessTokenValid
+      }, 
+      {
+        username: "admin",
+        email: "admin@email.com",
+        password: "admin",
+        refreshToken: adminAccessTokenValid,
+        role: "Admin"
+      }, 
+      {
+        username: "tester2",
+        email: "tester2@test.com",
+        password: "securepassword",
+      }
+    ])
+
+    const user1 = await User.findOne({ email: "tester@test.com" })
+    const user2 = await User.findOne({ email: "admin@email.com" })
+    await Group.create({name: "testgroup", members: [
+                  {email: "tester@test.com", user: user1._id},
+                  {email: "admin@email.com", user: user2._id}
+            ]
+    })
+
+    const response = await request(app)
+      .patch("/api/groups/testgroup/add")
+      .set("Cookie", `accessToken=${testerAccessTokenValid}; refreshToken=${testerAccessTokenValid}`)
+      .send({}) // empty object for body
+
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty("error", "Some Parameter is Missing")
+  })
 
   test("Returns a 400 error if the group name passed as a route parameter does not represent a group in the database", async () => {
     await User.create({
