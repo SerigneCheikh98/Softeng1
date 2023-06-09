@@ -658,7 +658,81 @@ describe("getGroup", () => {
   });
 })
 
-describe("addToGroup", () => { })
+/**
+ * - Request Parameters: A string equal to the `name` of the group
+  - Example: `api/groups/Family/add` (user route)
+  - Example: `api/groups/Family/insert` (admin route)
+  - Request Body Content: An array of strings containing the `emails` of the members to add to the group
+    - Example: `{emails: ["pietro.blue@email.com"]}`
+  - Response `data` Content: An object having an attribute `group` (this object must have a string attribute for the `name` of the created group and an array for the `members` of the group, this array must include the new members as well as the old ones), an array that lists the `alreadyInGroup` members (members whose email is already present in a group) and an array that lists the `membersNotFound` (members whose email does not appear in the system)
+    - Example: `res.status(200).json({data: {group: {name: "Family", members: [{email: "mario.red@email.com"}, {email: "luigi.red@email.com"}, {email: "pietro.blue@email.com"}]}, membersNotFound: [], alreadyInGroup: []} refreshedTokenMessage: res.locals.refreshedTokenMessage})`
+  - In case any of the following errors apply then no user is added to the group
+  - Returns a 400 error if the request body does not contain all the necessary attributes
+  - Returns a 400 error if the group name passed as a route parameter does not represent a group in the database
+  - Returns a 400 error if all the provided emails represent users that are already in a group or do not exist in the database
+  - Returns a 400 error if at least one of the member emails is not in a valid email format
+  - Returns a 400 error if at least one of the member emails is an empty string
+  - Returns a 401 error if called by an authenticated user who is not part of the group (authType = Group) if the route is `api/groups/:name/add`
+  - Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is `api/groups/:name/insert`
+ */
+describe.only("addToGroup", () => { 
+  test.only("Inserts user into requested group as admin", async () => {
+    // create users
+    
+    await User.insertMany([
+      {
+        username: "tester",
+        email: "tester@test.com",
+        password: "tester",
+        refreshToken: testerAccessTokenValid
+      }, 
+      {
+        username: "admin",
+        email: "admin@email.com",
+        password: "admin",
+        refreshToken: adminAccessTokenValid,
+        role: "Admin"
+      }, 
+      {
+        username: "tester2",
+        email: "tester2@test.com",
+        password: "securepassword",
+      }
+    ])
+
+    // create a group and add two of them into that group
+    const user1 = await User.findOne({ email: "tester@test.com" })
+    const user2 = await User.findOne({ email: "admin@email.com" })
+    const user3 = await User.findOne({ email: "tester2@test.com" })
+    await Group.create({name: "testgroup", members: [
+                  {email: "tester@test.com", user: user1._id},
+                  {email: "admin@email.com", user: user2._id}
+            ]
+    })
+
+    // add a third one into the group with an API call
+    const response = await request(app)
+      .patch("/api/groups/testgroup/insert")
+      .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+      .send({emails: ["tester2@test.com"]})
+    
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual(
+      {
+        group: {
+          name: "testgroup", 
+          members: [
+            {email: "tester@test.com"}, 
+            {email: "admin@email.com"}, 
+            {email: "tester2@test.com"}
+          ]
+        }, 
+        membersNotFound: [], 
+        alreadyInGroup: []
+      }
+    )
+  })
+})
 
 describe("removeFromGroup", () => { })
 
