@@ -781,7 +781,7 @@ describe("addToGroup", () => {
             {email: "tester2@test.com"}
           ]
         }, 
-        membersNotFound: ["notexisting@test.com"], 
+        membersNotFound: [{email:"notexisting@test.com"}], 
         alreadyInGroup: []
       }
     )
@@ -873,7 +873,7 @@ describe("addToGroup", () => {
             {email: "tester2@test.com"}
           ]
         }, 
-        membersNotFound: ["notexisting@test.com"], 
+        membersNotFound: [{email: "notexisting@test.com"}], 
         alreadyInGroup: []
       }
     )

@@ -766,9 +766,7 @@ describe("addToGroup", () => {
 
     const newGroup = {
       name: 'testgroup1',
-      members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"],
-      alreadyInGroup: ["alreadyInAnotherGroup@example.com"],
-      membersNotFound: ["notFound@example.com"]
+      members: [{email: "requestingUser@example.com"}, {email: "someoneelse@example.com"}, {email: "toAdd1@example.com"}],
     };
 
     const firstUser = { username: "toAdd1", email: "toAdd1@example.com"}
@@ -776,8 +774,8 @@ describe("addToGroup", () => {
     const thirdUser = { username: "notFound", email: "notFound@example.com"}
 
     const res = { authorized: true, cause: "Authorized" };
-    const response = { data: { name: "testgroup1", members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"] }
-    , membersNotFound: ["notFound@example.com"], alreadyInGroup: [{email: "alreadyInAnotherGroup@example.com", user: undefined}], refreshedTokenMessage: undefined }
+    const response = { data: {group: { name: "testgroup1", members: [{email: "requestingUser@example.com"}, {email: "someoneelse@example.com"}, {email: "toAdd1@example.com"}] }
+    , membersNotFound: [{email:"notFound@example.com"}], alreadyInGroup: [{email: "alreadyInAnotherGroup@example.com"}]}, refreshedTokenMessage: undefined }
 
     // call to check if group actually exists 
     Group.findOne.mockResolvedValueOnce(alreadyExistingGroup)
@@ -831,9 +829,7 @@ describe("addToGroup", () => {
 
     const newGroup = {
       name: 'testgroup1',
-      members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"],
-      alreadyInGroup: ["alreadyInAnotherGroup@example.com"],
-      membersNotFound: ["notFound@example.com"]
+      members: [{email: "requestingUser@example.com"}, {email: "someoneelse@example.com"}, {email: "toAdd1@example.com"}],
     };
 
     const firstUser = { username: "toAdd1", email: "toAdd1@example.com"}
@@ -841,8 +837,8 @@ describe("addToGroup", () => {
     const thirdUser = { username: "notFound", email: "notFound@example.com"}
 
     const res = { authorized: true, cause: "Authorized" };
-    const response = { data: { name: "testgroup1", members: ["requestingUser@example.com", "someoneelse@example.com", "toAdd1@example.com"] }
-    , membersNotFound: ["notFound@example.com"], alreadyInGroup: [{email: "alreadyInAnotherGroup@example.com", user: undefined}], refreshedTokenMessage: undefined }
+    const response = { data: {group: { name: "testgroup1", members: [{email: "requestingUser@example.com"}, {email: "someoneelse@example.com"}, {email: "toAdd1@example.com"}] }
+    , membersNotFound: [{email: "notFound@example.com"}], alreadyInGroup: [{email: "alreadyInAnotherGroup@example.com"}]}, refreshedTokenMessage: undefined }
 
     // call to check if group actually exists 
     Group.findOne.mockResolvedValueOnce(alreadyExistingGroup)

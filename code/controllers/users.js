@@ -50,7 +50,7 @@ export const getUser = async (req, res) => {
       res.status(200).json({ data: { username: user.username, email: user.email, role: user.role }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
     }
     else {
-      res.status(401).json({ error: (adminAuth.authorized) ? adminAuth.cause : userAuth.cause })
+      res.status(401).json({ error: userAuth.cause })
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -268,7 +268,7 @@ export const addToGroup = async (req, res) => {
         let user = await User.findOne({ email: email });
         if (user === null) {
           // if not existent, push into membersNotFound
-          membersNotFound.push(email);
+          membersNotFound.push({ email: email });
         } else {
           // check if user is already in a group
           let in_group = await Group.findOne({ "members.email": email });
@@ -277,7 +277,7 @@ export const addToGroup = async (req, res) => {
             members.push({ email: email, user: user._id });
           } else {
             // if user already in a group, add it to alreadyInGroup
-            alreadyInGroup.push({ email: email, user: user._id });
+            alreadyInGroup.push({ email: email});
           }
         }
       }
