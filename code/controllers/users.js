@@ -76,7 +76,6 @@ export const getUser = async (req, res) => {
 export const createGroup = async (req, res) => {
   try {
     const group = await Group.findOne({ name: req.body.name });
-    console.log(group)
     if (group !== null)
       return res.status(400).json({ error: "Group already exists" });
     const userAuth = verifyAuth(req, res, { authType: "Simple" })
@@ -115,12 +114,10 @@ export const createGroup = async (req, res) => {
           return res.status(400).json({ error: "Invalid email format" });
         }
 
-        console.log(user)
         //check if body contains  email of the user that calls the function
         if (email === user.email) {
           callerInGroup = true;
         }
-        console.log(callerInGroup)
         // verify that the user exists
         let user1 = await User.findOne({ email: email });
         if (user1 === null) {
@@ -146,16 +143,13 @@ export const createGroup = async (req, res) => {
         if (!callerInGroup) {
           //if user is not in a group, add it to members
           members.push({ email: user.email, user: user._id });
-          //console.log("Utente invocante non in gruppo,aggiungo")
         }
         // create a group
         const new_group = await Group.create({
           name,
           members,
         });
-        console.log(new_group)
         const membersData = new_group.members.map( ({email})  => {return {email: email} } );
-        console.log(membersData)
         // all ok, return the group created
         res.status(200).json({ data: { group: {name: new_group.name, members: membersData}, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
       }

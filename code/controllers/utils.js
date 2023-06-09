@@ -92,29 +92,6 @@ export const verifyAuth = (req, res, info) => {
             return { authorized: true, cause: "Authorized" }
         }
 
-        /*
-        const currentTime2 = Date.now();
-        const remainingTime2 = decodedAccessToken.exp*1000 - currentTime2;
-        
-        // Convert remaining time to seconds, minutes, or hours as needed
-        const remainingSeconds = Math.floor(remainingTime2 / 1000);
-        const remainingMinutes = Math.floor(remainingTime2 / 60000);
-        const remainingHours = Math.floor(remainingTime2 / 3600000);
-        
-        console.log('Remaining time in minutes:', remainingMinutes);
-        console.log('Remaining time in hours:', remainingHours);
-
-        const currentTime = Date.now();
-        const remainingTime = decodedRefreshToken.exp*1000 - currentTime;
-        
-        // Convert remaining time to seconds, minutes, or hours as needed
-        const remainingSeconds2 = Math.floor(remainingTime / 1000);
-        const remainingMinutes2 = Math.floor(remainingTime / 60000);
-        const remainingHours2= Math.floor(remainingTime / 3600000);
-        
-        console.log('Remaining time in minutes:', remainingMinutes2);
-        console.log('Remaining time in hours:', remainingHours2);
-*/
         if (!decodedAccessToken.username || !decodedAccessToken.email || !decodedAccessToken.role) {
             return { authorized: false, cause: "Token is missing information" }
         }
@@ -174,28 +151,7 @@ export const verifyAuth = (req, res, info) => {
                 }, process.env.ACCESS_KEY, { expiresIn: '1h' })
                 res.cookie('accessToken', newAccessToken, { httpOnly: true, path: '/api', maxAge: 60 * 60 * 1000, sameSite: 'none', secure: true })
                 res.locals.refreshedTokenMessage= 'Access token has been refreshed. Remember to copy the new one in the headers of subsequent calls'
-                /*const currentTime2 = Date.now();
-                const axxx = jwt.verify(newAccessToken,process.env.ACCESS_KEY)
-                const remainingTime2 = axxx.exp*1000 - currentTime2;
-                
-                // Convert remaining time to seconds, minutes, or hours as needed
-                const remainingSeconds = Math.floor(remainingTime2 / 1000);
-                const remainingMinutes = Math.floor(remainingTime2 / 60000);
-                const remainingHours = Math.floor(remainingTime2 / 3600000);
-                
-                console.log('Catch:Remaining time in minutes:', remainingMinutes);
-                console.log('Catch:Remaining time in hours:', remainingHours);
-        
-                const currentTime = Date.now();
-                const remainingTime = refreshToken.exp*1000 - currentTime;
-                
-                // Convert remaining time to seconds, minutes, or hours as needed
-                const remainingSeconds2 = Math.floor(remainingTime / 1000);
-                const remainingMinutes2 = Math.floor(remainingTime / 60000);
-                const remainingHours2= Math.floor(remainingTime / 3600000);
-                
-                console.log('Catch:Remaining time in minutes:', remainingMinutes2);
-                console.log('Catch:Remaining time in hours:', remainingHours2);*/
+     
                 return { authorized: true, cause: "Authorized" }
 
             } catch (err) {

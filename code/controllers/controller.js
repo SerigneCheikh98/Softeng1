@@ -120,11 +120,6 @@ export const deleteCategory = async (req, res) => {
                 let firstCat = await categories.findOne({}, null, { sort: { _id: 1 } })//assigning of default
 
                 if (numbCateg > req.body.types.length) {
-                    //case:  MOTO,AUTO,VESPA  MOTO,AUTO => rimane VESPA
-
-                    //let prova=await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
-                    //console.log("Categorie non in body "+prova+"vaffanculo")
-
                     firstCat = await categories.findOne({ type: { $nin: req.body.types } }, null, { sort: { _id: 1 } });
                     await categories.deleteOne({ type: type });
                     const updated_transactions = await transactions.updateMany({ type: type }, { type: firstCat.type });
