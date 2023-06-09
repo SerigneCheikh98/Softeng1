@@ -5,6 +5,8 @@ import { transactions } from '../models/model.js';
 import { getUsers, getUser, deleteUser, createGroup, getGroup, getGroups, addToGroup, removeFromGroup, deleteGroup } from '../controllers/users';
 import { verifyAuth } from '../controllers/utils';
 import { response } from 'express';
+import jwt from 'jsonwebtoken';
+process.env.ACCESS_KEY = 'EZWALLET';
 
 /**
  * In order to correctly mock the calls to external modules it is necessary to mock them using the following line.
@@ -430,6 +432,38 @@ describe("createGroup", () => {
 
     await createGroup(mockReq, mockRes)
 
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(response)
+  })
+
+  test("should return error if the user passed in the request body does not exist", async () => {
+    const mockReq = {
+      body: { name: "testgroup1", memberEmails: ["notexists@example.com", "alreadyingroup1@example.com", "alreadyingroup2@example.com"] },
+      cookies: {
+        accessToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+        refreshToken: jwt.sign({ username: 'testuser', email: 'test@example.com', role: 'Regular' }, process.env.ACCESS_KEY, { expiresIn: '1y' }),
+      },
+    }
+
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      locals: jest.fn()
+    }
+
+    const resAuth = { authorized: true, cause: "Authorized" };
+    const group = { name: "testgroup1", memberEmails: ["notexists@example.com", "alreadyingroup1@example.com", "alreadyingroup2@example.com"] };
+    const response = { error: "User not found" } 
+    
+    Group.findOne.mockResolvedValue(group)
+    jest.spyOn(VerifyAuthmodule, "verifyAuth").mockImplementation(() => resAuth)
+    User.findOne.mockResolvedValue(null)
+
+    await createGroup(mockReq, mockRes)
+
+    expect(Group.findOne).toHaveBeenCalledWith({name : group.name})
+    expect(verifyAuth).toHaveBeenCalledWith(mockReq, mockRes, { authType: "Simple" })
+    expect(User.findOne).toHaveBeenCalledWith({refreshToken: mockReq.cookies.refreshToken})
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })

@@ -275,6 +275,24 @@ describe("updateCategory", () => {
         expect(errorMessage).toBe(true)
     })
 
+    test("Returns a 400 error if the category does not exists", async () => {
+        await User.create({
+            username: "admin",
+            email: "admin@email.com",
+            password: "admin",
+            refreshToken: adminAccessTokenValid,
+            role: "Admin"
+        })
+        const response = await request(app)
+            .patch("/api/categories/food")
+            .set("Cookie", `accessToken=${adminAccessTokenValid}; refreshToken=${adminAccessTokenValid}`)
+            .send({type: "non_existent_category", color: "blue"})
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.error).toBe('This category does not exist.');
+    })
+
     test("Returns a 401 error if called by a user who is not an Admin", async () => {
         await User.insertMany([{
             username: "tester",

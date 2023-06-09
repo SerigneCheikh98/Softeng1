@@ -171,6 +171,7 @@
 |should return error if all the member emails do not exist or are already in a group|createGroup|unit|WB/Statement Coverage|
 |should return error if request body does not have all the necessary attributes|createGroup|unit|WB/Statement Coverage|
 |should return error if the group name passed in the request body is an empty string|createGroup|unit|WB/Statement Coverage|
+|should return error if the user passed in the request body does not exist|createGroup|unit|WB/Statement Coverage|
 |should return error if the user who calls the API is already in a group|createGroup|unit|WB/Statement Coverage|
 |should return error if at least one of the member emails is not in a valid email format|createGroup|unit|WB/Statement Coverage|
 |should return error if at least one of the member emails is an empty string|createGroup|unit|WB/Statement Coverage|
@@ -297,6 +298,7 @@
 |Returns a 400 error if the type of the new category is the same as one that exists already and that category is not the requested one|updateCategory|integration|WB/Statement Coverage|
 |Returns a 400 error if the request body does not contain all the necessary parameters|updateCategory|integration|WB/Statement Coverage|
 |Returns a 400 error if at least one of the parameters in the request body is an empty string|updateCategory|integration|WB/Statement Coverage|
+|Returns a 400 error if the category does not exists|updateCategory|integration|WB/Statement Coverage|
 |Returns a 401 error if called by a user who is not an Admin|updateCategory|integration|WB/Statement Coverage|
 |Returns a 400 error if the type of category passed as a route parameter does not represent a category in the database|updateCategory|integration|WB/Statement Coverage|
 |TODO|deleteCategory|integration|WB/Statement Coverage|
