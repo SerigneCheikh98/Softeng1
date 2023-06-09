@@ -315,7 +315,6 @@ describe("utils.js", () => {
             };
 
             const response = verifyAuth(req,res, info);
-            console.log(response)
 
             expect(Object.values(response).includes(true)).toBe(true)
 
@@ -339,7 +338,6 @@ describe("utils.js", () => {
             };
 
             const response = verifyAuth(req,res, info);
-            console.log(response)
 
             expect(Object.values(response).includes(true)).toBe(false)
 
