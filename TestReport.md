@@ -348,6 +348,58 @@
 ## users.integration.test
 | Test case name | Object(s) tested | Test level | Technique used |
 |--|--|--|--|
+|Returns empty list if there are no users|getUsers|integration|WB/Statement Coverage|
+|Returns all users in database|getUsers|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)|getUsers|integration|WB/Statement Coverage|
+|Returns the requested username by User|getUser|integration|WB/Statement Coverage|
+|Returns the requested username by Admin|getUser|integration|WB/Statement Coverage|
+|Returns a 400 error if the username passed as the route parameter does not represent a user in the database|getUser|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is neither the same user as the parameter (authType = User) nor an admin (authType = Admin)|getUser|integration|WB/Statement Coverage|
+|Returns the just created group, an alreadyInGroup list and a membersNotFound list|createGroup|integration|WB/Statement Coverage|
+|If the user who calls the API does not have their email in the list of emails then their email is added to the list of members|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the request body does not contain all the necessary attributes|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the group name passed in the request body is an empty string|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the group name passed in the request body represents an already existing group in the database|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if all the provided emails (the ones in the array, the email of the user calling the function does not have to be considered in this case) represent users that are already in a group or do not exist in the database|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the user who calls the API is already in a group|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if at least one of the member emails is not in a valid email format|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if at least one of the member emails is an empty string|createGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the user who calls does not exist in database|createGroup|integration|WB/Statement Coverage|
+|Returns a 401 error if called by a user who is not authenticated (authType = Simple)|createGroup|integration|WB/Statement Coverage|
+|Returns all groups on database|getGroups|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)|getGroups|integration|WB/Statement Coverage|
+|Returns the requested group|getGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the group name passed as a route parameter does not represent a group in the database|getGroup|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is neither part of the group (authType = Group) nor an admin (authType = Admin)|getGroup|integration|WB/Statement Coverage|
+|Inserts user into requested group as admin|addToGroup|integration|WB/Statement Coverage|
+|Inserts user into requested group as user|addToGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the request body does not contain all the necessary attributes|addToGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the group name passed as a route parameter does not represent a group in the database|addToGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if all the provided emails represent users that are already in a group or do not exist in the database|addToGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if at least one of the member emails is not in a valid email format|addToGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if at least one of the member emails is an empty string|addToGroup|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is not part of the group (authType = Group) if the route is api/groups/:name/add|addToGroup|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is api/groups/:name/insert|addToGroup|integration|WB/Statement Coverage|
+|Removes members from a group successfully|removeFromGroup|integration|WB/Statement Coverage|
+|400 error if at least one of the emails is an empty string|removeFromGroup|integration|WB/Statement Coverage|
+|400 error if the group contains only one member before deleting any user|removeFromGroup|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not part of the group (authType = Group) if the route is api/groups/:name/remove|removeFromGroup|integration|WB/Statement Coverage|
+|401 error if called by an authenticated user who is not an admin (authType = Admin) if the route is api/groups/:name/pull|removeFromGroup|integration|WB/Statement Coverage|
+|Should successfully delete the given user who does not belongs to a group|deleteUser|integration|WB/Statement Coverage|
+|Should successfully delete the given user who was with other member in a group|deleteUser|integration|WB/Statement Coverage|
+|Should successfully delete the given user who was alone in a group|deleteUser|integration|WB/Statement Coverage|
+|Should return error if the request body does not contain all the necessary attributes|deleteUser|integration|WB/Statement Coverage|
+|Should return error if the email passed in the request body is an empty string|deleteUser|integration|WB/Statement Coverage|
+|Should return error if the email passed in the request body is not in correct email format|deleteUser|integration|WB/Statement Coverage|
+|Should return error if the email passed in the request body does not represent a user in the database|deleteUser|integration|WB/Statement Coverage|
+|Should return error if the email passed in the request body represents an admin|deleteUser|integration|WB/Statement Coverage|
+|Should return error if called by an authenticated user who is not an admin|deleteUser|integration|WB/Statement Coverage|
+|Returns confirmation message|deleteGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the request body does not contain all the necessary attributes|deleteGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the name passed in the request body is an empty string|deleteGroup|integration|WB/Statement Coverage|
+|Returns a 400 error if the name passed in the request body does not represent a group in the database|deleteGroup|integration|WB/Statement Coverage|
+|Returns a 401 error if called by an authenticated user who is not an admin (authType = Admin)|deleteGroup|integration|WB/Statement Coverage|
+
 ## utils.integration.test
 | Test case name | Object(s) tested | Test level | Technique used |
 |--|--|--|--|

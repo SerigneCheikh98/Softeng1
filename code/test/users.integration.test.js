@@ -440,7 +440,7 @@ describe("createGroup", () => {
     expect(response.body).toHaveProperty("error", "Caller already in a group")
   });
 
-  test("Returns a 400 error if the user who calls the API is already in a group", async () => {
+  test("Returns a 400 error if at least one of the member emails is not in a valid email format", async () => {
     await User.insertMany([{
       username: "tester",
       email: "tester@test.com",
@@ -498,7 +498,7 @@ describe("createGroup", () => {
     expect(response.body).toHaveProperty("error", "User not found")
   });
   
-  test("Returns a 400 error if at least one of the member emails is an empty string", async () => {
+  test("Returns a 401 error if called by a user who is not authenticated (authType = Simple)", async () => {
     
     const response = await request(app)
       .post("/api/groups")
