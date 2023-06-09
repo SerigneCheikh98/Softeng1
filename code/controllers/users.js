@@ -287,8 +287,8 @@ export const addToGroup = async (req, res) => {
       if (members.length === 0) {
         return res.status(400).json({ error: "All memberEmails does not exist or Already in Group" });
       }
-      res.status(200).json({ data: updated_group, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup, refreshedTokenMessage: res.locals.refreshedTokenMessage })
-
+      const membersData = updated_group.members.map( ({email})  => {return {email: email} } );
+      res.status(200).json({ data: { group: {name: updated_group.name, members: membersData}, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
     } else {
       res.status(401).json({ error: auth.cause })
     }
