@@ -238,7 +238,7 @@ describe("createGroup", () => {
       locals: jest.fn()
     }
 
-    const returnedGroupObject = { name: "testgroup1", members: ["notingroup1@example.com", "notingroup2@example.com", "notingroup3@example.com"] }
+    const returnedGroupObject = { name: "testgroup1", members: [{email :"notingroup1@example.com"},{email :"notingroup2@example.com"},{email :"notingroup3@example.com"}] }
     const res = { authorized: true, cause: "Authorized" };
     const response = { data: { group: { name: "testgroup1", members: [{email: "notingroup1@example.com"}, {email: "notingroup2@example.com"}, {email: "notingroup3@example.com"}] }
       , membersNotFound: [], alreadyInGroup: [] }, refreshedTokenMessage: undefined }
@@ -304,7 +304,7 @@ describe("createGroup", () => {
       locals: jest.fn()
     }
 
-    const returnedGroupObject = { name: "testgroup1", members: ["notingroup@example.com"] }
+    const returnedGroupObject = { name: "testgroup1", members: [{email:"notingroup@example.com"}] }
     const res = { authorized: true, cause: "Authorized" };
     const response = { data: { group: 
       { name: "testgroup1", members: [{email: "notingroup@example.com"}] },
@@ -413,7 +413,6 @@ describe("createGroup", () => {
 
   test("should return error if the group name passed in the request body is an empty string", async () => {
     const mockReq = {
-      // NOTE: group name is empty string, different from ""
       body: { name: " ", memberEmails: ["notexists@example.com", "alreadyingroup1@example.com", "alreadyingroup2@example.com"] } 
     }
 
@@ -986,7 +985,6 @@ describe("addToGroup", () => {
     expect(mockRes.json).toHaveBeenCalledWith(response)
   })
 
-  // NOTE: this test should work but functionality is seemingly broken in users.js
   test("should return error if called by an authenticated user who is not part of the group (authType = Group)", async () => { 
     const mockReq = {
       url: "api/groups/testgroup1/add",

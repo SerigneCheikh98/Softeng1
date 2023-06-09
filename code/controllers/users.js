@@ -146,14 +146,16 @@ export const createGroup = async (req, res) => {
         if (!callerInGroup) {
           //if user is not in a group, add it to members
           members.push({ email: user.email, user: user._id });
-          console.log("Utente invocante non in gruppo,aggiungo")
+          //console.log("Utente invocante non in gruppo,aggiungo")
         }
         // create a group
         const new_group = await Group.create({
           name,
           members,
         });
-        const membersData = new_group.members.map( email => {return {email: email} } );
+        console.log(new_group)
+        const membersData = new_group.members.map( ({email})  => {return {email: email} } );
+        console.log(membersData)
         // all ok, return the group created
         res.status(200).json({ data: { group: {name: new_group.name, members: membersData}, membersNotFound: membersNotFound, alreadyInGroup: alreadyInGroup }, refreshedTokenMessage: res.locals.refreshedTokenMessage })
       }
@@ -245,10 +247,11 @@ export const addToGroup = async (req, res) => {
       return res.status(400).json({ error: "Group not Found." });
     }
     const emailsInGroup = url_group.members.map((member) => member.email);
+    //add user , insert admin
     if (req.url.indexOf("/add") >= 0) {
-      auth = verifyAuth(req, res, { authType: "Admin" });
-    } else {
       auth = verifyAuth(req, res, { authType: "Group", emails: emailsInGroup });
+    } else {
+      auth = verifyAuth(req, res, { authType: "Admin"});
     }
     if (auth.authorized) {
       let memberEmails = req.body.emails;
