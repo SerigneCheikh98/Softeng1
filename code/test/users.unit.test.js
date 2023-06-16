@@ -1124,7 +1124,7 @@ describe("removeFromGroup", () => {
     User.findOne.mockResolvedValueOnce(user1);
     Group.findOne.mockResolvedValue(group);
     User.findOne.mockResolvedValue(user1);
-    Group.findOneAndUpdate.mockResolvedValueOnce({ name: 'existinggroup', members: [{ email: 'user2@example.com', user: 'user2' }] });
+    Group.findOneAndUpdate.mockResolvedValueOnce({ name: 'existinggroup', members: [{ email: 'user2@example.com', _id: 'user2' }] });
 
     await removeFromGroup(req, res);
 
@@ -1134,14 +1134,14 @@ describe("removeFromGroup", () => {
     expect(User.findOne).toHaveBeenCalledWith({ email: 'user1@example.com' });
     expect(Group.findOneAndUpdate).toHaveBeenCalledWith(
       { name: 'existinggroup' },
-      { $pull: { members: { email: 'user1@example.com', user: user1 } } },
+      { $pull: { members: { email: 'user1@example.com', _id: user1 } } },
       { new: true }
     );
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       data: {
-        group: { name: 'existinggroup', members: [{ email: 'user2@example.com', user: 'user2' }] },
+        group: { name: 'existinggroup', members: [{ email: 'user2@example.com', _id: 'user2' }] },
         membersNotFound: [],
         notInGroup: [],
       }

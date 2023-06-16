@@ -1097,7 +1097,7 @@ describe("removeFromGroup", () => {
 
     const user1 = await User.findOne({ email: "tester@test.com" })
     const user2 = await User.findOne({ email: "admin@test.com" })
-    await Group.create({ name: "testGroup", members: [{ email: "tester@test.com", user: user1._id }, { email: "admin@test.com", user: user2._id }] })
+    await Group.create({ name: "testGroup", members: [{ email: "tester@test.com", _id: user1._id }, { email: "admin@test.com", _id: user2._id }] })
 
 
     const response = await request(app)
@@ -1107,7 +1107,6 @@ describe("removeFromGroup", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('data');
-
     expect(response.body).toEqual({
       data: {
         group: {
@@ -1115,7 +1114,7 @@ describe("removeFromGroup", () => {
           _id: expect.any(String),
           name: 'testGroup',
           members: [
-            { email: "admin@test.com", user: expect.any(String), _id: expect.any(String), },
+            { email: "admin@test.com", _id: expect.any(String), },
           ],
         },
         membersNotFound: [],
@@ -1141,7 +1140,7 @@ describe("removeFromGroup", () => {
 
     const user1 = await User.findOne({ email: "tester@test.com" })
     const user2 = await User.findOne({ email: "admin@test.com" })
-    await Group.create({ name: "testGroup", members: [{ email: "tester@test.com", user: user1._id }, { email: "admin@test.com", user: user2._id }] })
+    await Group.create({ name: "testGroup", members: [{ email: "tester@test.com", _id: user1._id }, { email: "admin@test.com", _id: user2._id }] })
 
 
     const response = await request(app)
@@ -1170,7 +1169,7 @@ describe("removeFromGroup", () => {
 
     const user1 = await User.findOne({ email: "tester@test.com" })
     const user2 = await User.findOne({ email: "admin@test.com" })
-    await Group.create({ name: "testGroup", members: [{ email: "tester@test.com", user: user1._id }, { email: "admin@test.com", user: user2._id }] })
+    await Group.create({ name: "testGroup", members: [{ email: "tester@test.com", _id: user1._id }, { email: "admin@test.com", _id: user2._id }] })
 
 
     const response = await request(app)
@@ -1492,7 +1491,7 @@ describe("deleteUser", () => {
     }])
 
     const userTester = await User.findOne({ email: "tester@test.com" })
-    await Group.create({ name: "holiday", members: [{ email: "tester@test.com", user: userTester._id }] })
+    await Group.create({ name: "holiday", members: [{ email: "tester@test.com", _id: userTester._id }] })
 
     const response = await request(app)
       .delete("/api/users")
