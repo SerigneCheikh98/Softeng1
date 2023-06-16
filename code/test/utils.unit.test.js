@@ -23,7 +23,7 @@ describe("handleDateFilterParams", () => {
     //passing date
     test('Should return the correct filter object when filtering by date', () => {
         const req = {
-            date: '2023-05-29',
+            query: {date: '2023-05-29'}
         }
 
         const response = {
@@ -40,7 +40,7 @@ describe("handleDateFilterParams", () => {
     //passing upTo
     test('Should return the correct filter object when filtering by upTo', () => {
         const req = {
-            upTo: '2023-05-29',
+            query: {upTo: '2023-05-29'}
         }
 
         const response = {
@@ -54,7 +54,7 @@ describe("handleDateFilterParams", () => {
     //passing from
     test('Should return the correct filter object when filtering by from', () => {
         const req = {
-            from: '2023-05-29',
+            query: {from: '2023-05-29'}
         }
         const response = {
             date: {
@@ -67,8 +67,10 @@ describe("handleDateFilterParams", () => {
     //passing from and upTo
     test('Should return the correct filter object when filtering from a date to an other', () => {
         const req = {
-            from: '2023-05-29',
-            upTo: '2023-06-02',
+            query: {
+                from: '2023-05-29',
+                upTo: '2023-06-02'
+            }
         }
 
         const response = {
@@ -84,7 +86,7 @@ describe("handleDateFilterParams", () => {
     });
     //no query parameter
     test('Should return an empty object when no query parameters are passed', () => {
-        const req = {}
+        const req = { query:{} }
 
         const response = {};
 
@@ -95,8 +97,10 @@ describe("handleDateFilterParams", () => {
     //Throws an error if date is present in the query parameter together with at least one of from or upTo
     test('Should throws an error when are present both date and from ', () => {
         const req = {
-            from: '2023-05-29',
-            date: '2023-06-08',
+            query: {
+                from: '2023-05-29',
+                date: '2023-06-08'
+            }
         }
         expect(() => {
             handleDateFilterParams(req);
@@ -105,8 +109,10 @@ describe("handleDateFilterParams", () => {
     //Throws an error if date is present in the query parameter together with at least one of from or upTo
     test('Should throws an error when are present both date and upTo ', () => {
         const req = {
-            date: '2023-05-29',
-            upTo: '2023-06-08',
+            query: {
+                date: '2023-05-29',
+                upTo: '2023-06-08'
+            }
         }
         expect(() => {
             handleDateFilterParams(req);
@@ -115,9 +121,11 @@ describe("handleDateFilterParams", () => {
     //Throws an error if date is present in the query parameter together with at least one of from or upTo
     test('Should throws an error when are present  date, from and upTo', () => {
         const req = {
-            from: '2023-05-29',
-            date: '2023-06-08',
-            upTo: '2023-06-11',
+            query: {
+                from: '2023-05-29',
+                date: '2023-06-08',
+                upTo: '2023-06-11'
+            }
         }
         expect(() => {
             handleDateFilterParams(req);
@@ -126,7 +134,9 @@ describe("handleDateFilterParams", () => {
     //Throws an error if the value of any of the three query parameters is not a string that represents a date in the format YYYY-MM-DD  
     test('should throw an error when date is not valid', () => {
         const req = {
-            date: 'InvalidDate',
+            query: {
+                date: 'InvalidDate'
+            }
         };
 
         expect(() => {
@@ -136,7 +146,9 @@ describe("handleDateFilterParams", () => {
     //Throws an error if the value of any of the three query parameters is not a string that represents a date in the format YYYY-MM-DD  
     test('should throw an error when upTo is not valid', () => {
         const req = {
-            upTo: 'InvalidDate',
+            query: {
+                upTo: 'InvalidDate'
+            }
         };
 
         expect(() => {
@@ -146,7 +158,9 @@ describe("handleDateFilterParams", () => {
     //Throws an error if the value of any of the three query parameters is not a string that represents a date in the format YYYY-MM-DD  
     test('should throw an error when from is not valid', () => {
         const req = {
-            from: 'InvalidDate',
+            query: {
+                from: 'InvalidDate'
+            }
         };
 
         expect(() => {
@@ -155,8 +169,10 @@ describe("handleDateFilterParams", () => {
     });
     test('should throw an error when from or upTo are not valid but both defined', () => {
         const req = {
-            from: 'InvalidDate',
-            upTo: '2023-06-08',
+            query: {
+                from: 'InvalidDate',
+                upTo: '2023-06-08'
+            }
         };
 
         expect(() => {
@@ -768,7 +784,7 @@ Throws an error if the value of any of the two query parameters is not a numeric
 describe("handleAmountFilterParams", () => {
     test('should return the correct filter object when filtering by min amount only', () => {
         const req = {
-            min: '100',
+            query: {min: '100'}
         };
 
         const expectedFilter = {
@@ -783,7 +799,7 @@ describe("handleAmountFilterParams", () => {
 
     test('should return the correct filter object when filtering by max amount only', () => {
         const req = {
-            max: '500',
+            query: {max: '500'}
         };
 
         const expectedFilter = {
@@ -798,8 +814,10 @@ describe("handleAmountFilterParams", () => {
 
     test('should return the correct filter object when filtering by min and max amount', () => {
         const req = {
-            min: '100',
-            max: '500',
+            query: {
+                min: '100',
+                max: '500',
+            }
         };
 
         const expectedFilter = {
@@ -815,7 +833,7 @@ describe("handleAmountFilterParams", () => {
 
     test('should throw an error when min value is not valid', () => {
         const req = {
-            min: 'InvalidMin',
+            query: {min: 'InvalidMin'}
         };
 
         expect(() => {
@@ -825,7 +843,7 @@ describe("handleAmountFilterParams", () => {
 
     test('should throw an error when max value is not valid', () => {
         const req = {
-            max: 'InvalidMax',
+            query: {max: 'InvalidMax'}
         };
 
         expect(() => {
@@ -834,8 +852,10 @@ describe("handleAmountFilterParams", () => {
     });
     test('should throw an error when max or min are not valid but are both defined', () => {
         const req = {
-            max: 'InvalidMax',
-            min: '100',
+            query: {
+                max: 'InvalidMax',
+                min: '100'
+            }
         };
 
         expect(() => {
@@ -843,7 +863,7 @@ describe("handleAmountFilterParams", () => {
         }).toThrow('Min or Max values are not valid');
     });
     test('should return an empty object when max and min are not defined ', () => {
-        const req = {};
+        const req = { query: {} };
 
         const expectedFilter = {};
 

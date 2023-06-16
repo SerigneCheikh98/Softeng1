@@ -7,7 +7,9 @@ import jwt from 'jsonwebtoken'
 describe("handleDateFilterParams", () => {
     test('Returns an object with a date attribute used for filtering mongoose aggregate queries - from parameter', () => {
         const req = {
-            from: '2023-04-30',
+            query: {
+                from: '2023-04-30'
+            }
         };
 
         const result = handleDateFilterParams(req);
@@ -19,7 +21,9 @@ describe("handleDateFilterParams", () => {
 
     test('Returns an object with a date attribute used for filtering mongoose aggregate queries - upTo parameter', () => {
         const req = {
-            upTo: '2023-05-10',
+            query: {
+                upTo: '2023-05-10'
+            }
         };
 
         const result = handleDateFilterParams(req);
@@ -31,8 +35,10 @@ describe("handleDateFilterParams", () => {
 
     test('Returns an object with a date attribute used for filtering mongoose aggregate queries - from and upTo parameters', () => {
         const req = {
-            from: '2023-04-30',
-            upTo: '2023-05-10',
+            query: {
+                from: '2023-04-30',
+                upTo: '2023-05-10'
+            }
         };
 
         const result = handleDateFilterParams(req);
@@ -47,7 +53,9 @@ describe("handleDateFilterParams", () => {
 
     test('Returns an object with a date attribute used for filtering mongoose aggregate queries - date parameter', () => {
         const req = {
-            date: '2023-05-10',
+            query: {
+                date: '2023-05-10'
+            }
         };
 
         const result = handleDateFilterParams(req);
@@ -61,7 +69,7 @@ describe("handleDateFilterParams", () => {
     });
 
     test('Returns an empty object if there are no query parameters', () => {
-        const req = {};
+        const req = { query:{} };
 
         const result = handleDateFilterParams(req);
 
@@ -70,8 +78,10 @@ describe("handleDateFilterParams", () => {
 
     test('Throws an error if date is present with from parameter', () => {
         const req = {
-            date: '2023-05-10',
-            from: '2023-04-30',
+            query: {
+                date: '2023-05-10',
+                from: '2023-04-30'   
+            }
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('Unauthorized query parameters');
@@ -79,8 +89,10 @@ describe("handleDateFilterParams", () => {
 
     test('Throws an error if date is present with upTo parameter', () => {
         const req = {
-            date: '2023-05-10',
-            upTo: '2023-05-20',
+            query: {
+                date: '2023-05-10',
+                upTo: '2023-05-20'
+            }
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('Unauthorized query parameters');
@@ -88,30 +100,37 @@ describe("handleDateFilterParams", () => {
 
     test('Throws an error if the value of any query parameter is not a valid date (from only)', () => {
         const req = {
-            from: 'invalid-date',
+            query: {
+                from: 'invalid-date'
+            }
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('From or upTo not valid');
     });
     test('Throws an error if the value of any query parameter is not a valid date (date only)', () => {
         const req = {
-            date: 'invalid-date',
+            query: {
+                date: 'invalid-date'
+            }
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('Date not valid');
     });
     test('Throws an error if the value of any query parameter is not a valid date (upTo only)', () => {
         const req = {
-            upTo: 'invalid-date',
+            query: {
+                upTo: 'invalid-date'
+            }
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('From or upTo not valid');
     });
     test('Throws an error if the value of any query parameter is not a valid date (from and upTo only)', () => {
         const req = {
-            from: 'invalid-date',
-            upTo: 'invalid-date',
-
+            query: {
+                from: 'invalid-date',
+                upTo: 'invalid-date'
+            }
         };
 
         expect(() => handleDateFilterParams(req)).toThrow('From or upTo not valid');
@@ -390,7 +409,9 @@ describe("utils.js", () => {
 describe("handleAmountFilterParams", () => {
     test('Returns an object with an amount attribute used for filtering mongoDBs aggregate queries - min parameter', () => {
         const req = {
-            min: '10',
+            query: {
+                min: '10'
+            }
         };
 
         const result = handleAmountFilterParams(req);
@@ -402,7 +423,9 @@ describe("handleAmountFilterParams", () => {
 
     test('Returns an object with an amount attribute used for filtering mongoose aggregate queries - max parameter', () => {
         const req = {
-            max: '50',
+            query: {
+                max: '50'
+            }
         };
 
         const result = handleAmountFilterParams(req);
@@ -414,8 +437,10 @@ describe("handleAmountFilterParams", () => {
 
     test('Returns an object with an amount attribute used for filtering mongoose aggregate queries - min and max parameters', () => {
         const req = {
-            min: '10',
-            max: '50',
+            query: {
+                min: '10',
+                max: '50'
+            }
         };
 
         const result = handleAmountFilterParams(req);
@@ -430,7 +455,9 @@ describe("handleAmountFilterParams", () => {
 
     test('Throws an error if the value of any query parameter is not a numerical value - min parameter', () => {
         const req = {
-            min: 'invalid',
+            query: {
+                min: 'invalid'
+            }
         };
 
         expect(() => handleAmountFilterParams(req)).toThrow('Min or Max values are not valid');
@@ -438,21 +465,25 @@ describe("handleAmountFilterParams", () => {
 
     test('Throws an error if the value of any query parameter is not a numerical value - max parameter', () => {
         const req = {
-            max: 'invalid',
+            query: {
+                max: 'invalid'
+            }
         };
 
         expect(() => handleAmountFilterParams(req)).toThrow('Min or Max values are not valid');
     });
     test('Throws an error if the value of any query parameter is not a numerical value but are both defined - max parameter', () => {
         const req = {
-            max: 'invalid',
-            min: "10"
+            query: {
+                max: 'invalid',
+                min: "10"
+            }
         };
 
         expect(() => handleAmountFilterParams(req)).toThrow('Min or Max values are not valid');
     });
     test('Returns an empty object if there are no query parameters', () => {
-        const req = {};
+        const req = { query:{} };
 
         const result = handleAmountFilterParams(req);
 
