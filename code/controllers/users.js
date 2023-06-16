@@ -370,11 +370,11 @@ export const removeFromGroup = async (req, res) => {
       }
       // Group Does Not exist or All memberEmails does not exist or Already in Group error handling
       if (membersToDelete.length === 0) {
-        res.status(400).json({ error: "All memberEmails does not exist or Already in Group" });
+        return res.status(400).json({ error: "All memberEmails does not exist or Already in Group" });
       } else {
         for (let member of membersToDelete) {
           let user = await User.findOne({ email: member.email });
-          updated_group = await Group.findOneAndUpdate({ name: name }, { $pull: { members: { email: member.email, user: user } } }, { new: true });
+          updated_group = await Group.findOneAndUpdate({ name: name }, { $pull: { members: { email: member.email, _id: user } } }, { new: true });
           if (updated_group.members.length === 1)
             break;
         }
@@ -421,7 +421,7 @@ export const deleteUser = async (req, res) => {
         return res.status(400).json({ error: "User is an Admin,can't delete" });
       } else {
         //remove from group
-        const updated_group = await Group.findOneAndUpdate({ "members.email": email }, { $pull: { members: { email: email, user: user._id } } }, { new: true });
+        const updated_group = await Group.findOneAndUpdate({ "members.email": email }, { $pull: { members: { email: email, _id: user._id } } }, { new: true });
 
         if (updated_group !== null && updated_group.members.length === 0) {
           await Group.deleteOne({ name: updated_group.name });
