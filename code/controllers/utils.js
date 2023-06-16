@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken'
  * @throws an error if the query parameters include `date` together with at least one of `from` or `upTo`
  */
 export const handleDateFilterParams = (req) => {
-        const { from, upTo, date } = req;
+        const { from, upTo, date } = req.query;
          
         if (date) {
             if (from || upTo) {
@@ -85,12 +85,8 @@ export const verifyAuth = (req, res, info) => {
             return { authorized: false, cause: "Unauthorized" };
         }
 
-            const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
-            const decodedRefreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
-    
-        if (info.authType === "Simple" && decodedAccessToken  && decodedRefreshToken ) {
-            return { authorized: true, cause: "Authorized" }
-        }
+        const decodedAccessToken = jwt.verify(cookie.accessToken, process.env.ACCESS_KEY);
+        const decodedRefreshToken = jwt.verify(cookie.refreshToken, process.env.ACCESS_KEY);
 
         if (!decodedAccessToken.username || !decodedAccessToken.email || !decodedAccessToken.role) {
             return { authorized: false, cause: "Token is missing information" }
@@ -102,6 +98,10 @@ export const verifyAuth = (req, res, info) => {
         //|| decodedAccessToken.email !== decodedRefreshToken.email) ho levato questo perchè altrimenti in Group error test non funziona
         if (decodedAccessToken.username !== decodedRefreshToken.username)  {
             return { authorized: false, cause: "Mismatched users" };
+        }
+        
+        if (info.authType === "Simple" && decodedAccessToken  && decodedRefreshToken ) {
+            return { authorized: true, cause: "Authorized" }
         }
         // User authType check
         if (info.authType === 'User' && info.username !== decodedAccessToken.username ) {
@@ -176,7 +176,7 @@ export const verifyAuth = (req, res, info) => {
  *  Example: {amount: {$gte: 100}} returns all transactions whose `amount` parameter is greater or equal than 100
  */
 export const handleAmountFilterParams = (req) => {
-    const {min, max} = req;
+    const {min, max} = req.query;
     let minFilter = parseInt(min);
     let maxFilter = parseInt(max);
     if(min && !max){

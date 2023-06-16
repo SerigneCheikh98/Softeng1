@@ -290,8 +290,8 @@ export const getTransactionsByUser = async (req, res) => {
                 filterByAmount = {};
             } else {
                 //users (filtering, so apply all the filters)
-                filterByDate = handleDateFilterParams(req.query);
-                filterByAmount = handleAmountFilterParams(req.query);
+                filterByDate = handleDateFilterParams(req);
+                filterByAmount = handleAmountFilterParams(req);
             }
             //find all transactions then 
             let allTransactions = [];
