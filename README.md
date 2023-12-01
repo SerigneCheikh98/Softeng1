@@ -4,3 +4,5 @@ EZWallet is a web application designed to help individuals and families keep tra
 expenses. Users can enter and categorize their expenses, allowing them to quickly see where their 
 money is going. EZWallet is a powerful tool for those looking to take control of their finances and 
 make informed decisions about their spending.
+
+**Worked with**: Domenico Gagliardo, Agostino Saviano and Gaetano Roberto.
